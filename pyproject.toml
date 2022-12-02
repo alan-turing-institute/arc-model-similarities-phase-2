@@ -12,6 +12,7 @@ pre-commit = "^2.20.0"
 pytest = "^7.2.0"
 torch = {platform="macosx", url = "https://download.pytorch.org/whl/cpu/torch-1.13.0-cp310-none-macosx_11_0_arm64.whl"}
 torchvision = {platform="macosx", url="https://download.pytorch.org/whl/cpu/torchvision-0.14.0-cp310-cp310-macosx_11_0_arm64.whl"}
+pytorch-lightning = "^1.8.3.post1"
 lightning-bolts = "^0.6.0.post1"
 
 [build-system]
