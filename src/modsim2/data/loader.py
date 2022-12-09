@@ -75,7 +75,10 @@ class CIFAR10DataModulePlus(CIFAR10DataModule):
         if self.drop > 0:
             labels = [i[1] for i in self.dataset_train]
             index, _ = train_test_split(
-                self.dataset_train.indices, test_size=self.drop, stratify=labels
+                self.dataset_train.indices,
+                test_size=self.drop,
+                stratify=labels,
+                random_state=self.seed,
             )
             return self._data_loader(
                 Subset(self.dataset_train, index), shuffle=self.shuffle
