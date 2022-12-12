@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Subset
 
 
-class CIFAR10DataModulePlus(CIFAR10DataModule):
+class CIFAR10DataModuleDrop(CIFAR10DataModule):
     def __init__(
         self,
         drop: Union[int, float] = 0,
@@ -66,10 +66,6 @@ class CIFAR10DataModulePlus(CIFAR10DataModule):
 
         # The new bit: drop %
         self.drop = drop
-
-    # Allow updating the drop value (for A/B copying then changing)
-    def update_drop(self, new_drop: Union[int, float]):
-        self.drop = new_drop
 
     # Data loader: if drop > 0, drop that % of the data
     def train_dataloader(self) -> DataLoader:
