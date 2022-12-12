@@ -5,7 +5,6 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Subset
 
 
-# Define a new class that drops a % of the train set
 class CIFAR10DataModulePlus(CIFAR10DataModule):
     def __init__(
         self,
@@ -26,6 +25,8 @@ class CIFAR10DataModulePlus(CIFAR10DataModule):
         **kwargs: Any,
     ) -> None:
         """
+        A modified CIFAR10DataModule class that drops a % of the train set
+
         Args:
             drop: % of training data to drop when using dataloader
             data_dir: Where to save/load the data
