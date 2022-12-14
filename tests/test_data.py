@@ -27,7 +27,7 @@ def test_drop_loader_stratification():
     subset_count = Counter(subset_labels)
 
     count_test = [
-        isclose(full_count[i] * (1 - drop), subset_count[i], rel_tol=1)
+        isclose(full_count[i] * (1 - drop), subset_count[i], abs_tol=1)
         for i in range(9)
     ]
     assert all(count_test)
