@@ -20,12 +20,15 @@ def test_drop_loader_stratification():
     cifar.setup()
     dl = cifar.train_dataloader()
 
+    # Extract labels from full and subsetted dataset
     full_labels = [i[1] for i in cifar.dataset_train]
     subset_labels = [dl.dataset.dataset.dataset.targets[i] for i in dl.dataset.indices]
 
+    # Get count of labels in each dataset
     full_count = Counter(full_labels)
     subset_count = Counter(subset_labels)
 
+    # Check that the subset count is (1-drop%)*full count, allowing for rounding error
     count_test = [
         isclose(full_count[i] * (1 - drop), subset_count[i], abs_tol=1)
         for i in range(9)
