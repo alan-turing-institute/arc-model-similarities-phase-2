@@ -2,7 +2,13 @@
 
 ## Problem Statement
 
-Do measures of dataset similarity correlate with and predict attack transferability between those two datasets?
+Previous ARC research examined the relationship between neural network similarity and attack transferability between those two networks.
+
+In the second phase of model similarity research, we are now assessing the relationship between dataset similarity and attack transferability between identitical models trained on two different datasets.
+
+We expect that dataset similarity will be predictive of attack transferability. This is in line with recent research that shows dataset similarity is predictive of successful transfer learning.
+
+**Statement of Work (internal only):** <https://thealanturininstitute.sharepoint.com/:b:/s/tds/Ee5knRguzUxChT-aziaBP3QBAQppT8YrDpYv-TsSrkRn1g?e=jei47a>
 
 ## Technical Approach
 
