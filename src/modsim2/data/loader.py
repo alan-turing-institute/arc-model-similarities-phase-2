@@ -72,29 +72,37 @@ class CIFAR10DataModuleDrop(CIFAR10DataModule):
 
     # Data loader: if drop > 0, drop that % of the data
     def train_dataloader(self) -> DataLoader:
-        if self.drop > 0:
-            labels = [i[1] for i in self.dataset_train]
-            index, unselected = train_test_split(
-                self.dataset_train.indices,
-                test_size=self.drop * 2,
-                stratify=labels,
-                random_state=self.seed,
-            )
-            unselected_labels = [
-                self.dataset_train.dataset.targets[i] for i in unselected
-            ]
-            keep_A, keep_B = train_test_split(
-                unselected,
-                test_size=0.5,
-                stratify=unselected_labels,
-                random_state=self.seed,
-            )
-            if self.keep == "A":
-                index = index + keep_A
-            elif self.keep == "B":
-                index = index + keep_B
-            return self._data_loader(
-                Subset(self.dataset_train, index), shuffle=self.shuffle
-            )
-        else:
+
+        # if no need to drop, return original dataset
+        if self.drop == 0:
             return self._data_loader(self.dataset_train, shuffle=self.shuffle)
+
+        # Partition off the unselected portion of the dataset
+        labels = [i[1] for i in self.dataset_train]
+        index, unselected = train_test_split(
+            self.dataset_train.indices,
+            test_size=self.drop
+            * 2,  # since we want to drop from A and B, double the drop
+            stratify=labels,
+            random_state=self.seed,
+        )
+        unselected_labels = [self.dataset_train.dataset.targets[i] for i in unselected]
+
+        # Split the unselected component in half
+        keep_A, keep_B = train_test_split(
+            unselected,
+            test_size=0.5,  # in half for A_keep and B_keep
+            stratify=unselected_labels,
+            random_state=self.seed,
+        )
+
+        # Put either A or B keep back on as appropriate, dropping the other component
+        if self.keep == "A":
+            index = index + keep_A
+        elif self.keep == "B":
+            index = index + keep_B
+
+        # Return
+        return self._data_loader(
+            Subset(self.dataset_train, index), shuffle=self.shuffle
+        )
