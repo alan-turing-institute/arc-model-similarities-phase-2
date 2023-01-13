@@ -8,7 +8,8 @@ from torch.utils.data import DataLoader, Subset
 class CIFAR10DataModuleDrop(CIFAR10DataModule):
     def __init__(
         self,
-        drop: Union[int, float] = 0,
+        drop_A: Union[int, float] = 0.0,
+        drop_B: Union[int, float] = 0.0,
         keep: str = "A",
         data_dir: Optional[str] = None,
         val_split: Union[int, float] = 0.2,
@@ -67,40 +68,44 @@ class CIFAR10DataModuleDrop(CIFAR10DataModule):
         )
 
         # Additional inputs for the dataloader
-        self.drop = drop
+        self.drop_A = drop_A
+        self.drop_B = drop_B
         self.keep = keep
 
     # Data loader: if drop > 0, drop that % of the data
     def train_dataloader(self) -> DataLoader:
 
         # if no need to drop, return original dataset
-        if self.drop == 0:
+        if (self.drop_A == 0) and (self.drop_B == 0):
             return self._data_loader(self.dataset_train, shuffle=self.shuffle)
 
         # Partition off the unselected portion of the dataset
         labels = [i[1] for i in self.dataset_train]
         index, unselected = train_test_split(
             self.dataset_train.indices,
-            test_size=self.drop
-            * 2,  # since we want to drop from A and B, double the drop
+            test_size=self.drop_A + self.drop_B,  # drop all together
             stratify=labels,
             random_state=self.seed,
         )
         unselected_labels = [self.dataset_train.dataset.targets[i] for i in unselected]
 
-        # Split the unselected component in half
-        keep_A, keep_B = train_test_split(
-            unselected,
-            test_size=0.5,  # in half for A_keep and B_keep
-            stratify=unselected_labels,
-            random_state=self.seed,
-        )
+        # If dropping from both
+        if (self.drop_A > 0) and (self.drop_B > 0):
 
-        # Put either A or B keep back on as appropriate, dropping the other component
-        if self.keep == "A":
-            index = index + keep_A
-        elif self.keep == "B":
-            index = index + keep_B
+            # Split the unselected component into A_keep and B_keep
+            # since B is test, test amount is proportion of drop that is B
+            keep_A, keep_B = train_test_split(
+                unselected,
+                test_size=self.drop_B / (self.drop_A + self.drop_B),
+                stratify=unselected_labels,
+                random_state=self.seed,
+            )
+
+            # Put either A or B keep back on as appropriate
+            if self.keep == "A":
+                index = index + keep_A
+            elif self.keep == "B":
+                index = index + keep_B
 
         # Return
         return self._data_loader(
