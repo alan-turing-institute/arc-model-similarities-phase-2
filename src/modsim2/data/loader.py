@@ -9,6 +9,7 @@ class CIFAR10DataModuleDrop(CIFAR10DataModule):
     def __init__(
         self,
         drop: Union[int, float] = 0,
+        keep: str = "A",
         data_dir: Optional[str] = None,
         val_split: Union[int, float] = 0.2,
         num_workers: int = 0,
@@ -29,6 +30,7 @@ class CIFAR10DataModuleDrop(CIFAR10DataModule):
 
         Args:
             drop: % of training data to drop when using dataloader
+            keep: whether in the 'unselected' component to keep A or B
             data_dir: Where to save/load the data
             val_split: Percent (float) or number (int) of samples to use
                        for the validation split
@@ -64,19 +66,33 @@ class CIFAR10DataModuleDrop(CIFAR10DataModule):
             **kwargs,
         )
 
-        # The new bit: drop %
+        # Additional inputs for the dataloader
         self.drop = drop
+        self.keep = keep
 
     # Data loader: if drop > 0, drop that % of the data
     def train_dataloader(self) -> DataLoader:
         if self.drop > 0:
             labels = [i[1] for i in self.dataset_train]
-            index, _ = train_test_split(
+            index, unselected = train_test_split(
                 self.dataset_train.indices,
-                test_size=self.drop,
+                test_size=self.drop * 2,
                 stratify=labels,
                 random_state=self.seed,
             )
+            unselected_labels = [
+                self.dataset_train.dataset.targets[i] for i in unselected
+            ]
+            keep_A, keep_B = train_test_split(
+                unselected,
+                test_size=0.5,
+                stratify=unselected_labels,
+                random_state=self.seed,
+            )
+            if self.keep == "A":
+                index = index + keep_A
+            elif self.keep == "B":
+                index = index + keep_B
             return self._data_loader(
                 Subset(self.dataset_train, index), shuffle=self.shuffle
             )
