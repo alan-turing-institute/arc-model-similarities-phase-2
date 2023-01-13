@@ -7,7 +7,7 @@ from modsim2.data.loader import CIFAR10DataModuleDrop
 
 def test_drop_loader_n_obs():
     drop = 0.1
-    cifar = CIFAR10DataModuleDrop(drop=drop)
+    cifar = CIFAR10DataModuleDrop(drop_A=drop)
     cifar.prepare_data()
     cifar.setup()
     dl = cifar.train_dataloader()
@@ -16,7 +16,7 @@ def test_drop_loader_n_obs():
 
 def test_drop_loader_stratification():
     drop = 0.1
-    cifar = CIFAR10DataModuleDrop(drop=drop)
+    cifar = CIFAR10DataModuleDrop(drop_A=drop)
     cifar.prepare_data()
     cifar.setup()
     dl = cifar.train_dataloader()
@@ -40,7 +40,7 @@ def test_drop_loader_stratification():
 def test_drop_loader_double_overlap():
     # Generate datasets A and B. Drop 10% from both with no overlap
     drop = 0.1
-    cifar_A = CIFAR10DataModuleDrop(drop=drop)
+    cifar_A = CIFAR10DataModuleDrop(drop_A=drop, drop_B=drop)
     cifar_B = deepcopy(cifar_A)
     cifar_B.keep = "B"
 
