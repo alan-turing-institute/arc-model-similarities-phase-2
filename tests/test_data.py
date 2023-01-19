@@ -1,29 +1,27 @@
 from collections import Counter
-from copy import deepcopy
 from math import isclose
 
-from modsim2.data.loader import CIFAR10DataModuleDrop
+from modsim2.data.loader import DMPair
 
 
-def test_drop_loader_n_obs():
+def test_cifar_pair_n_obs():
     drop = 0.1
-    cifar = CIFAR10DataModuleDrop(drop_A=drop)
-    cifar.prepare_data()
-    cifar.setup()
-    dl = cifar.train_dataloader()
-    assert len(dl.dataset) == (1 - drop) * len(cifar.dataset_train)
+    dmpair = DMPair(drop_A=drop, drop_B=0)
+    dl_A = dmpair.A.train_dataloader()
+    dl_B = dmpair.B.train_dataloader()
+    assert len(dl_A.dataset) == (1 - drop) * len(dl_B.dataset)
 
 
-def test_drop_loader_stratification():
+def test_cifar_pair_stratification():
     drop = 0.1
-    cifar = CIFAR10DataModuleDrop(drop_A=drop)
-    cifar.prepare_data()
-    cifar.setup()
-    dl = cifar.train_dataloader()
+    dmpair = DMPair(drop_A=drop)
 
     # Extract labels from full and subsetted dataset
-    full_labels = [i[1] for i in cifar.dataset_train]
-    subset_labels = [dl.dataset.dataset.dataset.targets[i] for i in dl.dataset.indices]
+    full_labels = [i[1] for i in dmpair.A.dataset_train.dataset]
+    subset_labels = [
+        dmpair.A.dataset_train.dataset.dataset.targets[i]
+        for i in dmpair.A.dataset_train.indices
+    ]
 
     # Get count of labels in each dataset
     full_count = Counter(full_labels)
@@ -37,22 +35,14 @@ def test_drop_loader_stratification():
     assert all(count_test)
 
 
-def test_drop_loader_double_overlap():
+def test_cifar_pair_overlap():
     # Generate datasets A and B. Drop 10% from both with no overlap
     drop = 0.1
-    cifar_A = CIFAR10DataModuleDrop(drop_A=drop, drop_B=drop)
-    cifar_B = deepcopy(cifar_A)
-    cifar_B.keep = "B"
+    dmpair = DMPair(drop_A=drop, drop_B=drop)
+    dl_A = dmpair.A.train_dataloader()
+    dl_B = dmpair.B.train_dataloader()
 
-    # Set up the datasets
-    cifar_A.prepare_data()
-    cifar_A.setup()
-    cifar_B.prepare_data()
-    cifar_B.setup()
-    dl_A = cifar_A.train_dataloader()
-    dl_B = cifar_B.train_dataloader()
-
-    # Extract indices from both datasets to work as lists
+    # Get indices
     indices_A = set(dl_A.dataset.indices)
     indices_B = set(dl_B.dataset.indices)
 
