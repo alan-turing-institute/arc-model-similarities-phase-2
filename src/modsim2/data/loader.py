@@ -2,15 +2,13 @@ from typing import Any, Callable, Optional, Union
 
 from pl_bolts.datamodules import CIFAR10DataModule
 from sklearn.model_selection import train_test_split
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import Dataset, Subset
 
 
-class CIFAR10DataModuleDrop(CIFAR10DataModule):
+class CIFAR10DMSubset(CIFAR10DataModule):
     def __init__(
         self,
-        drop_A: Union[int, float] = 0.0,
-        drop_B: Union[int, float] = 0.0,
-        keep: str = "A",
+        train_dataset: Union[Subset, Dataset],
         data_dir: Optional[str] = None,
         val_split: Union[int, float] = 0.2,
         num_workers: int = 0,
@@ -67,47 +65,123 @@ class CIFAR10DataModuleDrop(CIFAR10DataModule):
             **kwargs,
         )
 
-        # Additional inputs for the dataloader
+        # Change the dataset from original CIFAR10 DM
+        self.dataset_train = train_dataset
+
+
+class DMPair:
+    def __init__(
+        self,
+        drop_A: Union[int, float] = 0,
+        drop_B: Union[int, float] = 0,
+        data_dir: Optional[str] = None,
+        val_split: Union[int, float] = 0.2,
+        num_workers: int = 0,
+        normalize: bool = False,
+        batch_size: int = 32,
+        seed: int = 42,
+        shuffle: bool = True,
+        pin_memory: bool = True,
+        drop_last: bool = False,
+        train_transforms: Optional[Callable] = None,
+        val_transforms: Optional[Callable] = None,
+        test_transforms: Optional[Callable] = None,
+        *args: Any,
+        **kwargs: Any,
+    ):
+        # Assign params
         self.drop_A = drop_A
         self.drop_B = drop_B
-        self.keep = keep
+        self.seed = seed
 
-    # Data loader: if drop > 0, drop that % of the data
-    def train_dataloader(self) -> DataLoader:
+        # Load and setup CIFAR
+        cifar = CIFAR10DataModule()
+        cifar.prepare_data()
+        cifar.setup()
 
-        # if no need to drop, return original dataset
-        if (self.drop_A == 0) and (self.drop_B == 0):
-            return self._data_loader(self.dataset_train, shuffle=self.shuffle)
+        # If not dropping any observations
+        if (self.drop_A + self.drop_B) == 0:
+            self.A = cifar
+            self.B = cifar
 
-        # Partition off the unselected portion of the dataset
-        labels = [i[1] for i in self.dataset_train]
-        index, unselected = train_test_split(
-            self.dataset_train.indices,
-            test_size=self.drop_A + self.drop_B,  # drop all together
-            stratify=labels,
-            random_state=self.seed,
-        )
-        unselected_labels = [self.dataset_train.dataset.targets[i] for i in unselected]
+        # If needing to drop observations
+        if (self.drop_A + self.drop_B) > 0:
 
-        # If dropping from both
-        if (self.drop_A > 0) and (self.drop_B > 0):
+            # Set up indices and labels
+            self._train_indices = cifar.dataset_train.indices
+            self._train_labels = [i[1] for i in cifar.dataset_train]
 
-            # Split the unselected component into A_keep and B_keep
-            # since B is test, test amount is proportion of drop that is B
-            keep_A, keep_B = train_test_split(
-                unselected,
-                test_size=self.drop_B / (self.drop_A + self.drop_B),
-                stratify=unselected_labels,
+            # Defaults
+            a_inds = []
+            b_inds = []
+
+            # Split (drop_A + drop_B)% of the training data
+            self._main_indices, self._drop_indices = train_test_split(
+                self._train_indices,
+                test_size=self.drop_A + self.drop_B,  # drop all together
+                stratify=self._train_labels,
                 random_state=self.seed,
             )
+            unselected_labels = [
+                cifar.dataset_train.dataset.targets[i] for i in self._drop_indices
+            ]
 
-            # Put either A or B keep back on as appropriate
-            if self.keep == "A":
-                index = index + keep_A
-            elif self.keep == "B":
-                index = index + keep_B
+            # If dropping only from A
+            if self.drop_A > 0 and self.drop_B == 0:
+                b_inds = unselected_labels
 
-        # Return
-        return self._data_loader(
-            Subset(self.dataset_train, index), shuffle=self.shuffle
-        )
+            # If dropping only from B
+            if self.drop_A == 0 and self.drop_B > 0:
+                a_inds = unselected_labels
+
+            # If dropping from both
+            if (self.drop_A > 0) and (self.drop_B > 0):
+
+                # Split the unselected component into parts to keep/drop in A vs B
+                # since B is test, test amount is proportion of unselected that is B
+                a_inds, b_inds = train_test_split(
+                    self._drop_indices,
+                    test_size=self.drop_B / (self.drop_A + self.drop_B),
+                    stratify=unselected_labels,
+                    random_state=self.seed,
+                )
+
+            # Store indices
+            self.indices_A = self._main_indices + a_inds
+            self.indices_B = self._main_indices + b_inds
+
+            # Create data modules
+            self.A = CIFAR10DMSubset(
+                train_dataset=Subset(cifar.dataset_train, self.indices_A),
+                data_dir=data_dir,
+                val_split=val_split,
+                num_workers=num_workers,
+                normalize=normalize,
+                batch_size=batch_size,
+                seed=seed,
+                shuffle=shuffle,
+                pin_memory=pin_memory,
+                drop_last=drop_last,
+                train_transforms=train_transforms,
+                val_transforms=val_transforms,
+                test_transforms=test_transforms,
+                *args,
+                **kwargs,
+            )
+            self.B = CIFAR10DMSubset(
+                train_dataset=Subset(cifar.dataset_train, self.indices_B),
+                data_dir=data_dir,
+                val_split=val_split,
+                num_workers=num_workers,
+                normalize=normalize,
+                batch_size=batch_size,
+                seed=seed,
+                shuffle=shuffle,
+                pin_memory=pin_memory,
+                drop_last=drop_last,
+                train_transforms=train_transforms,
+                val_transforms=val_transforms,
+                test_transforms=test_transforms,
+                *args,
+                **kwargs,
+            )
