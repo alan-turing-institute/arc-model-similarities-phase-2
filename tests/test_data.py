@@ -6,22 +6,17 @@ from modsim2.data.loader import DMPair
 
 def test_cifar_pair_n_obs():
     drop = 0.1
-    dmpair = DMPair(drop_A=drop, drop_B=0)
-    dl_A = dmpair.A.train_dataloader()
-    dl_B = dmpair.B.train_dataloader()
-    assert len(dl_A.dataset) == (1 - drop) * len(dl_B.dataset)
+    dmpair = DMPair(drop_percent_A=drop, drop_percent_B=0)
+    assert len(set(dmpair.indices_A)) == (1 - drop) * len(set(dmpair.indices_B))
 
 
 def test_cifar_pair_stratification():
     drop = 0.1
-    dmpair = DMPair(drop_A=drop)
+    dmpair = DMPair(drop_percent_A=drop)
 
     # Extract labels from full and subsetted dataset
     full_labels = [i[1] for i in dmpair.A.dataset_train.dataset]
-    subset_labels = [
-        dmpair.A.dataset_train.dataset.dataset.targets[i]
-        for i in dmpair.A.dataset_train.indices
-    ]
+    subset_labels = dmpair.labels_A
 
     # Get count of labels in each dataset
     full_count = Counter(full_labels)
@@ -38,13 +33,12 @@ def test_cifar_pair_stratification():
 def test_cifar_pair_overlap():
     # Generate datasets A and B. Drop 10% from both with no overlap
     drop = 0.1
-    dmpair = DMPair(drop_A=drop, drop_B=drop)
+    dmpair = DMPair(drop_percent_A=drop, drop_percent_B=drop)
     dl_A = dmpair.A.train_dataloader()
-    dl_B = dmpair.B.train_dataloader()
 
-    # Get indices
-    indices_A = set(dl_A.dataset.indices)
-    indices_B = set(dl_B.dataset.indices)
+    # Get indices, put into set
+    indices_A = set(dmpair.indices_A)
+    indices_B = set(dmpair.indices_B)
 
     # Since no overlap in data dropped, if we drop x obs, both shld contain
     # N-x obs, with x obs not in the other. Shared obs should therefore be equal
