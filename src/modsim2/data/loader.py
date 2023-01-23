@@ -250,6 +250,7 @@ class DMPair:
         )
 
         # Store labels
+        # List comprehension because pytorch dataset makes it necsesary
         self.labels_A = [
             self.A.dataset_train.dataset.targets[i] for i in self.indices_A
         ]
