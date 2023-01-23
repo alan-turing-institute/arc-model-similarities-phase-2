@@ -29,8 +29,8 @@ class CIFAR10DMSubset(CIFAR10DataModule):
         the original training dataset with this Subset
 
         Args:
-            drop: % of training data to drop when using dataloader
-            keep: whether in the 'unselected' component to keep A or B
+            dataset_train: Dataset or Subset class object to replace
+                           original dataset_train with
             data_dir: Where to save/load the data
             val_split: Percent (float) or number (int) of samples to use
                        for the validation split
@@ -128,7 +128,7 @@ class DMPair:
 
         # Default
         self.indices_core = cifar.dataset_train.indices
-        labels_core = [i[1] for i in cifar.dataset_train]
+        labels_core = [image[1] for image in cifar.dataset_train]
         self.keep_inds_A = []
         self.keep_inds_B = []
 
@@ -174,7 +174,7 @@ class DMPair:
 
         # Create data modules
         self.A = CIFAR10DMSubset(
-            dataset_train=Subset(cifar.dataset_train, self.indices_A),
+            dataset_train=Subset(cifar.dataset_train.dataset, self.indices_A),
             data_dir=data_dir,
             val_split=val_split,
             num_workers=num_workers,
@@ -191,7 +191,7 @@ class DMPair:
             **kwargs,
         )
         self.B = CIFAR10DMSubset(
-            dataset_train=Subset(cifar.dataset_train, self.indices_B),
+            dataset_train=Subset(cifar.dataset_train.dataset, self.indices_B),
             data_dir=data_dir,
             val_split=val_split,
             num_workers=num_workers,
@@ -210,8 +210,8 @@ class DMPair:
 
         # Store labels
         self.labels_A = [
-            self.A.dataset_train.dataset.dataset.targets[i] for i in self.indices_A
+            self.A.dataset_train.dataset.targets[i] for i in self.indices_A
         ]
         self.labels_B = [
-            self.B.dataset_train.dataset.dataset.targets[i] for i in self.indices_B
+            self.B.dataset_train.dataset.targets[i] for i in self.indices_B
         ]
