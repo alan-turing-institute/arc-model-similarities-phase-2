@@ -70,6 +70,80 @@ class CIFAR10DMSubset(CIFAR10DataModule):
         self.dataset_train = dataset_train
 
 
+def split_indices(
+    indices: list[int],
+    labels: list[int],
+    drop_percent_A: float,
+    drop_percent_B: float,
+    seed: int,
+    cifar: CIFAR10DataModule,
+) -> tuple[list[int], list[int]]:
+    """_summary_
+
+    Args:
+        indices (list[int]): Indices to be split across 2 datasets
+        labels (list[int]): Labels corresponding to the indices
+        drop_percent_A (float): Percentage of data to drop from A
+        drop_percent_B (float): Percentage of data to drop from B
+        seed (int): Seed for random splitting
+        cifar (CIFAR10DataModule): CIFAR datamodule to use in extracting
+                                   stratifying the second split
+
+    Returns:
+        tuple[list[int], list[int]]: Two lists containing indices for A and B
+    """
+
+    # Defaults
+    shared_AB_indices = indices
+    shared_AB_labels = labels
+    indices_kept_A_dropped_B = []
+    indices_kept_B_dropped_A = []
+
+    # Numbers to be used
+    num_obs = len(indices)
+    num_drop_A = round(num_obs * drop_percent_A)
+    num_drop_B = round(num_obs * drop_percent_B)
+    total_dropped = num_drop_A + num_drop_B
+    share_dropped_from_A_kept_in_B = num_drop_A / total_dropped
+
+    # If needing to drop observations
+    if (drop_percent_A + drop_percent_B) > 0:
+
+        # Split (drop_A + drop_B)% of the training data
+        shared_AB_indices, drop_indices = train_test_split(
+            shared_AB_indices,
+            test_size=total_dropped,
+            stratify=shared_AB_labels,
+            random_state=seed,
+        )
+        drop_labels = [cifar.dataset_train.dataset.targets[i] for i in drop_indices]
+
+        # If dropping only from A
+        if drop_percent_A > 0 and drop_percent_B == 0:
+            indices_kept_B_dropped_A = drop_indices
+
+        # If dropping only from B
+        if drop_percent_A == 0 and drop_percent_B > 0:
+            indices_kept_A_dropped_B = drop_indices
+
+        # If dropping from both
+        if (drop_percent_A > 0) and (drop_percent_B > 0):
+
+            # Split the unselected component into parts to keep/drop in A vs B
+            # since B is test, test amount is proportion of unselected that is B
+            indices_kept_A_dropped_B, indices_kept_B_dropped_A = train_test_split(
+                drop_indices,
+                test_size=share_dropped_from_A_kept_in_B,
+                stratify=drop_labels,
+                random_state=seed,
+            )
+
+        # Return
+        indices_A = shared_AB_indices + indices_kept_A_dropped_B
+        indices_B = shared_AB_indices + indices_kept_B_dropped_A
+        return indices_A, indices_B
+
+
 class DMPair:
     def __init__(
         self,
@@ -127,52 +201,19 @@ class DMPair:
         cifar.setup()
 
         # Default
-        self.indices_core = cifar.dataset_train.indices
-        labels_core = [image[1] for image in cifar.dataset_train]
-        self.keep_inds_A = []
-        self.keep_inds_B = []
-
-        # If needing to drop observations
-        if (self.drop_percent_A + self.drop_percent_B) > 0:
-
-            # Split (drop_A + drop_B)% of the training data
-            self.indices_core, drop_indices = train_test_split(
-                self.indices_core,
-                test_size=self.drop_percent_A
-                + self.drop_percent_B,  # drop all together
-                stratify=labels_core,
-                random_state=self.seed,
-            )
-            labels_unselected = [
-                cifar.dataset_train.dataset.targets[i] for i in drop_indices
-            ]
-
-            # If dropping only from A
-            if self.drop_percent_A > 0 and self.drop_percent_B == 0:
-                self.keep_inds_B = drop_indices
-
-            # If dropping only from B
-            if self.drop_percent_A == 0 and self.drop_percent_B > 0:
-                self.keep_inds_A = drop_indices
-
-            # If dropping from both
-            if (self.drop_percent_A > 0) and (self.drop_percent_B > 0):
-
-                # Split the unselected component into parts to keep/drop in A vs B
-                # since B is test, test amount is proportion of unselected that is B
-                self.keep_inds_A, self.keep_inds_B = train_test_split(
-                    drop_indices,
-                    test_size=self.drop_percent_B
-                    / (self.drop_percent_A + self.drop_percent_B),
-                    stratify=labels_unselected,
-                    random_state=self.seed,
-                )
-
-        # Store indices
-        self.indices_A = self.indices_core + self.keep_inds_A
-        self.indices_B = self.indices_core + self.keep_inds_B
+        shared_AB_indices = cifar.dataset_train.indices
+        shared_AB_labels = [image[1] for image in cifar.dataset_train]
+        self.indices_A, self.indices_B = split_indices(
+            indices=shared_AB_indices,
+            labels=shared_AB_labels,
+            drop_percent_A=self.drop_percent_A,
+            drop_percent_B=self.drop_percent_B,
+            seed=self.seed,
+            cifar=cifar,
+        )
 
         # Create data modules
+        self.cifar = cifar  # necessary for some tests
         self.A = CIFAR10DMSubset(
             dataset_train=Subset(cifar.dataset_train.dataset, self.indices_A),
             data_dir=data_dir,
