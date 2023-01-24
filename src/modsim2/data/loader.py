@@ -98,50 +98,84 @@ def split_indices(
     Returns: Two lists containing indices for A and B
     """
 
+    # Input checking A and B
+    sum_drop_percentage = drop_percent_A + drop_percent_B
+    if drop_percent_A < 0 or drop_percent_A > 1:
+        raise ValueError(
+            "drop_percent_A: "
+            + str(drop_percent_A)
+            + " should be between 0 and 1 inclusive"
+        )
+    if drop_percent_B < 0 or drop_percent_B > 1:
+        raise ValueError(
+            "drop_percent_B: "
+            + str(drop_percent_B)
+            + " should be between 0 and 1 inclusive"
+        )
+    if sum_drop_percentage > 1:
+        raise ValueError(
+            "drop_percent_A + drop_percent_B = "
+            + str(sum_drop_percentage)
+            + " should not be a sum greater than 1"
+        )
+
     # Defaults
     shared_AB_indices = indices
     shared_AB_labels = labels
     indices_kept_A_dropped_B = []
     indices_kept_B_dropped_A = []
 
-    # Numbers to be used
-    num_obs = len(indices)
-    num_drop_A = round(num_obs * drop_percent_A)
-    num_drop_B = round(num_obs * drop_percent_B)
-    total_dropped = num_drop_A + num_drop_B
-    share_dropped_from_A_kept_in_B = num_drop_A / total_dropped
-
     # If needing to drop observations
-    if (drop_percent_A + drop_percent_B) > 0:
+    if sum_drop_percentage > 0:
 
-        # Split (drop_A + drop_B)% of the training data
-        shared_AB_indices, drop_indices = train_test_split(
-            shared_AB_indices,
-            test_size=total_dropped,
-            stratify=shared_AB_labels,
-            random_state=seed,
-        )
-        drop_labels = [cifar.dataset_train.dataset.targets[i] for i in drop_indices]
+        # Numbers to be used
+        num_obs = len(indices)
+        num_drop_A = round(num_obs * drop_percent_A)
+        num_drop_B = round(num_obs * drop_percent_B)
+        total_dropped = num_drop_A + num_drop_B
+        share_dropped_from_A_kept_in_B = num_drop_A / total_dropped
 
-        # If dropping only from A
-        if drop_percent_A > 0 and drop_percent_B == 0:
-            indices_kept_B_dropped_A = drop_indices
+        # If there will be shared observations between A and B
+        if sum_drop_percentage < 1:
 
-        # If dropping only from B
-        if drop_percent_A == 0 and drop_percent_B > 0:
-            indices_kept_A_dropped_B = drop_indices
-
-        # If dropping from both
-        if (drop_percent_A > 0) and (drop_percent_B > 0):
-
-            # Split the unselected component into parts to keep/drop in A vs B
-            # since B is test, test amount is proportion of unselected that is B
-            indices_kept_A_dropped_B, indices_kept_B_dropped_A = train_test_split(
-                drop_indices,
-                test_size=share_dropped_from_A_kept_in_B,
-                stratify=drop_labels,
+            # Split (drop_A + drop_B)% of the training data
+            shared_AB_indices, drop_indices = train_test_split(
+                shared_AB_indices,
+                test_size=total_dropped,
+                stratify=shared_AB_labels,
                 random_state=seed,
             )
+            drop_labels = [cifar.dataset_train.dataset.targets[i] for i in drop_indices]
+
+            # If dropping only from A
+            if drop_percent_A > 0 and drop_percent_B == 0:
+                indices_kept_B_dropped_A = drop_indices
+
+            # If dropping only from B
+            if drop_percent_A == 0 and drop_percent_B > 0:
+                indices_kept_A_dropped_B = drop_indices
+
+            # If dropping from both
+            if (drop_percent_A > 0) and (drop_percent_B > 0):
+
+                # Split the unselected component into parts to keep/drop in A vs B
+                # since B is test, test amount is proportion of unselected that is B
+                indices_kept_A_dropped_B, indices_kept_B_dropped_A = train_test_split(
+                    drop_indices,
+                    test_size=share_dropped_from_A_kept_in_B,
+                    stratify=drop_labels,
+                    random_state=seed,
+                )
+
+        # If no shared observations between A and B
+        if sum_drop_percentage == 1:
+            indices_kept_A_dropped_B, indices_kept_B_dropped_A = train_test_split(
+                shared_AB_indices,
+                test_size=num_drop_A,
+                stratify=shared_AB_labels,
+                random_state=seed,
+            )
+            shared_AB_indices = []
 
     # Return
     indices_A = shared_AB_indices + indices_kept_A_dropped_B
