@@ -300,6 +300,8 @@ class DMPair:
         )
 
         # Create data modules
+        # NB A and B MUST use the same seed as each other and as the cifar used
+        # to generate their training datasets
         self.cifar = cifar  # necessary for some tests
         logging.warning("Performing early loading of CIFARDM10Subset.dataset_train")
         self.A = CIFAR10DMSubset(
