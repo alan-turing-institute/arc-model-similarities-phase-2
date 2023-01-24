@@ -3,6 +3,7 @@ from typing import Any, Callable, Optional, Union
 from pl_bolts.datamodules import CIFAR10DataModule
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, Subset
+from torchvision.transforms import transforms
 
 
 class CIFAR10DMSubset(CIFAR10DataModule):
@@ -71,7 +72,36 @@ class CIFAR10DMSubset(CIFAR10DataModule):
 
     # Override original setup message to avoid restoring CIFAR observations
     def setup(self, stage: Optional[str] = None) -> None:
-        return None
+        """Creates train, val, and test dataset."""
+        if stage == "fit" or stage is None:
+            train_transforms = (
+                self.default_transforms()
+                if self.train_transforms is None
+                else self.train_transforms
+            )
+            val_transforms = (
+                self.default_transforms()
+                if self.val_transforms is None
+                else self.val_transforms
+            )
+
+            self.dataset_train.dataset.transform = transforms.Compose(train_transforms)
+            dataset_val = self.dataset_cls(
+                self.data_dir, train=True, transform=val_transforms, **self.EXTRA_ARGS
+            )
+
+            # Split
+            self.dataset_val = self._split_dataset(dataset_val, train=False)
+
+        if stage == "test" or stage is None:
+            test_transforms = (
+                self.default_transforms()
+                if self.test_transforms is None
+                else self.test_transforms
+            )
+            self.dataset_test = self.dataset_cls(
+                self.data_dir, train=False, transform=test_transforms, **self.EXTRA_ARGS
+            )
 
 
 def split_indices(
