@@ -87,16 +87,15 @@ def split_indices(
     some rounding error.
 
     Args:
-        indices (list[int]): Indices to be split across 2 datasets
-        labels (list[int]): Labels corresponding to the indices
-        drop_percent_A (float): Percentage of data to drop from A
-        drop_percent_B (float): Percentage of data to drop from B
-        seed (int): Seed for random splitting
-        cifar (CIFAR10DataModule): CIFAR datamodule to use in extracting
-                                   stratifying the second split
+        indices: Indices to be split across 2 datasets
+        labels: Labels corresponding to the indices
+        drop_percent_A: Percentage of data to drop from A
+        drop_percent_B: Percentage of data to drop from B
+        seed: Seed for random splitting
+        cifar: CIFAR datamodule to use in stratifying the
+               second split according to labels
 
-    Returns:
-        tuple[list[int], list[int]]: Two lists containing indices for A and B
+    Returns: Two lists containing indices for A and B
     """
 
     # Defaults
