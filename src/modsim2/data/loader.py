@@ -1,9 +1,13 @@
+import logging
 from typing import Any, Callable, Optional, Union
 
 from pl_bolts.datamodules import CIFAR10DataModule
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, Subset
 from torchvision.transforms import transforms
+
+# Set module logger
+logger = logging.getLogger(__name__)
 
 
 class CIFAR10DMSubset(CIFAR10DataModule):
@@ -72,7 +76,13 @@ class CIFAR10DMSubset(CIFAR10DataModule):
 
     # Override original setup message to avoid restoring CIFAR observations
     def setup(self, stage: Optional[str] = None) -> None:
-        """Creates train, val, and test dataset."""
+        """
+        Overrides original setup method in VisionDataModule to avoid reverting
+        to original training dataset.
+
+        Args:
+            stage: Stage of the training loop. Defaults to None.
+        """
         if stage == "fit" or stage is None:
             train_transforms = (
                 self.default_transforms()
@@ -119,6 +129,8 @@ def split_indices(
     they drop are non-overlapping with respect to each other, and the label
     proportions in A and B are the same as the input, while allowing for
     some rounding error.
+
+    Note that late loading of the train_dataset does not occur.
 
     Args:
         indices: Indices to be split across 2 datasets
@@ -240,7 +252,9 @@ class DMPair:
 
         """
         A class to generate and manage two paired datamodules, including
-        specifying non-overlapping portions of the original dataset to be dropped
+        specifying non-overlapping portions of the original dataset to be dropped.
+
+        Early loading of the train_dataset is performed
 
         Args:
             drop_percent_A: % of training data to drop from A
@@ -287,6 +301,7 @@ class DMPair:
 
         # Create data modules
         self.cifar = cifar  # necessary for some tests
+        logging.warning("Performing early loading of CIFARDM10Subset.dataset_train")
         self.A = CIFAR10DMSubset(
             dataset_train=Subset(cifar.dataset_train.dataset, self.indices_A),
             data_dir=data_dir,
