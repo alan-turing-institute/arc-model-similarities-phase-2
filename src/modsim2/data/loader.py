@@ -78,7 +78,13 @@ def split_indices(
     seed: int,
     cifar: CIFAR10DataModule,
 ) -> tuple[list[int], list[int]]:
-    """_summary_
+    """
+    A function that takes as input a list of indices and a list of
+    labels. It returns two lists of indices, A and B, that have dropped
+    indices with respect to the input. Importantly however, the indices
+    they drop are non-overlapping with respect to each other, and the label
+    proportions in A and B are the same as the input, while allowing for
+    some rounding error.
 
     Args:
         indices (list[int]): Indices to be split across 2 datasets
