@@ -138,10 +138,10 @@ def split_indices(
                 random_state=seed,
             )
 
-        # Return
-        indices_A = shared_AB_indices + indices_kept_A_dropped_B
-        indices_B = shared_AB_indices + indices_kept_B_dropped_A
-        return indices_A, indices_B
+    # Return
+    indices_A = shared_AB_indices + indices_kept_A_dropped_B
+    indices_B = shared_AB_indices + indices_kept_B_dropped_A
+    return indices_A, indices_B
 
 
 class DMPair:
