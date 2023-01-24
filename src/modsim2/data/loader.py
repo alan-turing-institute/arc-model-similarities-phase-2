@@ -69,6 +69,10 @@ class CIFAR10DMSubset(CIFAR10DataModule):
         # Change the dataset from original CIFAR10 DM
         self.dataset_train = dataset_train
 
+    # Override original setup message to avoid restoring CIFAR observations
+    def setup(self, stage: Optional[str] = None) -> None:
+        return None
+
 
 def split_indices(
     indices: list[int],
