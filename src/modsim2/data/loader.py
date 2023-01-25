@@ -285,6 +285,7 @@ class DMPair:
         # Load and setup CIFAR
         cifar = CIFAR10DataModule(val_split=val_split, seed=self.seed)
         cifar.prepare_data()
+        logging.warning("Performing early loading of CIFARDM10Subset.dataset_train")
         cifar.setup()
 
         # Default
@@ -303,7 +304,6 @@ class DMPair:
         # NB A and B MUST use the same seed as each other and as the cifar used
         # to generate their training datasets
         self.cifar = cifar  # necessary for some tests
-        logging.warning("Performing early loading of CIFARDM10Subset.dataset_train")
         self.A = CIFAR10DMSubset(
             dataset_train=Subset(cifar.dataset_train.dataset, self.indices_A),
             data_dir=data_dir,
