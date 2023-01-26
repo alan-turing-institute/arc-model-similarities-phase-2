@@ -52,8 +52,6 @@ You can begin using the package code with an import command:
    poetry run pre-commit install --install-hooks
    ```
 
-3. Note that per issue [#8] you may encounter difficulties in installing pytorch with the current setup (i.e. if you are not running a mac with arm architecture). If this is the case, please update the URLs on lines 13 and 14 of pyproject.toml
-
 ### Testing
 
 1. To run tests:
