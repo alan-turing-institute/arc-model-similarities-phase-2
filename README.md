@@ -8,8 +8,6 @@ In the second phase of model similarity research, we are now assessing the relat
 
 We expect that dataset similarity will be predictive of attack transferability. This is in line with recent research that shows dataset similarity is predictive of successful transfer learning.
 
-**Statement of Work (internal only):** <https://thealanturininstitute.sharepoint.com/:b:/s/tds/Ee5knRguzUxChT-aziaBP3QBAQppT8YrDpYv-TsSrkRn1g?e=jei47a>
-
 ## Technical Approach
 
 - **Step 1:** Generate target-surrogate pairs of datasets with differences between them
