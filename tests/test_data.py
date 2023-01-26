@@ -14,17 +14,33 @@ def _test_dm_n_obs(
 ) -> None:
     assert length_subset == (1 - drop) * CIFAR_10_TRAIN_SIZE
 
+def _test_cifar_dataloader_batch_count(data_loader, batch_size):
+    dataset_size = len(data_loader.dataset)
+    count = 0
+    for batch in data_loader:
+        count += 1
+    assert count == ceil(dataset_size / batch_size)
 
 def test_cifar_A_n_obs():
-    drop = 0.1
+    # test n observations
+    drop = 0.175
     dmpair = DMPair(drop_percent_A=drop, val_split=VAL_SPLIT)
     _test_dm_n_obs(len(dmpair.A.dataset_train), drop)
+    # test batching
+    batch_size = 32
+    dla = dmpair.A.train_dataloader()
+    _test_cifar_dataloader_batch_count(dla, batch_size)
 
 
 def test_cifar_B_n_obs():
-    drop = 0.1
+    # test n observations
+    drop = 0.175
     dmpair = DMPair(drop_percent_B=drop, val_split=VAL_SPLIT)
     _test_dm_n_obs(len(dmpair.B.dataset_train), drop)
+    # test batching
+    batch_size = 32
+    dlb = dmpair.B.train_dataloader()
+    _test_cifar_dataloader_batch_count(dlb, batch_size)
 
 
 def _test_dm_stratification(
@@ -42,18 +58,14 @@ def _test_dm_stratification(
     assert all(count_test)
 
 
-def test_cifar_A_stratification():
-    drop = 0.1
-    dmpair = DMPair(drop_percent_A=drop, drop_percent_B=drop)
+def test_cifar_stratification():
+    a_drop = 0.1
+    b_drop = 0.1
+    dmpair = DMPair(drop_percent_A=a_drop, drop_percent_B=b_drop)
     full_labels = [image[1] for image in dmpair.cifar.dataset_train]
-    _test_dm_stratification(full_labels, dmpair.labels_A, drop=drop)
-
-
-def test_cifar_B_stratification():
-    drop = 0.1
-    dmpair = DMPair(drop_percent_A=drop, drop_percent_B=drop)
-    full_labels = [image[1] for image in dmpair.cifar.dataset_train]
-    _test_dm_stratification(full_labels, dmpair.labels_B, drop=drop)
+    _test_dm_stratification(full_labels, dmpair.labels_A, drop=a_drop)
+    _test_dm_stratification(full_labels, dmpair.labels_B, drop=b_drop)
+    
 
 
 def _test_dm_overlap(
@@ -88,23 +100,3 @@ def test_cifar_pair_overlap_diff_size():
     )
 
 
-def _test_cifar_dataloader_batch_count(data_loader, batch_size):
-    dataset_size = len(data_loader.dataset)
-    count = 0
-    for batch in data_loader:
-        count += 1
-    assert count == ceil(dataset_size / batch_size)
-
-
-def test_cifar_A_batch_count():
-    batch_size = 32
-    dmpair = DMPair(drop_percent_A=0.175, batch_size=batch_size)
-    dla = dmpair.A.train_dataloader()
-    _test_cifar_dataloader_batch_count(dla, batch_size)
-
-
-def test_cifar_B_batch_count():
-    batch_size = 32
-    dmpair = DMPair(drop_percent_B=0.175, batch_size=batch_size)
-    dla = dmpair.B.train_dataloader()
-    _test_cifar_dataloader_batch_count(dla, batch_size)
