@@ -1,46 +1,66 @@
+import os
 from collections import Counter
 from math import ceil, isclose
+from unittest.mock import patch
+
+import pytest
+from pl_bolts.datamodules import CIFAR10DataModule
+from pl_bolts.datasets.cifar10_dataset import CIFAR10
 
 from modsim2.data.loader import DMPair
 
 # Constants for testing
 VAL_SPLIT = 0.2
-CIFAR_10_TRAIN_SIZE = 40000
+DUMMY_CIFAR10_SIZE = 300
+DUMMY_CIFAR10_TRAIN_SIZE = DUMMY_CIFAR10_SIZE * (1 - VAL_SPLIT)
+DUMMY_CIFAR_DIR = os.path.abspath(
+    os.path.join(__file__, os.pardir, "testdata", "dummy_cifar")
+)
 
 
 def _test_dm_n_obs(
     length_subset: int,
     drop: float,
 ) -> None:
-    assert length_subset == (1 - drop) * CIFAR_10_TRAIN_SIZE
+    assert length_subset == (1 - drop) * DUMMY_CIFAR10_TRAIN_SIZE
 
-def _test_cifar_dataloader_batch_count(data_loader, batch_size):
-    dataset_size = len(data_loader.dataset)
-    count = 0
-    for batch in data_loader:
-        count += 1
-    assert count == ceil(dataset_size / batch_size)
+
+# same structure as CIFAR10 but doesn't require a download
+class DummyCIFAR10(CIFAR10):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.num_samples = DUMMY_CIFAR10_SIZE
+
+    @property
+    def cached_folder_path(self) -> str:
+        return DUMMY_CIFAR_DIR
+
+    def prepare_data(self, download: bool):
+        pass
+
+
+class MockCIFAR10DataModule(CIFAR10DataModule):
+    dataset_cls = DummyCIFAR10
+
+
+@pytest.fixture(scope="session", autouse=True)
+def patch_datamodule():
+    with patch(
+        "modsim2.data.loader.CIFAR10DataModule", new=MockCIFAR10DataModule
+    ) as _fixture:
+        yield _fixture
+
 
 def test_cifar_A_n_obs():
-    # test n observations
-    drop = 0.175
+    drop = 0.1
     dmpair = DMPair(drop_percent_A=drop, val_split=VAL_SPLIT)
     _test_dm_n_obs(len(dmpair.A.dataset_train), drop)
-    # test batching
-    batch_size = 32
-    dla = dmpair.A.train_dataloader()
-    _test_cifar_dataloader_batch_count(dla, batch_size)
 
 
 def test_cifar_B_n_obs():
-    # test n observations
-    drop = 0.175
+    drop = 0.1
     dmpair = DMPair(drop_percent_B=drop, val_split=VAL_SPLIT)
     _test_dm_n_obs(len(dmpair.B.dataset_train), drop)
-    # test batching
-    batch_size = 32
-    dlb = dmpair.B.train_dataloader()
-    _test_cifar_dataloader_batch_count(dlb, batch_size)
 
 
 def _test_dm_stratification(
@@ -58,14 +78,18 @@ def _test_dm_stratification(
     assert all(count_test)
 
 
-def test_cifar_stratification():
-    a_drop = 0.1
-    b_drop = 0.1
-    dmpair = DMPair(drop_percent_A=a_drop, drop_percent_B=b_drop)
+def test_cifar_A_stratification():
+    drop = 0.1
+    dmpair = DMPair(drop_percent_A=drop, drop_percent_B=drop)
     full_labels = [image[1] for image in dmpair.cifar.dataset_train]
-    _test_dm_stratification(full_labels, dmpair.labels_A, drop=a_drop)
-    _test_dm_stratification(full_labels, dmpair.labels_B, drop=b_drop)
-    
+    _test_dm_stratification(full_labels, dmpair.labels_A, drop=drop)
+
+
+def test_cifar_B_stratification():
+    drop = 0.1
+    dmpair = DMPair(drop_percent_A=drop, drop_percent_B=drop)
+    full_labels = [image[1] for image in dmpair.cifar.dataset_train]
+    _test_dm_stratification(full_labels, dmpair.labels_B, drop=drop)
 
 
 def _test_dm_overlap(
@@ -81,7 +105,7 @@ def _test_dm_overlap(
     # Below is based on notion that there should be no overlap in data
     # dropped from both datasets
     total_drop_percentage = drop_percentage_A + drop_percentage_B
-    shared_size = CIFAR_10_TRAIN_SIZE * (1 - total_drop_percentage)
+    shared_size = DUMMY_CIFAR10_TRAIN_SIZE * (1 - total_drop_percentage)
     assert len(indices_A & indices_B) == shared_size
 
 
@@ -100,3 +124,23 @@ def test_cifar_pair_overlap_diff_size():
     )
 
 
+def _test_cifar_dataloader_batch_count(data_loader, batch_size):
+    dataset_size = len(data_loader.dataset)
+    count = 0
+    for batch in data_loader:
+        count += 1
+    assert count == ceil(dataset_size / batch_size)
+
+
+def test_cifar_A_batch_count():
+    batch_size = 32
+    dmpair = DMPair(drop_percent_A=0.175, batch_size=batch_size)
+    dla = dmpair.A.train_dataloader()
+    _test_cifar_dataloader_batch_count(dla, batch_size)
+
+
+def test_cifar_B_batch_count():
+    batch_size = 32
+    dmpair = DMPair(drop_percent_B=0.175, batch_size=batch_size)
+    dla = dmpair.B.train_dataloader()
+    _test_cifar_dataloader_batch_count(dla, batch_size)
