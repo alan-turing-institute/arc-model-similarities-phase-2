@@ -43,12 +43,12 @@ class MockCIFAR10DataModule(CIFAR10DataModule):
     dataset_cls = DummyCIFAR10
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def patch_datamodule():
     with patch(
         "modsim2.data.loader.CIFAR10DataModule", new=MockCIFAR10DataModule
-    ) as _fixture:
-        yield _fixture
+    ):
+        yield None
 
 
 def test_cifar_A_n_obs():
