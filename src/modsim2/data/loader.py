@@ -6,6 +6,8 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, Subset
 from torchvision.transforms import transforms
 
+from modsim2.similarity.mmd import mmd_rbf
+
 # Set module logger
 logger = logging.getLogger(__name__)
 
@@ -347,3 +349,15 @@ class DMPair:
         self.labels_B = [
             self.B.dataset_train.dataset.targets[i] for i in self.indices_B
         ]
+
+    def compute_similarity(self):
+        data_A = self.A.dataset_train.dataset.data[
+            self.indices_A,
+        ]
+        data_B = self.B.dataset_train.dataset.data[
+            self.indices_B,
+        ]
+
+        similarity_dict = {"mmd": mmd_rbf(data_A, data_B)}
+
+        return similarity_dict
