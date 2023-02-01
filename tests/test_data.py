@@ -153,4 +153,4 @@ def test_cifar_mmd_same():
 def test_cifar_mmd_different():
     dmpair = DMPair(drop_percent_A=0.2)
     similarity_dict = dmpair.compute_similarity()
-    assert similarity_dict["mmd"] != 0
+    assert similarity_dict["mmd"] > 0
