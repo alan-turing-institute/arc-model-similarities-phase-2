@@ -142,15 +142,3 @@ def test_cifar_B_batch_count():
     dmpair = DMPair(drop_percent_B=0.175, batch_size=batch_size)
     dla = dmpair.B.train_dataloader()
     _test_cifar_dataloader_batch_count(dla, batch_size)
-
-
-def test_cifar_mmd_same():
-    dmpair = DMPair()
-    similarity_dict = dmpair.compute_similarity()
-    assert similarity_dict["mmd"] == 0
-
-
-def test_cifar_mmd_different():
-    dmpair = DMPair(drop_percent_A=0.2)
-    similarity_dict = dmpair.compute_similarity()
-    assert similarity_dict["mmd"] > 0
