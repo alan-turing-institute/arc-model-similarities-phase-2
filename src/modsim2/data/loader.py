@@ -1,12 +1,12 @@
 import logging
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 from pl_bolts.datamodules import CIFAR10DataModule
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, Subset
 from torchvision.transforms import transforms
 
-from modsim2.similarity.mmd import mmd_rbf
+from modsim2.similarity.mmd import mmd
 
 # Set module logger
 logger = logging.getLogger(__name__)
@@ -234,6 +234,7 @@ def split_indices(
 class DMPair:
     def __init__(
         self,
+        metric_config: Dict = {},
         drop_percent_A: Union[int, float] = 0,
         drop_percent_B: Union[int, float] = 0,
         data_dir: Optional[str] = None,
@@ -283,6 +284,7 @@ class DMPair:
         self.drop_percent_A = drop_percent_A
         self.drop_percent_B = drop_percent_B
         self.seed = seed
+        self.metric_config = metric_config
 
         # Load and setup CIFAR
         cifar = CIFAR10DataModule(val_split=val_split, seed=self.seed)
@@ -358,6 +360,17 @@ class DMPair:
             self.indices_B,
         ]
 
-        similarity_dict = {"mmd": mmd_rbf(data_A, data_B)}
+        # Manages calling of functions from config string input
+        function_dict = {"mmd": mmd}
 
+        # Loop over dict, compute metrics
+        similarity_dict = {}
+        config_keys = self.metric_config.keys()
+        for key in config_keys:
+            metric = self.metric_config[key]
+            similarity_dict[key] = function_dict[metric["function"]](
+                data_A, data_B, **metric["arguments"]
+            )
+
+        # Output
         return similarity_dict

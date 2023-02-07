@@ -1,7 +1,11 @@
-from typing import Callable
-
 import numpy as np
 from sklearn import metrics
+
+# Dictionary mapping from kernel names to Callables
+kernel_dict = {
+    "rbf": metrics.pairwise.rbf_kernel,
+    "laplace": metrics.pairwise.laplacian_kernel,
+}
 
 
 def array_to_matrix(array: np.ndarray) -> np.ndarray:
@@ -22,13 +26,13 @@ def array_to_matrix(array: np.ndarray) -> np.ndarray:
     return matrix
 
 
-def mmd(array_A: np.ndarray, array_B: np.ndarray, kernel: Callable) -> float:
+def mmd(array_A: np.ndarray, array_B: np.ndarray, kernel_name: str) -> float:
     """
     Computes maximum mean discrepancy (MMD) for A and B. Given a kernel
     embedding k(X,X'), computes
 
-        MMD^2 = 1/(N_A^2)*sum(k(A,A) + 1/(N_B^2)*sum(k(B,B)) -
-                    2/(N_A * N_B)*sum(k(A,B)
+        MMD^2 = 1/(N_A^2)*sum(k(A,A)) + 1/(N_B^2)*sum(k(B,B)) -
+                    2/(N_A * N_B)*sum(k(A,B))
 
     Note that A and B must be matrices for the MMD. Currently mmd()
     will reshape arbitarily size np.ndarrays to matrices. However,
@@ -36,30 +40,36 @@ def mmd(array_A: np.ndarray, array_B: np.ndarray, kernel: Callable) -> float:
     the future.
 
     Args:
-        array_A (np.ndarray): The first image dataset
-        array_B (np.ndarray): The second image dataset
-        kernel (Callable): An appropriate kernel embedding. See
-                           sklearn.metrics.pairwise for choices
+        array_A: The first image dataset
+        array_B: The second image dataset
+        kernel_name: An appropriate kernel embedding. See kernel_dict
+                     for choices
 
     Returns:
         float: The maximum mean discrepancy between A and B
     """
-    # In the future, consider using feature embeddings here
+    # In the future, consider optionally using feature embeddings here
     matrix_A = array_to_matrix(array_A)
     matrix_B = array_to_matrix(array_B)
     N_A = matrix_A.shape[0]
     N_B = matrix_B.shape[0]
 
+    # Extract kernel callable
+    kernel = kernel_dict[kernel_name]
+
+    # Compute MMD components
     kernel_AA = kernel(X=matrix_A)
     kernel_BB = kernel(X=matrix_B)
     kernel_AB = kernel(X=matrix_A, Y=matrix_B)
 
+    # Compute MMD
     mmd = (
         np.sum(kernel_AA) / (N_A**2)
         + np.sum(kernel_BB) / (N_B**2)
         - 2 * np.sum(kernel_AB) / (N_A * N_B)
     )
 
+    # Return
     return mmd
 
 
@@ -75,4 +85,4 @@ def mmd_rbf(array_A: np.ndarray, array_B: np.ndarray) -> float:
     Returns:
         float: The maximum mean discrepancy between A and B
     """
-    return mmd(array_A=array_A, array_B=array_B, kernel=metrics.pairwise.rbf_kernel)
+    return mmd(array_A=array_A, array_B=array_B, kernel="rbf")
