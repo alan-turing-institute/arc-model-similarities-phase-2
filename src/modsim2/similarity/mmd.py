@@ -1,12 +1,6 @@
 import numpy as np
 from sklearn import metrics
 
-# Dictionary mapping from kernel names to Callables
-kernel_dict = {
-    "rbf": metrics.pairwise.rbf_kernel,
-    "laplace": metrics.pairwise.laplacian_kernel,
-}
-
 
 def array_to_matrix(array: np.ndarray) -> np.ndarray:
     """
@@ -26,7 +20,20 @@ def array_to_matrix(array: np.ndarray) -> np.ndarray:
     return matrix
 
 
-def mmd(array_A: np.ndarray, array_B: np.ndarray, kernel_name: str) -> float:
+# Dictionary mapping from embedding names to Callables
+embedding_dict = {"matrix": array_to_matrix}
+
+
+# Dictionary mapping from kernel names to Callables
+kernel_dict = {
+    "rbf": metrics.pairwise.rbf_kernel,
+    "laplace": metrics.pairwise.laplacian_kernel,
+}
+
+
+def mmd(
+    array_A: np.ndarray, array_B: np.ndarray, embedding_name: str, kernel_name: str
+) -> float:
     """
     Computes maximum mean discrepancy (MMD) for A and B. Given a kernel
     embedding k(X,X'), computes
@@ -48,9 +55,12 @@ def mmd(array_A: np.ndarray, array_B: np.ndarray, kernel_name: str) -> float:
     Returns:
         float: The maximum mean discrepancy between A and B
     """
+    # Extract embedding callable
+    embedding = embedding_dict[embedding_name]
+
     # In the future, consider optionally using feature embeddings here
-    matrix_A = array_to_matrix(array_A)
-    matrix_B = array_to_matrix(array_B)
+    matrix_A = embedding(array_A)
+    matrix_B = embedding(array_B)
     N_A = matrix_A.shape[0]
     N_B = matrix_B.shape[0]
 
@@ -71,18 +81,3 @@ def mmd(array_A: np.ndarray, array_B: np.ndarray, kernel_name: str) -> float:
 
     # Return
     return mmd
-
-
-def mmd_rbf(array_A: np.ndarray, array_B: np.ndarray) -> float:
-    """
-    A wrapper function for mmd(). Uses the gaussian (radial basis
-    function) kernel.
-
-    Args:
-        array_A (np.ndarray): A num_obs_A by num_features_A matrix
-        array_B (np.ndarray): A num_obs_B by num_features_B matrix
-
-    Returns:
-        float: The maximum mean discrepancy between A and B
-    """
-    return mmd(array_A=array_A, array_B=array_B, kernel="rbf")
