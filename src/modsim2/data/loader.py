@@ -260,6 +260,7 @@ class DMPair:
         Early loading of the train_dataset is performed
 
         Args:
+            metric_config: Dict of metric configs for similarity measures
             drop_percent_A: % of training data to drop from A
             drop_percent_B: % of training data to drop from B
             data_dir: Where to save/load the data
