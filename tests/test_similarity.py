@@ -6,6 +6,7 @@ from pl_bolts.datamodules import CIFAR10DataModule
 from pl_bolts.datasets.cifar10_dataset import CIFAR10
 
 from modsim2.data.loader import DMPair
+from modsim2.utils.config import load_configs
 
 # Constants for testing
 VAL_SPLIT = 0.2
@@ -15,12 +16,13 @@ DUMMY_CIFAR_DIR = os.path.abspath(
     os.path.join(__file__, os.pardir, "testdata", "dummy_cifar")
 )
 
+# project root = arc-model-similarites-phase-2/
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 
-def _test_dm_n_obs(
-    length_subset: int,
-    drop: float,
-) -> None:
-    assert length_subset == (1 - drop) * DUMMY_CIFAR10_TRAIN_SIZE
+# Get metric config
+METRICS_CONFIG_PATH = os.path.join(PROJECT_ROOT, "tests", "testconfig", "metrics.yaml")
+CONFIGS = load_configs(METRICS_CONFIG_PATH)
+METRIC_CONFIG = CONFIGS["metric_config"]
 
 
 # same structure as CIFAR10 but doesn't require a download
@@ -48,12 +50,14 @@ def patch_datamodule():
 
 
 def test_cifar_mmd_same():
-    dmpair = DMPair()
+    dmpair = DMPair(metric_config=METRIC_CONFIG)
     similarity_dict = dmpair.compute_similarity()
-    assert similarity_dict["mmd"] == 0
+    assert similarity_dict["mmd_rbf"] == 0
+    assert similarity_dict["mmd_laplace"] == 0
 
 
 def test_cifar_mmd_different():
-    dmpair = DMPair(drop_percent_A=0.2)
+    dmpair = DMPair(metric_config=METRIC_CONFIG, drop_percent_A=0.2)
     similarity_dict = dmpair.compute_similarity()
-    assert similarity_dict["mmd"] > 0
+    assert similarity_dict["mmd_rbf"] > 0
+    assert similarity_dict["mmd_laplace"] > 0
