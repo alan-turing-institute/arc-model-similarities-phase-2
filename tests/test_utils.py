@@ -14,8 +14,10 @@ def test_configs_exist():
     assert "metric_config" in CONFIGS
 
 
-def test_metric_configs_exist():
+def test_metric_configs_structure_exists():
     metric_config = CONFIGS["metric_config"]
     assert "mmd_rbf" in metric_config
     assert "function" in metric_config["mmd_rbf"]
     assert "arguments" in metric_config["mmd_rbf"]
+    assert "embedding_name" in metric_config["mmd_rbf"]["arguments"]
+    assert "kernel_name" in metric_config["mmd_rbf"]["arguments"]
