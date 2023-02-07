@@ -1,0 +1,9 @@
+# Store configs for each metric to be used
+mmd_rbf:
+  function: mmd
+  arguments:
+    kernel_name: rbf
+mmd_laplace:
+  function: mmd
+  arguments:
+    kernel_name: laplace
