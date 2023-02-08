@@ -2,4 +2,4 @@ from modsim2.similarity.mmd import mmd
 
 FUNCTION = "function"
 ARGUMENTS = "arguments"
-FUNCTION_DICT = {"mmd": mmd}
+METRIC_FN_DICT = {"mmd": mmd}
