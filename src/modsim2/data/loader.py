@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, Subset
 from torchvision.transforms import transforms
 
-from modsim2.similarity.mmd import mmd
+from modsim2.similarity.constants import ARGUMENTS, FUNCTION, FUNCTION_DICT
 
 # Set module logger
 logger = logging.getLogger(__name__)
@@ -361,14 +361,11 @@ class DMPair:
             self.indices_B,
         ]
 
-        # Manages calling of functions from config string input
-        function_dict = {"mmd": mmd}
-
         # Loop over dict, compute metrics
         similarity_dict = {}
-        for key, metric in self.config_keys.items():
-            similarity_dict[key] = function_dict[metric["function"]](
-                data_A, data_B, **metric["arguments"]
+        for key, metric in self.metric_config.items():
+            similarity_dict[key] = FUNCTION_DICT[metric[FUNCTION]](
+                data_A, data_B, **metric[ARGUMENTS]
             )
 
         # Output
