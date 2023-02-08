@@ -366,9 +366,7 @@ class DMPair:
 
         # Loop over dict, compute metrics
         similarity_dict = {}
-        config_keys = self.metric_config.keys()
-        for key in config_keys:
-            metric = self.metric_config[key]
+        for key, metric in self.config_keys.items():
             similarity_dict[key] = function_dict[metric["function"]](
                 data_A, data_B, **metric["arguments"]
             )
