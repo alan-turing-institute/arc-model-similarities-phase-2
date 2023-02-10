@@ -55,19 +55,8 @@ def mmd(
 
     # Compute MMD components
     logging.info(
-        "Computing "
-        + str(N_A)
-        + " by "
-        + str(N_A)
-        + ", "
-        + str(N_B)
-        + " by "
-        + str(N_B)
-        + ", and "
-        + str(N_A)
-        + " by "
-        + str(N_B)
-        + " kernels. This may take some time!"
+        f"Computing {N_A} by {N_A}, {N_B} by {N_B}, and {N_A} by {N_B} kernels. "
+        "This may take some time!"
     )
     kernel_AA = kernel_fn(X=matrix_A)
     kernel_BB = kernel_fn(X=matrix_B)
