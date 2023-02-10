@@ -1,10 +1,12 @@
 import logging
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 from pl_bolts.datamodules import CIFAR10DataModule
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, Subset
 from torchvision.transforms import transforms
+
+from modsim2.similarity.constants import ARGUMENTS, FUNCTION, METRIC_FN_DICT
 
 # Set module logger
 logger = logging.getLogger(__name__)
@@ -232,6 +234,7 @@ def split_indices(
 class DMPair:
     def __init__(
         self,
+        metric_config: Dict = {},
         drop_percent_A: Union[int, float] = 0,
         drop_percent_B: Union[int, float] = 0,
         data_dir: Optional[str] = None,
@@ -257,6 +260,7 @@ class DMPair:
         Early loading of the train_dataset is performed
 
         Args:
+            metric_config: Dict of metric configs for similarity measures
             drop_percent_A: % of training data to drop from A
             drop_percent_B: % of training data to drop from B
             data_dir: Where to save/load the data
@@ -281,6 +285,7 @@ class DMPair:
         self.drop_percent_A = drop_percent_A
         self.drop_percent_B = drop_percent_B
         self.seed = seed
+        self.metric_config = metric_config
 
         # Load and setup CIFAR
         cifar = CIFAR10DataModule(val_split=val_split, seed=self.seed)
@@ -347,3 +352,21 @@ class DMPair:
         self.labels_B = [
             self.B.dataset_train.dataset.targets[i] for i in self.indices_B
         ]
+
+    def compute_similarity(self):
+        data_A = self.A.dataset_train.dataset.data[
+            self.indices_A,
+        ]
+        data_B = self.B.dataset_train.dataset.data[
+            self.indices_B,
+        ]
+
+        # Loop over dict, compute metrics
+        similarity_dict = {}
+        for key, metric in self.metric_config.items():
+            similarity_dict[key] = METRIC_FN_DICT[metric[FUNCTION]](
+                data_A, data_B, **metric[ARGUMENTS]
+            )
+
+        # Output
+        return similarity_dict
