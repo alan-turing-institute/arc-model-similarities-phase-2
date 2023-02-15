@@ -8,14 +8,14 @@ from torchmetrics import Accuracy
 
 
 def create_model(num_classes=10, channels=3):
-    """_summary_
+    """
+    Function to create a resnet18 model for CIAFAR-10.
 
     Args:
-        num_classes (int, optional): _description_. Defaults to 10.
-        channels (int, optional): _description_. Defaults to 3.
+        num_classes: Number of classes in the dataset
+        channels: Number of channels in the image
 
-    Returns:
-        _type_: _description_
+    Returns: ResNet18 model
     """
     model = torchvision.models.resnet18(pretrained=False, num_classes=num_classes)
     # ResNet is designed for ImageNet which has high res images;
@@ -29,7 +29,7 @@ def create_model(num_classes=10, channels=3):
 
 class ResnetModel(pl.LightningModule):
     """
-    PyTorch Lightning module for models considered in project.
+    ResNet18 model lightning module for use in project
     """
 
     def __init__(
