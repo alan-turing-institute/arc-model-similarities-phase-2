@@ -131,3 +131,6 @@ dmypy.json
 # CIFAR
 cifar-10-python.tar.gz
 cifar-10-batches-py/
+
+# Training logs
+logs/
