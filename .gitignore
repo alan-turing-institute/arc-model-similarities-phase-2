@@ -132,5 +132,10 @@ dmypy.json
 cifar-10-python.tar.gz
 cifar-10-batches-py/
 
-# Training logs
+#lightning logs
 logs/
+
+#vscode
+launch.json
+settings.json
+

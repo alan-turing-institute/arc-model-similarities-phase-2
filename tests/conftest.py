@@ -1,3 +1,4 @@
+import logging
 from unittest.mock import patch
 
 import pytest
@@ -24,7 +25,29 @@ class MockCIFAR10DataModule(CIFAR10DataModule):
     dataset_cls = DummyCIFAR10
 
 
+# used for all tests - need to revisit mock deletion failure if this changes
 @pytest.fixture(scope="module", autouse=True)
 def patch_datamodule():
     with patch("modsim2.data.loader.CIFAR10DataModule", new=MockCIFAR10DataModule):
-        yield None
+        # patch for inheritance within CIFAR10DMSubset
+        # alternative is to monkey patch in each test
+        # annoyingly need to catch exception on exit of mock as
+        #  it messes up removing itself
+        try:
+            with patch(
+                "modsim2.data.loader.CIFAR10DMSubset.__bases__",
+                (MockCIFAR10DataModule,),
+            ):
+                yield None
+        except TypeError as e:
+            # make sure it's the error we're expected and just pass if so
+            # should be fine as used for all tests
+            if (
+                str(e)
+                == "cannot delete '__bases__' attribute of immutable type 'CIFAR10DMSubset'"  # noqa: E501
+            ):
+                # warn
+                logging.warning("Failed to delete mock on CIFAR10DMSubset inheritace.")
+                pass
+            else:
+                raise e
