@@ -1,10 +1,11 @@
 import logging
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union, Tuple, List
 
 from pl_bolts.datamodules import CIFAR10DataModule
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, Subset
 from torchvision.transforms import transforms
+import torch
 
 from modsim2.similarity.constants import ARGUMENTS, FUNCTION, METRIC_FN_DICT
 
@@ -16,6 +17,7 @@ class CIFAR10DMSubset(CIFAR10DataModule):
     def __init__(
         self,
         dataset_train: Union[Subset, Dataset],
+        dataset_val: Union[Subset, Dataset],
         data_dir: Optional[str] = None,
         val_split: Union[int, float] = 0.2,
         num_workers: int = 0,
@@ -73,8 +75,9 @@ class CIFAR10DMSubset(CIFAR10DataModule):
             **kwargs,
         )
 
-        # Change the dataset from original CIFAR10 DM
+        # Set the datasets directly - change from original CIFAR10 DM
         self.dataset_train = dataset_train
+        self.dataset_val = dataset_val
 
     # Override original setup message to avoid restoring CIFAR observations
     def setup(self, stage: Optional[str] = None) -> None:
@@ -97,13 +100,8 @@ class CIFAR10DMSubset(CIFAR10DataModule):
                 else self.val_transforms
             )
 
-            self.dataset_train.dataset.transform = transforms.Compose(train_transforms)
-            dataset_val = self.dataset_cls(
-                self.data_dir, train=True, transform=val_transforms, **self.EXTRA_ARGS
-            )
-
-            # Split
-            self.dataset_val = self._split_dataset(dataset_val, train=False)
+            self.dataset_train.dataset.transform = train_transforms
+            self.dataset_val.dataset.transform = val_transforms
 
         if stage == "test" or stage is None:
             test_transforms = (
@@ -114,6 +112,10 @@ class CIFAR10DMSubset(CIFAR10DataModule):
             self.dataset_test = self.dataset_cls(
                 self.data_dir, train=False, transform=test_transforms, **self.EXTRA_ARGS
             )
+            
+    def prepare_data(self):
+        # override parent and do nothing
+        pass
 
 
 def split_indices(
@@ -225,6 +227,7 @@ def split_indices(
             )
             shared_AB_indices = []
 
+
     # Return
     indices_A = shared_AB_indices + indices_kept_A_dropped_B
     indices_B = shared_AB_indices + indices_kept_B_dropped_A
@@ -261,8 +264,8 @@ class DMPair:
 
         Args:
             metric_config: Dict of metric configs for similarity measures
-            drop_percent_A: % of training data to drop from A
-            drop_percent_B: % of training data to drop from B
+            drop_percent_A: % of training/val data to drop from A
+            drop_percent_B: % of training/val data to drop from B
             data_dir: Where to save/load the data
             val_split: Percent (float) or number (int) of samples to use
                        for the validation split
@@ -293,12 +296,17 @@ class DMPair:
         logging.warning("Performing early loading of CIFARDM10Subset.dataset_train")
         cifar.setup()
 
-        # Default
-        shared_AB_indices = cifar.dataset_train.indices
-        shared_AB_labels = [image[1] for image in cifar.dataset_train]
-        self.indices_A, self.indices_B = split_indices(
-            indices=shared_AB_indices,
-            labels=shared_AB_labels,
+        train_indices_A, train_indices_B = split_indices(
+            indices=cifar.dataset_train.indices,
+            labels=[image[1] for image in cifar.dataset_train],
+            drop_percent_A=self.drop_percent_A,
+            drop_percent_B=self.drop_percent_B,
+            seed=self.seed,
+            cifar=cifar,
+        )
+        val_indices_A, val_indices_B =  split_indices(
+            indices=cifar.dataset_val.indices,
+            labels=[image[1] for image in cifar.dataset_val],
             drop_percent_A=self.drop_percent_A,
             drop_percent_B=self.drop_percent_B,
             seed=self.seed,
@@ -310,7 +318,8 @@ class DMPair:
         # to generate their training datasets
         self.cifar = cifar  # necessary for some tests
         self.A = CIFAR10DMSubset(
-            dataset_train=Subset(cifar.dataset_train.dataset, self.indices_A),
+            dataset_train=Subset(cifar.dataset_train.dataset, train_indices_A),
+            dataset_val=Subset(cifar.dataset_val.dataset, val_indices_A),
             data_dir=data_dir,
             val_split=val_split,
             num_workers=num_workers,
@@ -327,7 +336,8 @@ class DMPair:
             **kwargs,
         )
         self.B = CIFAR10DMSubset(
-            dataset_train=Subset(cifar.dataset_train.dataset, self.indices_B),
+            dataset_train=Subset(cifar.dataset_train.dataset, train_indices_B),
+            dataset_val=Subset(cifar.dataset_val.dataset, val_indices_B),
             data_dir=data_dir,
             val_split=val_split,
             num_workers=num_workers,
@@ -344,22 +354,22 @@ class DMPair:
             **kwargs,
         )
 
-        # Store labels
-        # List comprehension because pytorch dataset makes it necsesary
-        self.labels_A = [
-            self.A.dataset_train.dataset.targets[i] for i in self.indices_A
-        ]
-        self.labels_B = [
-            self.B.dataset_train.dataset.targets[i] for i in self.indices_B
-        ]
-
-    def compute_similarity(self):
-        data_A = self.A.dataset_train.dataset.data[
-            self.indices_A,
-        ]
-        data_B = self.B.dataset_train.dataset.data[
-            self.indices_B,
-        ]
+    # TODO consider val?
+    def compute_similarity(self, only_train: bool=False):
+        """ 
+        compute similarity between data of A and B 
+        only_train removes the validation data from this comparison
+        """
+        # coerce data into single tensor (not subset)
+        train_data_A, val_data_A = self.get_A_data()
+        train_data_B, val_data_B = self.get_B_data()
+        
+        if not only_train:
+            data_A = torch.concat((train_data_A, val_data_A))
+            data_B = torch.concat((train_data_B, val_data_B))
+        else:
+            data_A = train_data_A
+            data_B = train_data_B
 
         # Loop over dict, compute metrics
         similarity_dict = {}
@@ -370,3 +380,40 @@ class DMPair:
 
         # Output
         return similarity_dict
+
+    """ convenience methods below for getting data/labels from subsets """
+
+    @staticmethod
+    def _get_subset_data(subset_module: CIFAR10DMSubset) -> Tuple[torch.Tensor, torch.Tensor]:
+        train = subset_module.dataset_train.dataset.data[
+            subset_module.dataset_train.indices
+        ]
+        val = subset_module.dataset_val.dataset.data[subset_module.dataset_val.indices]
+        return train, val
+
+    def get_A_data(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        return self._get_subset_data(self.A)
+
+    def get_B_data(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        return self._get_subset_data(self.B)
+
+    @staticmethod
+    def _get_subset_labels(subset_module: CIFAR10DMSubset) -> Tuple[List, List]:
+        # List comprehension because pytorch dataset makes it necsesary
+        train = [
+            subset_module.dataset_train.dataset.targets[i]
+            for i in subset_module.dataset_train.indices
+        ]
+        val = [
+            subset_module.dataset_val.dataset.targets[i]
+            for i in subset_module.dataset_val.indices
+        ]
+        return train, val
+
+    def get_A_labels(self) -> Tuple[List, List]:
+        """returns train and val labels for A"""
+        return self._get_subset_labels(self.A)
+
+    def get_B_labels(self) -> Tuple[List, List]:
+        """returns train and val labels for A"""
+        return self._get_subset_labels(self.B)
