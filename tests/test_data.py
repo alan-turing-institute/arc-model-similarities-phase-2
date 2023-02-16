@@ -3,8 +3,7 @@ from math import ceil, isclose
 
 import testing_constants
 
-from modsim2.data.loader import DMPair, CIFAR10DMSubset
-
+from modsim2.data.loader import CIFAR10DMSubset, DMPair
 
 
 def _test_dm_n_obs(
@@ -86,13 +85,11 @@ def test_cifar_stratification():
     # test B
     _test_dm_stratification(full_train_labels, train_labels_B, drop=drop_B)
 
-    #val
-    #test A
+    # val
+    # test A
     _test_dm_stratification(full_val_labels, val_labels_A, drop=drop_A)
     # test B
     _test_dm_stratification(full_val_labels, val_labels_B, drop=drop_B)
-
-    
 
 
 def _test_dm_overlap_split(
@@ -100,7 +97,7 @@ def _test_dm_overlap_split(
     indices_B: list[int],
     drop_percentage_A: float,
     drop_percentage_B: float,
-    orig_total_size: int
+    orig_total_size: int,
 ) -> None:
     # Get indices, put into set
     indices_A = set(indices_A)
@@ -109,19 +106,16 @@ def _test_dm_overlap_split(
     # Below is based on notion that there should be no overlap in data
     # dropped from both datasets
     total_drop_percentage = drop_percentage_A + drop_percentage_B
-    shared_size = orig_total_size * (
-        1 - total_drop_percentage
-    )
+    shared_size = orig_total_size * (1 - total_drop_percentage)
     assert len(indices_A & indices_B) == shared_size
 
+
 def _test_dm_overlap(drop_A: float, drop_B: float, val_split: float):
-    dmpair = DMPair(
-        drop_percent_A=drop_A, drop_percent_B=drop_B, val_split=val_split
-    )
+    dmpair = DMPair(drop_percent_A=drop_A, drop_percent_B=drop_B, val_split=val_split)
     dmpair.A.setup()
     dmpair.B.setup()
 
-    orig_train_size = round(testing_constants.DUMMY_CIFAR10_SIZE * (1-val_split))
+    orig_train_size = round(testing_constants.DUMMY_CIFAR10_SIZE * (1 - val_split))
     orig_val_size = testing_constants.DUMMY_CIFAR10_SIZE - orig_train_size
 
     _test_dm_overlap_split(
@@ -129,7 +123,7 @@ def _test_dm_overlap(drop_A: float, drop_B: float, val_split: float):
         dmpair.B.dataset_train.indices,
         dmpair.drop_percent_A,
         dmpair.drop_percent_B,
-        orig_total_size=orig_train_size
+        orig_total_size=orig_train_size,
     )
 
     _test_dm_overlap_split(
@@ -137,13 +131,14 @@ def _test_dm_overlap(drop_A: float, drop_B: float, val_split: float):
         dmpair.B.dataset_val.indices,
         dmpair.drop_percent_A,
         dmpair.drop_percent_B,
-        orig_total_size=orig_val_size
+        orig_total_size=orig_val_size,
     )
+
+
 def test_cifar_pair_overlap_same_size():
     drop = 0.2
-    val_split=0.4
+    val_split = 0.4
     _test_dm_overlap(drop_A=drop, drop_B=drop, val_split=val_split)
-    
 
 
 def test_cifar_pair_overlap_diff_size():
@@ -151,7 +146,6 @@ def test_cifar_pair_overlap_diff_size():
     drop_B = 0.3
     val_split = 0.4
     _test_dm_overlap(drop_A=drop_A, drop_B=drop_B, val_split=val_split)
-
 
 
 def _test_cifar_dataloader_batch_count(data_loader, batch_size):
@@ -172,7 +166,6 @@ def test_cifar_A_batch_count():
     _test_cifar_dataloader_batch_count(dmpair.A.val_dataloader(), batch_size)
 
 
-
 def test_cifar_B_batch_count():
     batch_size = 32
     val_split = 0.4
@@ -181,5 +174,3 @@ def test_cifar_B_batch_count():
     dmpair.B.setup()
     _test_cifar_dataloader_batch_count(dmpair.B.train_dataloader(), batch_size)
     _test_cifar_dataloader_batch_count(dmpair.B.val_dataloader(), batch_size)
-
-

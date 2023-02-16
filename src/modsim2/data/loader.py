@@ -1,11 +1,10 @@
 import logging
-from typing import Any, Callable, Dict, Optional, Union, Tuple, List
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
+import torch
 from pl_bolts.datamodules import CIFAR10DataModule
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, Subset
-from torchvision.transforms import transforms
-import torch
 
 from modsim2.similarity.constants import ARGUMENTS, FUNCTION, METRIC_FN_DICT
 
@@ -112,7 +111,7 @@ class CIFAR10DMSubset(CIFAR10DataModule):
             self.dataset_test = self.dataset_cls(
                 self.data_dir, train=False, transform=test_transforms, **self.EXTRA_ARGS
             )
-            
+
     def prepare_data(self):
         # override parent and do nothing
         pass
@@ -227,7 +226,6 @@ def split_indices(
             )
             shared_AB_indices = []
 
-
     # Return
     indices_A = shared_AB_indices + indices_kept_A_dropped_B
     indices_B = shared_AB_indices + indices_kept_B_dropped_A
@@ -304,7 +302,7 @@ class DMPair:
             seed=self.seed,
             cifar=cifar,
         )
-        val_indices_A, val_indices_B =  split_indices(
+        val_indices_A, val_indices_B = split_indices(
             indices=cifar.dataset_val.indices,
             labels=[image[1] for image in cifar.dataset_val],
             drop_percent_A=self.drop_percent_A,
@@ -355,15 +353,15 @@ class DMPair:
         )
 
     # TODO consider val?
-    def compute_similarity(self, only_train: bool=False):
-        """ 
-        compute similarity between data of A and B 
+    def compute_similarity(self, only_train: bool = False):
+        """
+        compute similarity between data of A and B
         only_train removes the validation data from this comparison
         """
         # coerce data into single tensor (not subset)
         train_data_A, val_data_A = self.get_A_data()
         train_data_B, val_data_B = self.get_B_data()
-        
+
         if not only_train:
             data_A = torch.concat((train_data_A, val_data_A))
             data_B = torch.concat((train_data_B, val_data_B))
@@ -384,7 +382,9 @@ class DMPair:
     """ convenience methods below for getting data/labels from subsets """
 
     @staticmethod
-    def _get_subset_data(subset_module: CIFAR10DMSubset) -> Tuple[torch.Tensor, torch.Tensor]:
+    def _get_subset_data(
+        subset_module: CIFAR10DMSubset,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         train = subset_module.dataset_train.dataset.data[
             subset_module.dataset_train.indices
         ]

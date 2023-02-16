@@ -43,4 +43,3 @@ def test_cifar_mmd_different_train_only():
     expected_mmd_laplace = 0.0010416666666666664
     assert similarity_dict["mmd_rbf"] == expected_mmd_rbf
     assert similarity_dict["mmd_laplace"] == expected_mmd_laplace
-
