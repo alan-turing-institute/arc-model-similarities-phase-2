@@ -39,6 +39,8 @@ class CIFAR10DMSubset(CIFAR10DataModule):
         Args:
             dataset_train: Dataset or Subset class object to replace
                            original dataset_train with
+            dataset_train: Dataset or Subset class object to replace
+                           original dataset_val with
             data_dir: Where to save/load the data
             val_split: Percent (float) or number (int) of samples to use
                        for the validation split
@@ -124,7 +126,7 @@ def split_indices(
     drop_percent_B: float,
     seed: int,
     cifar: CIFAR10DataModule,
-) -> tuple[list[int], list[int]]:
+) -> Tuple[List[int], List[int]]:
     """
     A function that takes as input a list of indices and a list of
     labels. It returns two lists of indices, A and B, that have dropped
@@ -289,35 +291,25 @@ class DMPair:
         self.metric_config = metric_config
 
         # Load and setup CIFAR
-        cifar = CIFAR10DataModule(val_split=val_split, seed=self.seed)
-        cifar.prepare_data()
+        self.cifar = CIFAR10DataModule(val_split=val_split, seed=self.seed)
+        self.cifar.prepare_data()
         logging.warning("Performing early loading of CIFARDM10Subset.dataset_train")
-        cifar.setup()
+        self.cifar.setup()
 
-        train_indices_A, train_indices_B = split_indices(
-            indices=cifar.dataset_train.indices,
-            labels=[image[1] for image in cifar.dataset_train],
-            drop_percent_A=self.drop_percent_A,
-            drop_percent_B=self.drop_percent_B,
-            seed=self.seed,
-            cifar=cifar,
+        train_indices_A, train_indices_B = self._split_indices(
+            dataset=self.cifar.dataset_train
         )
-        val_indices_A, val_indices_B = split_indices(
-            indices=cifar.dataset_val.indices,
-            labels=[image[1] for image in cifar.dataset_val],
-            drop_percent_A=self.drop_percent_A,
-            drop_percent_B=self.drop_percent_B,
-            seed=self.seed,
-            cifar=cifar,
+        val_indices_A, val_indices_B = self._split_indices(
+            dataset=self.cifar.dataset_val
         )
 
         # Create data modules
         # NB A and B MUST use the same seed as each other and as the cifar used
         # to generate their training datasets
-        self.cifar = cifar  # necessary for some tests
+
         self.A = CIFAR10DMSubset(
-            dataset_train=Subset(cifar.dataset_train.dataset, train_indices_A),
-            dataset_val=Subset(cifar.dataset_val.dataset, val_indices_A),
+            dataset_train=Subset(self.cifar.dataset_train.dataset, train_indices_A),
+            dataset_val=Subset(self.cifar.dataset_val.dataset, val_indices_A),
             data_dir=data_dir,
             val_split=val_split,
             num_workers=num_workers,
@@ -334,8 +326,8 @@ class DMPair:
             **kwargs,
         )
         self.B = CIFAR10DMSubset(
-            dataset_train=Subset(cifar.dataset_train.dataset, train_indices_B),
-            dataset_val=Subset(cifar.dataset_val.dataset, val_indices_B),
+            dataset_train=Subset(self.cifar.dataset_train.dataset, train_indices_B),
+            dataset_val=Subset(self.cifar.dataset_val.dataset, val_indices_B),
             data_dir=data_dir,
             val_split=val_split,
             num_workers=num_workers,
@@ -352,13 +344,30 @@ class DMPair:
             **kwargs,
         )
 
-    # TODO consider val?
+    def _split_indices(
+        self, dataset: Union[Subset, Dataset]
+    ) -> Tuple[List[int], List[int]]:
+        # if empty then return two empty lists
+        if len(dataset) == 0:
+            return [], []
+        # else
+        return split_indices(
+            indices=dataset.indices,
+            labels=[image[1] for image in dataset],
+            drop_percent_A=self.drop_percent_A,
+            drop_percent_B=self.drop_percent_B,
+            seed=self.seed,
+            cifar=self.cifar,
+        )
+
     def compute_similarity(self, only_train: bool = False):
         """
         compute similarity between data of A and B
         only_train removes the validation data from this comparison
         """
+
         # coerce data into single tensor (not subset)
+        # TODO issue-15 want to get data post-transform
         train_data_A, val_data_A = self.get_A_data()
         train_data_B, val_data_B = self.get_B_data()
 

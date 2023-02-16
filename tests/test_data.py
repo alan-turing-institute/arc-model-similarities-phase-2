@@ -17,12 +17,20 @@ def _test_dm_n_obs(
     assert len(datamodule_subset.dataset_val) == round((1 - drop) * orig_val_size)
 
 
+def test_cifar_empty_val():
+    drop_A = 0.2
+    val_split = 0
+    dmpair = DMPair(drop_percent_A=drop_A, val_split=val_split)
+    # test A
+    _test_dm_n_obs(datamodule_subset=dmpair.A, drop=drop_A, val_split=val_split)
+    # test B
+    _test_dm_n_obs(datamodule_subset=dmpair.B, drop=0.0, val_split=val_split)
+
+
 def test_cifar_A_n_obs():
     drop_A = 0.2
     val_split = 0.4
     dmpair = DMPair(drop_percent_A=drop_A, val_split=val_split)
-    dmpair.A.setup()
-    dmpair.B.setup()
     # test A
     _test_dm_n_obs(datamodule_subset=dmpair.A, drop=drop_A, val_split=val_split)
     # test B
@@ -33,8 +41,6 @@ def test_cifar_B_n_obs():
     drop_B = 0.3
     val_split = 0.4
     dmpair = DMPair(drop_percent_B=drop_B, val_split=val_split)
-    dmpair.A.setup()
-    dmpair.B.setup()
     # test A
     _test_dm_n_obs(datamodule_subset=dmpair.A, drop=0.0, val_split=val_split)
     # test B
@@ -46,8 +52,6 @@ def test_cifar_both_n_obs():
     drop_B = 0.3
     val_split = 0.4
     dmpair = DMPair(drop_percent_A=drop_A, drop_percent_B=drop_B, val_split=val_split)
-    dmpair.A.setup()
-    dmpair.B.setup()
     # test A
     _test_dm_n_obs(datamodule_subset=dmpair.A, drop=drop_A, val_split=val_split)
     # test B
@@ -74,8 +78,6 @@ def test_cifar_stratification():
     drop_B = 0.3
     val_split = 0.4
     dmpair = DMPair(drop_percent_A=drop_A, drop_percent_B=drop_B, val_split=val_split)
-    dmpair.A.setup()
-    dmpair.B.setup()
     full_train_labels = [image[1] for image in dmpair.cifar.dataset_train]
     full_val_labels = [image[1] for image in dmpair.cifar.dataset_val]
     # test A
@@ -112,8 +114,6 @@ def _test_dm_overlap_split(
 
 def _test_dm_overlap(drop_A: float, drop_B: float, val_split: float):
     dmpair = DMPair(drop_percent_A=drop_A, drop_percent_B=drop_B, val_split=val_split)
-    dmpair.A.setup()
-    dmpair.B.setup()
 
     orig_train_size = round(testing_constants.DUMMY_CIFAR10_SIZE * (1 - val_split))
     orig_val_size = testing_constants.DUMMY_CIFAR10_SIZE - orig_train_size
@@ -151,7 +151,7 @@ def test_cifar_pair_overlap_diff_size():
 def _test_cifar_dataloader_batch_count(data_loader, batch_size):
     dataset_size = len(data_loader.dataset)
     count = 0
-    for batch in data_loader:
+    for _ in data_loader:
         count += 1
     assert count == ceil(dataset_size / batch_size)
 
@@ -160,8 +160,6 @@ def test_cifar_A_batch_count():
     batch_size = 32
     val_split = 0.4
     dmpair = DMPair(drop_percent_A=0.175, batch_size=batch_size, val_split=val_split)
-    dmpair.A.setup()
-    dmpair.B.setup()
     _test_cifar_dataloader_batch_count(dmpair.A.train_dataloader(), batch_size)
     _test_cifar_dataloader_batch_count(dmpair.A.val_dataloader(), batch_size)
 
@@ -170,7 +168,5 @@ def test_cifar_B_batch_count():
     batch_size = 32
     val_split = 0.4
     dmpair = DMPair(drop_percent_B=0.175, batch_size=batch_size, val_split=val_split)
-    dmpair.A.setup()
-    dmpair.B.setup()
     _test_cifar_dataloader_batch_count(dmpair.B.train_dataloader(), batch_size)
     _test_cifar_dataloader_batch_count(dmpair.B.val_dataloader(), batch_size)
