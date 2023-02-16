@@ -4,7 +4,6 @@ from typing import Any, Callable, Dict, Optional, Union
 from pl_bolts.datamodules import CIFAR10DataModule
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, Subset
-from torchvision.transforms import transforms
 
 from modsim2.similarity.constants import ARGUMENTS, FUNCTION, METRIC_FN_DICT
 
@@ -97,7 +96,7 @@ class CIFAR10DMSubset(CIFAR10DataModule):
                 else self.val_transforms
             )
 
-            self.dataset_train.dataset.transform = transforms.Compose(train_transforms)
+            self.dataset_train.dataset.transform = train_transforms
             dataset_val = self.dataset_cls(
                 self.data_dir, train=True, transform=val_transforms, **self.EXTRA_ARGS
             )
