@@ -1,8 +1,14 @@
+import logging
+
 import numpy as np
 from sklearn import metrics
 
 from modsim2.similarity.embeddings import EMBEDDING_FN_DICT
 
+# Set module logger
+logger = logging.getLogger(__name__)
+
+# Kernel dictionary
 MMD_KERNEL_DICT = {
     "rbf": metrics.pairwise.rbf_kernel,
     "laplace": metrics.pairwise.laplacian_kernel,
@@ -27,6 +33,8 @@ def mmd(
     Args:
         array_A: The first image dataset
         array_B: The second image dataset
+        embedding_name: What feature embeddings, if any, to use for the
+                        input arrays
         kernel_name: An appropriate kernel embedding. See kernel_dict
                      for choices
 
@@ -46,6 +54,10 @@ def mmd(
     kernel_fn = MMD_KERNEL_DICT[kernel_name]
 
     # Compute MMD components
+    logging.info(
+        f"Computing {N_A} by {N_A}, {N_B} by {N_B}, and {N_A} by {N_B} kernels. "
+        "This may take some time!"
+    )
     kernel_AA = kernel_fn(X=matrix_A)
     kernel_BB = kernel_fn(X=matrix_B)
     kernel_AB = kernel_fn(X=matrix_A, Y=matrix_B)
