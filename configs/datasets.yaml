@@ -1,0 +1,25 @@
+seeds: [42, 43, 44]
+val_split: 0.2
+
+experiment_groups:
+  drop_only:
+    - A:
+        drop: 0.0
+        transforms: null
+      B:
+        drop: 0.5
+        transforms: null
+
+    - A:
+        drop: 0.5
+        transforms: null
+      B:
+        drop: 0.5
+        transforms: null
+
+    - A:
+        drop: 0.5
+        transforms: null
+      B:
+        drop: 0.0
+        transforms: null
