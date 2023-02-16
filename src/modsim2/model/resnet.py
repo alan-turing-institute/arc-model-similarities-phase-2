@@ -17,7 +17,9 @@ def create_model(num_classes=10, channels=3):
 
     Returns: ResNet18 model
     """
+    # pretrained=False to avoid messing up our modification to conv1 below
     model = torchvision.models.resnet18(pretrained=False, num_classes=num_classes)
+
     # ResNet is designed for ImageNet which has high res images;
     # use a smaller kernel size for CIFAR-10.
     model.conv1 = torch.nn.Conv2d(
