@@ -1,6 +1,7 @@
 import logging
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
+import numpy as np
 import torch
 from pl_bolts.datamodules import CIFAR10DataModule
 from sklearn.model_selection import train_test_split
@@ -370,8 +371,8 @@ class DMPair:
         train_data_B, val_data_B = self.get_B_data()
 
         if not only_train:
-            data_A = torch.concat((train_data_A, val_data_A))
-            data_B = torch.concat((train_data_B, val_data_B))
+            data_A = np.concatenate((train_data_A, val_data_A), axis=0)
+            data_B = np.concatenate((train_data_B, val_data_B), axis=0)
         else:
             data_A = train_data_A
             data_B = train_data_B
