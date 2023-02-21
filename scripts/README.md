@@ -2,7 +2,7 @@
 
 ## Calculate Metrics
 
-TODO
+TODO - generate scripts to be called
 
 ## Train Models
 
