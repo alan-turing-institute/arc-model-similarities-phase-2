@@ -1,21 +1,14 @@
-import os
-
+import constants
 import yaml
 
-# project root = arc-model-similarites-phase-2/
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-
-# Get configs
-DATASET_CONFIG_PATH = os.path.join(PROJECT_ROOT, "configs", "datasets.yaml")
-METRICS_CONFIG_PATH = os.path.join(PROJECT_ROOT, "configs", "metrics.yaml")
-
 # Selections
+# TODO: replace with argparse
 EXPERIMENT_GROUP = "drop-only"
 
 
 def main():
     # Dataset config
-    with open(DATASET_CONFIG_PATH, "r") as stream:
+    with open(constants.DATASET_CONFIG_PATH, "r") as stream:
         dataset_config = yaml.safe_load(stream)
 
     # Prepare dataset list, seed list
@@ -24,19 +17,26 @@ def main():
 
     # Generate combinations of arguments to pass
     combinations = [
-        f"--dataset_config {DATASET_CONFIG_PATH} "
-        + f"--metric_config {METRICS_CONFIG_PATH} "
+        f"--dataset_config {constants.DATASET_CONFIG_PATH} "
+        + f"--metric_config {constants.METRICS_CONFIG_PATH} "
         + f"--experiment_group {EXPERIMENT_GROUP} "
         + f"--seed_index {seed_index} "
         + f"--dataset_index {dataset_index}"
         for seed_index in range(NUM_SEEDS)
         for dataset_index in range(NUM_PAIRS)
     ]
+    experiment_pair_names = [
+        f"scripts/{EXPERIMENT_GROUP}_{dataset_index}_{seed_index}" + "_metrics.sh"
+        for seed_index in range(NUM_SEEDS)
+        for dataset_index in range(NUM_PAIRS)
+    ]
 
-    # Run each combination sequentially
-    for combo in combinations:
-        # Make string, dump to file
-        print(f"python scripts/calculate_metrics.py {combo}")
+    # For each combination, write bash script with params
+    # TODO: replace script writing with slurm
+    for index, combo in enumerate(combinations):
+        script = f"python scripts/calculate_metrics.py {combo}"
+        with open(experiment_pair_names[index], "w") as f:
+            f.write(script)
 
 
 if __name__ == "__main__":
