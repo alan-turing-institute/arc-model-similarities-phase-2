@@ -299,42 +299,6 @@ def test_transforms():
     )
 
 
-def _test_get_x_data(
-    train_data: torch.Tensor,
-    val_data: torch.Tensor,
-    raw_data: torch.Tensor,
-    batch_size: int,
-    drop: float,
-    val_split: float,
-    train_transforms_mock: MagicMock,
-    val_transforms_mock: MagicMock,
-):
-    # test n_obs
-    _test_n_obs(
-        train_data=train_data, val_data=val_data, drop=drop, val_split=val_split
-    )
-
-    # test transforms
-    train_data = train_data.unsqueeze(1)
-    val_data = val_data.unsqueeze(1)
-    # zip with fake labels to look like dataloader with batches
-    train_data = zip(train_data, range(train_data.shape[0]))
-    val_data = zip(val_data, range(val_data.shape[0]))
-
-    _test_dl_transforms(
-        transforms_mock=train_transforms_mock,
-        batch_size=batch_size,
-        dl=train_data,
-        raw_orig_data=raw_data,
-    )
-    _test_dl_transforms(
-        transforms_mock=val_transforms_mock,
-        batch_size=batch_size,
-        dl=val_data,
-        raw_orig_data=raw_data,
-    )
-
-
 def _compare_dataloader_to_tensor(dl: torch.utils.data.DataLoader, data: torch.Tensor):
     dl_stacked = torch.vstack([item[0] for item in dl])
     assert torch.equal(dl_stacked, data)
