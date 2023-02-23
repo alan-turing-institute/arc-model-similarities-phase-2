@@ -142,3 +142,7 @@ settings.json
 #wandb
 wandb/
 ms2/
+
+# Generated bash scripts and outputs
+scripts/*.sh
+data/
