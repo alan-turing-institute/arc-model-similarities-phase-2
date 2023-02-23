@@ -10,7 +10,7 @@ DATASET_CONFIG_PATH = os.path.join(PROJECT_ROOT, "configs", "datasets.yaml")
 METRICS_CONFIG_PATH = os.path.join(PROJECT_ROOT, "configs", "metrics.yaml")
 
 # Selections
-EXPERIMENT_GROUP = "drop_only"
+EXPERIMENT_GROUP = "drop-only"
 
 
 def main():
@@ -35,7 +35,8 @@ def main():
 
     # Run each combination sequentially
     for combo in combinations:
-        os.system(f"python scripts/calculate_metrics.py {combo}")
+        # Make string, dump to file
+        print(f"python scripts/calculate_metrics.py {combo}")
 
 
 if __name__ == "__main__":
