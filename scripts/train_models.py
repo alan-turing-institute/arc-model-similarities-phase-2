@@ -1,12 +1,13 @@
 import argparse
 
+import wandb
 import yaml
+from functions import opts2dmpairArgs
 from pytorch_lightning import LightningDataModule, Trainer
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.callbacks.progress import TQDMProgressBar
 from pytorch_lightning.loggers import WandbLogger
 
-import wandb
 from modsim2.data.loader import DMPair
 from modsim2.model.resnet import ResnetModel
 
@@ -47,16 +48,6 @@ def train_models(dmpair_kwargs: dict, trainer_config: dict, experiment_pair_name
         experiment_name=f"{experiment_pair_name}_B",
         trainer_config=trainer_config,
     )
-
-
-def opts2dmpairArgs(opt: dict, seed: int) -> dict:
-    return {
-        "drop_percent_A": opt["A"]["drop"],
-        "drop_percent_B": opt["B"]["drop"],
-        "transforms_A": opt["A"]["transforms"],
-        "transforms_B": opt["B"]["transforms"],
-        "seed": seed,
-    }
 
 
 def main(
