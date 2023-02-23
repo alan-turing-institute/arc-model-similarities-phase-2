@@ -1,4 +1,6 @@
 import argparse
+import json
+import os
 
 import yaml
 from functions import opts2dmpairArgs
@@ -24,8 +26,34 @@ def main(
         "experiment_pair_name": experiment_pair_name,
         **dmpair.compute_similarity(),
     }
-    print(metrics)
-    # return(metrics)
+
+    # JSON file path
+    root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    data_path = os.path.join(root_path, "data")
+    out_file_path = os.path.join(data_path, "metrics.json")
+
+    # Create data folder if it does not exist
+    if not os.path.isdir(data_path):
+        os.mkdir(data_path)
+
+    # If file does not exist, create it
+    file_exists = os.path.isfile(out_file_path)
+    if not file_exists:
+        with open(out_file_path, "w") as out_file:
+            json.dump([metrics], out_file, indent=4)
+
+    # If file exists, append to it
+    if file_exists:
+        # Read file contents
+        with open(out_file_path) as out_file:
+            out_file_contents = json.load(out_file)
+
+        # Append dict to list in file
+        out_file_contents.append(metrics)
+
+        # Write new list with new output to file
+        with open(out_file_path, "w") as out_file:
+            json.dump(out_file_contents, out_file, indent=4)
 
 
 if __name__ == "__main__":
