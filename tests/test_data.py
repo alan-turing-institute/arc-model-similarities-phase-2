@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 import numpy as np
 import testing_constants
 import torch
+import torchvision.transforms
 
 from modsim2.data.loader import CIFAR10DMSubset, DMPair
 
@@ -334,44 +335,56 @@ def _test_get_x_data(
     )
 
 
+def _compare_dataloader_to_tensor(dl: torch.utils.data.DataLoader, data: torch.Tensor):
+    dl_stacked = torch.vstack([item[0] for item in dl])
+    assert torch.equal(dl_stacked, data)
+
+
 # test dataloader access via get_A_data and get_B_data
 def test_get_AB_data():
-    # same patter as test_transforms - want to check these have happened
-    # also check n_obs is consistent with expectations
-
-    # need to use batch size 1 for this test to match our non-batched iterator
-    batch_size = 1
-    val_split = 0.4
+    """
+    we need to make sure this returns the same as we'd get via the dataloaders
+    this ensures consistency between similarity calc and model training.
+    ensure same expected counts, transformed already
+    instead of rechecking, just compare against already tested dataloaders
+    """
     drop_A = 0.2
-    drop_B = 0.2
-    (dmpair, train_transforms_mock, val_transforms_mock, _,) = _setup_transforms_test(
-        batch_size=batch_size, drop_A=drop_A, drop_B=drop_B, val_split=val_split
+    drop_B = 0.3
+    val_split = 0.4
+
+    # different transforms for train and val
+    train_transforms = torchvision.transforms.Compose(
+        [
+            torchvision.transforms.ToTensor(),
+            torchvision.transforms.GaussianBlur(kernel_size=1),
+        ]
+    )
+    val_transforms = torchvision.transforms.Compose(
+        [
+            torchvision.transforms.ToTensor(),
+            torchvision.transforms.GaussianBlur(kernel_size=3),
+        ]
     )
 
-    # load orig raw data - for checking transforms called with orig data
-    raw_train = torch.load(testing_constants.DUMMY_CIFAR_TRAIN)
-    reshaped_raw_train = raw_train[0].reshape(-1, 3, 32, 32).permute(0, 2, 3, 1)
-
-    # pad for batches
-    train_data_A, val_data_A = dmpair.get_A_data()
-    _test_get_x_data(
-        train_data=train_data_A,
-        val_data=val_data_A,
-        raw_data=reshaped_raw_train,
-        batch_size=batch_size,
+    # ensure not shuffling for comparison
+    dmpair = DMPair(
+        drop_percent_A=drop_A,
+        drop_percent_B=drop_B,
         val_split=val_split,
-        drop=drop_A,
-        train_transforms_mock=train_transforms_mock,
-        val_transforms_mock=val_transforms_mock,
+        train_transforms=train_transforms,
+        val_transforms=val_transforms,
+        shuffle=False,
     )
+
+    train_data_a, val_data_a = dmpair.get_A_data()
     train_data_b, val_data_b = dmpair.get_B_data()
-    _test_get_x_data(
-        train_data=train_data_b,
-        val_data=val_data_b,
-        raw_data=reshaped_raw_train,
-        batch_size=batch_size,
-        val_split=val_split,
-        drop=drop_B,
-        train_transforms_mock=train_transforms_mock,
-        val_transforms_mock=val_transforms_mock,
-    )
+
+    # a train
+    _compare_dataloader_to_tensor(dl=dmpair.A.train_dataloader(), data=train_data_a)
+    # b train
+    _compare_dataloader_to_tensor(dl=dmpair.B.train_dataloader(), data=train_data_b)
+
+    # a val
+    _compare_dataloader_to_tensor(dl=dmpair.A.val_dataloader(), data=val_data_a)
+    # b val
+    _compare_dataloader_to_tensor(dl=dmpair.B.val_dataloader(), data=val_data_b)
