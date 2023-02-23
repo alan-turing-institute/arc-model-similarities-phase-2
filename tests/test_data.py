@@ -252,12 +252,14 @@ def test_transforms():
     raw_test = torch.load(testing_constants.DUMMY_CIFAR_TEST)
     reshaped_raw_test = raw_test[0].reshape(-1, 3, 32, 32).permute(0, 2, 3, 1)
 
+    # train A
     _test_dl_transforms(
         transforms_mock=train_transforms_mock,
         batch_size=batch_size,
         dl=dmpair.A.train_dataloader(),
         raw_orig_data=reshaped_raw_train,
     )
+    # train B
     _test_dl_transforms(
         transforms_mock=train_transforms_mock,
         batch_size=batch_size,
@@ -265,12 +267,14 @@ def test_transforms():
         raw_orig_data=reshaped_raw_train,
     )
 
+    # val A
     _test_dl_transforms(
         transforms_mock=val_transforms_mock,
         batch_size=batch_size,
         dl=dmpair.A.val_dataloader(),
         raw_orig_data=reshaped_raw_train,
     )
+    # val B
     _test_dl_transforms(
         transforms_mock=val_transforms_mock,
         batch_size=batch_size,
@@ -278,12 +282,14 @@ def test_transforms():
         raw_orig_data=reshaped_raw_train,
     )
 
+    # test A
     _test_dl_transforms(
         transforms_mock=test_transforms_mock,
         batch_size=batch_size,
         dl=dmpair.A.test_dataloader(),
         raw_orig_data=reshaped_raw_test,
     )
+    # test B
     _test_dl_transforms(
         transforms_mock=test_transforms_mock,
         batch_size=batch_size,
