@@ -2,14 +2,20 @@
 
 ## Calculate Metrics
 
-TODO - generate scripts to be called
+Call:
+
+```bash
+python scripts/metrics_script.py
+```
+
+to generate bash scripts that in turn call `scripts/calculate_metrics.py` to compute metrics for a single DMPair.
 
 ## Train Models
 
-TODO - generate scripts to be called
-
-currently called like:
+Call:
 
 ```bash
-python scripts/train_models.py --dataset_config ./configs/datasets.yaml --experiment_group drop_only --trainer_config ./configs/trainer.yaml --dataset_index 1 --seed_index 1
+python scripts/train_script.py
 ```
+
+to generate bash scripts that in turn call `scripts/train_models.py` to train both models for each DMPair.
