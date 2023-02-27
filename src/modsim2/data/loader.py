@@ -291,6 +291,7 @@ class DMPair:
         self.metric_config = metric_config
 
         # Load and setup CIFAR
+        # note: will set transforms later, in CIFAR10DMSubset setup() for A,B
         self.cifar = CIFAR10DataModule(val_split=val_split, seed=self.seed)
         self.cifar.prepare_data()
         logging.warning("Performing early loading of CIFARDM10Subset.dataset_train")
@@ -394,10 +395,10 @@ class DMPair:
     def _get_subset_data(
         subset_module: CIFAR10DMSubset,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        train = subset_module.dataset_train.dataset.data[
-            subset_module.dataset_train.indices
-        ]
-        val = subset_module.dataset_val.dataset.data[subset_module.dataset_val.indices]
+        # force __getitem__ in CIFAR10 class for train and val
+        # just take image rather than label
+        train = torch.stack([item[0] for item in subset_module.dataset_train])
+        val = torch.stack([item[0] for item in subset_module.dataset_val])
         return train, val
 
     def get_A_data(self) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -409,6 +410,7 @@ class DMPair:
     @staticmethod
     def _get_subset_labels(subset_module: CIFAR10DMSubset) -> Tuple[List, List]:
         # List comprehension because pytorch dataset makes it necsesary
+        # don't need to apply transforms here so don't bother forcing __getitem__
         train = [
             subset_module.dataset_train.dataset.targets[i]
             for i in subset_module.dataset_train.indices
