@@ -6,7 +6,7 @@ import yaml
 
 
 def load_configs(
-    metrics_config_path: str, transforms_config_path: Optional[str] = None
+    metrics_config_path: Optional[str], transforms_config_path: Optional[str] = None
 ) -> dict:
     """
     Function that takes config paths as input and returns a dictionary
@@ -23,8 +23,9 @@ def load_configs(
     # Outputs inside a single, overarching config
     config_dict = {}
 
-    with open(metrics_config_path, "r") as stream:
-        config_dict["metric_config"] = yaml.safe_load(stream)
+    if metrics_config_path:
+        with open(metrics_config_path, "r") as stream:
+            config_dict["metric_config"] = yaml.safe_load(stream)
 
     if transforms_config_path:
         with open(transforms_config_path, "r") as stream:
