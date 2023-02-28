@@ -57,7 +57,7 @@ You can see an example in the repository config folder as [datasets.yaml](/confi
 This should be a YAML file containing the elements with the following structure
 
 - an initial key denoting the name you wish to assign to the metric
-- nested within this, a key:value pair giving a function name (see our function dictionary at [this location](src/modsim2/similarity/constants.py))
+- nested within this, a key:value pair giving a function name (see our function dictionary at [this location](/src/modsim2/similarity/constants.py))
 - if relevant, another key for arguments giving the key:value pairs of argument names and argument values to be passed to the metric call
 
 You can see an example in the repository config folder as [metrics.yaml](/configs/metrics.yaml).
