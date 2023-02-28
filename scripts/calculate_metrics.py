@@ -1,11 +1,15 @@
 import argparse
 import json
+import logging
 import os
 
 import yaml
 from functions import opts2dmpairArgs
 
 from modsim2.data.loader import DMPair
+
+# Set logging level
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
 def main(
