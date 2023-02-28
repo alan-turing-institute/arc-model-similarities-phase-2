@@ -1,6 +1,5 @@
 trainer_kwargs:
-  max_epochs: 1
-  max_steps: 100
+  max_epochs: 100
   devices: "auto"
   accelerator: "auto"
 
