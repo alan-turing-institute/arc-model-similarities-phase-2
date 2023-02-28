@@ -55,7 +55,6 @@ if __name__ == "__main__":
         "--experiment_group",
         type=str,
         help="experiment group to use",
-        default="drop-only",
     )
     parser.add_argument(
         "--dataset_config_path",
