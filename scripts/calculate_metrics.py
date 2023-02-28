@@ -59,6 +59,10 @@ def main(
         with open(out_file_path, "w") as out_file:
             json.dump(out_file_contents, out_file, indent=4)
 
+    # Inform user output has been written
+    log_message = f"Output has been written to {out_file_path}"
+    logging.info(log_message)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process some integers.")
