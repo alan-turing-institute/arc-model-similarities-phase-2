@@ -29,12 +29,12 @@ def main(
 
     # JSON file path
     root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-    data_path = os.path.join(root_path, "data")
-    out_file_path = os.path.join(data_path, "metrics.json")
+    results_path = os.path.join(root_path, "results")
+    out_file_path = os.path.join(results_path, "metrics.json")
 
-    # Create data folder if it does not exist
-    if not os.path.isdir(data_path):
-        os.mkdir(data_path)
+    # Create results folder if it does not exist
+    if not os.path.isdir(results_path):
+        os.mkdir(results_path)
 
     # If file does not exist, create it
     file_exists = os.path.isfile(out_file_path)

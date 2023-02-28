@@ -1,32 +1,40 @@
+import argparse
+import os
+
 import constants
 import yaml
 
-# Selections
-# TODO: replace with argparse
-EXPERIMENT_GROUP = "drop-only"
 
-
-def main():
+def main(experiment_group, dataset_config_path, trainer_config_path):
     # Dataset config
-    with open(constants.DATASET_CONFIG_PATH, "r") as stream:
+    with open(dataset_config_path, "r") as stream:
         dataset_config = yaml.safe_load(stream)
 
     # Prepare dataset list, seed list
     NUM_SEEDS = len(dataset_config["seeds"])
-    NUM_PAIRS = len(dataset_config["experiment_groups"][EXPERIMENT_GROUP])
+    NUM_PAIRS = len(dataset_config["experiment_groups"][experiment_group])
 
     # Generate combinations of arguments to pass
     combinations = [
-        f"--dataset_config {constants.DATASET_CONFIG_PATH} "
-        + f"--trainer_config {constants.TRAINER_CONFIG_PATH} "
-        + f"--experiment_group {EXPERIMENT_GROUP} "
+        f"--dataset_config {dataset_config_path} "
+        + f"--trainer_config {trainer_config_path} "
+        + f"--experiment_group {experiment_group} "
         + f"--seed_index {seed_index} "
         + f"--dataset_index {dataset_index}"
         for seed_index in range(NUM_SEEDS)
         for dataset_index in range(NUM_PAIRS)
     ]
+
+    # Prepare path
+    scripts_path = os.path.join(constants.PROJECT_ROOT, "bash_scripts")
+
+    # If bash scripts path does not exist, create it
+    if not os.path.isdir(scripts_path):
+        os.mkdir(scripts_path)
+
+    # Generate files + script names
     experiment_pair_names = [
-        f"scripts/{EXPERIMENT_GROUP}_{dataset_index}_{seed_index}" + "_train.sh"
+        scripts_path + f"/{experiment_group}_{dataset_index}_{seed_index}" + "_train.sh"
         for seed_index in range(NUM_SEEDS)
         for dataset_index in range(NUM_PAIRS)
     ]
@@ -40,4 +48,30 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="Process arguments for script generation."
+    )
+    parser.add_argument(
+        "--experiment_group",
+        type=str,
+        help="experiment group to use",
+        default="drop-only",
+    )
+    parser.add_argument(
+        "--dataset_config_path",
+        type=str,
+        help="path to datasets config file",
+        default=constants.DATASET_CONFIG_PATH,
+    )
+    parser.add_argument(
+        "--train_config_path",
+        type=str,
+        help="path to train config file",
+        default=constants.TRAINER_CONFIG_PATH,
+    )
+    args = parser.parse_args()
+    main(
+        experiment_group=args.experiment_group,
+        dataset_config_path=args.dataset_config_path,
+        train_config_path=args.train_config_path,
+    )
