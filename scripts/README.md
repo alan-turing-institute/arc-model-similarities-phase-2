@@ -50,7 +50,7 @@ This should be YAML file containing the following elements:
 - val_split: a single number, the size of the validation split for model training
 - experiment_group: groups of experiments to run separately. Within each group should be several dataset specifications, covering drop percentages and dataset transformations.
 
-You can see an example in the repository config folder as [metrics.yaml](configs/metrics.yaml).
+You can see an example in the repository config folder as [datasets.yaml](/configs/datasets.yaml).
 
 ### Metrics Config File
 
@@ -60,7 +60,7 @@ This should be a YAML file containing the elements with the following structure
 - nested within this, a key:value pair giving a function name (see our function dictionary at [this location](src/modsim2/similarity/constants.py))
 - if relevant, another key for arguments giving the key:value pairs of argument names and argument values to be passed to the metric call
 
-You can see an example in the repository config folder as [metrics.yaml](configs/metrics.yaml).
+You can see an example in the repository config folder as [metrics.yaml](/configs/metrics.yaml).
 
 ### Trainer Config File
 
@@ -70,4 +70,4 @@ This should be a YAML file containing the following elements:
 - model: arguments to pass directly to the model
 - wandb: arguments to pass directly to wandb
 
-You can see an example in the repository config folder as [trainer.yaml](configs/trainer.yaml).
+You can see an example in the repository config folder as [trainer.yaml](/configs/trainer.yaml).
