@@ -72,18 +72,26 @@ def main(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process some integers.")
     parser.add_argument(
-        "--dataset_config", type=str, help="path to datasets config file"
+        "--dataset_config", type=str, help="path to datasets config file", required=True
     )
     parser.add_argument(
-        "--experiment_group", type=str, help="which experiment group to run"
+        "--experiment_group",
+        type=str,
+        help="which experiment group to run",
+        required=True,
     )
     parser.add_argument(
-        "--trainer_config", type=str, help="path to trainer config file"
+        "--trainer_config", type=str, help="path to trainer config file", required=True
     )
     parser.add_argument(
-        "--dataset_index", type=int, help="index of dataset options within group"
+        "--dataset_index",
+        type=int,
+        help="index of dataset options within group",
+        required=True,
     )
-    parser.add_argument("--seed_index", type=int, help="index of seed within seeds")
+    parser.add_argument(
+        "--seed_index", type=int, help="index of seed within seeds", required=True
+    )
 
     args = parser.parse_args()
 
