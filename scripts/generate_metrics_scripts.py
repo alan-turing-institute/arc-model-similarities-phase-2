@@ -19,7 +19,7 @@ def main(experiment_group, dataset_config_path, metrics_config_path):
     # Generate combinations of arguments to pass
     combinations = [
         f"--dataset_config {dataset_config_path} "
-        + f"--metric_config {metrics_config_path} "
+        + f"--metrics_config {metrics_config_path} "
         + f"--experiment_group {experiment_group} "
         + f"--seed_index {seed_index} "
         + f"--dataset_index {dataset_index}"
@@ -28,7 +28,7 @@ def main(experiment_group, dataset_config_path, metrics_config_path):
     ]
 
     # Prepare path
-    scripts_path = os.path.join(constants.PROJECT_ROOT, "bash_scripts")
+    scripts_path = os.path.join(constants.PROJECT_ROOT, "metrics_scripts")
 
     # If bash scripts path does not exist, create it
     if not os.path.isdir(scripts_path):
@@ -67,7 +67,7 @@ if __name__ == "__main__":
         default=constants.DATASET_CONFIG_PATH,
     )
     parser.add_argument(
-        "--metric_config_path",
+        "--metrics_config_path",
         type=str,
         help="path to metrics config file",
         default=constants.METRICS_CONFIG_PATH,

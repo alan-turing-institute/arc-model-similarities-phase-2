@@ -26,7 +26,7 @@ def main(experiment_group, dataset_config_path, trainer_config_path):
     ]
 
     # Prepare path
-    scripts_path = os.path.join(constants.PROJECT_ROOT, "bash_scripts")
+    scripts_path = os.path.join(constants.PROJECT_ROOT, "train_scripts")
 
     # If bash scripts path does not exist, create it
     if not os.path.isdir(scripts_path):
@@ -63,7 +63,7 @@ if __name__ == "__main__":
         default=constants.DATASET_CONFIG_PATH,
     )
     parser.add_argument(
-        "--train_config_path",
+        "--trainer_config_path",
         type=str,
         help="path to train config file",
         default=constants.TRAINER_CONFIG_PATH,
@@ -72,5 +72,5 @@ if __name__ == "__main__":
     main(
         experiment_group=args.experiment_group,
         dataset_config_path=args.dataset_config_path,
-        train_config_path=args.train_config_path,
+        trainer_config_path=args.trainer_config_path,
     )

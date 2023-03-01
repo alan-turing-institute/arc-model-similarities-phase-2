@@ -10,12 +10,12 @@ Call:
 python scripts/generate_metrics_scripts.py --experiment_group "drop-only"
 ```
 
-to generate bash scripts in `ROOT/bash_scripts/`. Note additional optional arguments include `--dataset_config_path` and `--metrics_config_path` (see below).
+to generate bash scripts in `ROOT/metrics_scripts/`. Note additional optional arguments include `--dataset_config_path` and `--metrics_config_path` (see below).
 
 Once this is done, you can call each of the individual scripts individually, e.g.
 
 ```bash
-bash_scripts/drop-only_0_0_metrics.sh
+metrics_scripts/drop-only_0_0_metrics.sh
 ```
 
 to compute metrics for that particular DMPair. Note that the results file from calling this will land in a `ROOT/results/` folder which will be created if it does not already exist.
@@ -25,15 +25,15 @@ to compute metrics for that particular DMPair. Note that the results file from c
 Call:
 
 ```bash
-python scripts/train_script.py
+python scripts/generate_train_scripts.py --experiment_group "drop-only"
 ```
 
-to generate bash scripts in `ROOT/bash_scripts/`. Note additional optional arguments include `--dataset_config_path` and `--trainer_config_path` (see below).
+to generate bash scripts in `ROOT/train_scripts/`. Note additional optional arguments include `--dataset_config_path` and `--train_config_path` (see below).
 
 Once this is done, you can call each of the individual scripts individually, e.g.
 
 ```bash
-bash_scripts/drop-only_0_0_train.sh
+trainer_scripts/drop-only_0_0_trainer.sh
 ```
 
 to train models for that particular DMPair. Note that logging is performed with wadnb and so you will need this set up on your machine in order to proceed.

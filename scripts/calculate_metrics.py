@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 def main(
     dataset_config: dict,
-    metric_config: dict,
+    metrics_config: dict,
     experiment_group: str,
     dataset_index: int,
     seed_index: int,
@@ -25,7 +25,7 @@ def main(
         seed=dataset_config["seeds"][seed_index],
     )
 
-    dmpair = DMPair(**dmpair_kwargs, metric_config=metric_config)
+    dmpair = DMPair(**dmpair_kwargs, metric_config=metrics_config)
     metrics = {
         "experiment_pair_name": experiment_pair_name,
         **dmpair.compute_similarity(),
@@ -72,7 +72,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--experiment_group", type=str, help="which experiment group to run"
     )
-    parser.add_argument("--metric_config", type=str, help="path to metric config file")
+    parser.add_argument(
+        "--metrics_config", type=str, help="path to metrics config file"
+    )
     parser.add_argument(
         "--dataset_index", type=int, help="index of dataset options within group"
     )
@@ -83,12 +85,12 @@ if __name__ == "__main__":
     with open(args.dataset_config, "r") as stream:
         dataset_config = yaml.safe_load(stream)
 
-    with open(args.metric_config, "r") as stream:
-        metric_config = yaml.safe_load(stream)
+    with open(args.metrics_config, "r") as stream:
+        metrics_config = yaml.safe_load(stream)
 
     main(
         dataset_config=dataset_config,
-        metric_config=metric_config,
+        metrics_config=metrics_config,
         experiment_group=args.experiment_group,
         dataset_index=args.dataset_index,
         seed_index=args.seed_index,
