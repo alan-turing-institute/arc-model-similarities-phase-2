@@ -144,5 +144,6 @@ wandb/
 ms2/
 
 # Generated bash scripts and outputs
-bash_scripts/
+metrics_scripts/
+train_scripts/
 results/
