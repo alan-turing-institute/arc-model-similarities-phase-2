@@ -1,13 +1,13 @@
 import argparse
 
-import wandb
 import yaml
-from functions import opts2dmpairArgs
 from pytorch_lightning import LightningDataModule, Trainer
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.callbacks.progress import TQDMProgressBar
 from pytorch_lightning.loggers import WandbLogger
+from utils import opts2dmpairArgs
 
+import wandb
 from modsim2.data.loader import DMPair
 from modsim2.model.resnet import ResnetModel
 

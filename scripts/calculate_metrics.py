@@ -4,7 +4,7 @@ import logging
 import os
 
 import yaml
-from functions import opts2dmpairArgs
+from utils import opts2dmpairArgs
 
 from modsim2.data.loader import DMPair
 
