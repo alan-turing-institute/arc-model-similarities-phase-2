@@ -1,6 +1,7 @@
 import logging
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
+import numpy as np
 import torch
 from pl_bolts.datamodules import CIFAR10DataModule
 from sklearn.model_selection import train_test_split
@@ -240,6 +241,8 @@ class DMPair:
         metric_config: Dict = {},
         drop_percent_A: Union[int, float] = 0,
         drop_percent_B: Union[int, float] = 0,
+        transforms_A: Optional[Callable] = None,
+        transforms_B: Optional[Callable] = None,
         data_dir: Optional[str] = None,
         val_split: Union[int, float] = 0.2,
         num_workers: int = 0,
@@ -249,9 +252,6 @@ class DMPair:
         shuffle: bool = True,
         pin_memory: bool = True,
         drop_last: bool = False,
-        train_transforms: Optional[Callable] = None,
-        val_transforms: Optional[Callable] = None,
-        test_transforms: Optional[Callable] = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -266,6 +266,8 @@ class DMPair:
             metric_config: Dict of metric configs for similarity measures
             drop_percent_A: % of training/val data to drop from A
             drop_percent_B: % of training/val data to drop from B
+            transforms_A: transformations applied to A train and val
+            transforms_B: transformations applied to B train and val
             data_dir: Where to save/load the data
             val_split: Percent (float) or number (int) of samples to use
                        for the validation split
@@ -279,9 +281,6 @@ class DMPair:
                         CUDA pinned memory before
                         returning them
             drop_last: If true drops the last incomplete batch
-            train_transforms: transformations you can apply to train dataset
-            val_transforms: transformations you can apply to validation dataset
-            test_transforms: transformations you can apply to test dataset
         """
 
         # Assign params
@@ -320,9 +319,9 @@ class DMPair:
             shuffle=shuffle,
             pin_memory=pin_memory,
             drop_last=drop_last,
-            train_transforms=train_transforms,
-            val_transforms=val_transforms,
-            test_transforms=test_transforms,
+            train_transforms=transforms_A,
+            val_transforms=transforms_A,
+            test_transforms=None,
             *args,
             **kwargs,
         )
@@ -338,9 +337,9 @@ class DMPair:
             shuffle=shuffle,
             pin_memory=pin_memory,
             drop_last=drop_last,
-            train_transforms=train_transforms,
-            val_transforms=val_transforms,
-            test_transforms=test_transforms,
+            train_transforms=transforms_B,
+            val_transforms=transforms_B,
+            test_transforms=None,
             *args,
             **kwargs,
         )
@@ -373,8 +372,8 @@ class DMPair:
         train_data_B, val_data_B = self.get_B_data()
 
         if not only_train:
-            data_A = torch.concat((train_data_A, val_data_A))
-            data_B = torch.concat((train_data_B, val_data_B))
+            data_A = np.concatenate((train_data_A, val_data_A), axis=0)
+            data_B = np.concatenate((train_data_B, val_data_B), axis=0)
         else:
             data_A = train_data_A
             data_B = train_data_B

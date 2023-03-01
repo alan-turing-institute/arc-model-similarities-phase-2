@@ -1,0 +1,12 @@
+trainer_kwargs:
+  max_epochs: 100
+  devices: "auto"
+  accelerator: "auto"
+
+model:
+  lr: 0.05
+
+wandb:
+  entity: turing-arc
+  project: ms2
+  mode: online
