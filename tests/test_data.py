@@ -192,31 +192,31 @@ def _setup_transforms_test(
 ) -> tuple[DMPair, torch.tensor, torch.tensor, torch.tensor]:
     """
     setup transforms test with dmpair and expected values provided by mocks of
-    transforms. Returns dmpair and mocks for train, val, test transforms
+    transforms. Returns dmpair and mocks for A, B, test transforms
     """
     batch_size = 16
 
-    train_output = torch.rand((3, 2, 2))
-    val_output = torch.rand((3, 2, 2))
+    output_A = torch.rand((3, 2, 2))
+    output_B = torch.rand((3, 2, 2))
     test_output = torch.rand((3, 2, 2))
 
-    train_transforms_mock = MagicMock(return_value=train_output)
-    val_transforms_mock = MagicMock(return_value=val_output)
+    transforms_A_mock = MagicMock(return_value=output_A)
+    transforms_B_mock = MagicMock(return_value=output_B)
     test_transforms_mock = MagicMock(return_value=test_output)
 
     dmpair = DMPair(
         drop_percent_A=drop_A,
         drop_percent_B=drop_B,
         val_split=val_split,
-        train_transforms=train_transforms_mock,
-        val_transforms=val_transforms_mock,
-        test_transforms=test_transforms_mock,
+        transforms_A=transforms_A_mock,
+        transforms_B=transforms_B_mock,
+        transforms_test=test_transforms_mock,
         batch_size=batch_size,
         drop_last=True,
     )
     dmpair.A.setup()
     dmpair.B.setup()
-    return dmpair, train_transforms_mock, val_transforms_mock, test_transforms_mock
+    return dmpair, transforms_A_mock, transforms_B_mock, test_transforms_mock
 
 
 def _test_dl_transforms(
@@ -242,8 +242,8 @@ def test_transforms():
     batch_size = 16
     (
         dmpair,
-        train_transforms_mock,
-        val_transforms_mock,
+        transforms_A_mock,
+        transforms_B_mock,
         test_transforms_mock,
     ) = _setup_transforms_test(batch_size=batch_size)
 
@@ -255,14 +255,14 @@ def test_transforms():
 
     # train A
     _test_dl_transforms(
-        transforms_mock=train_transforms_mock,
+        transforms_mock=transforms_A_mock,
         batch_size=batch_size,
         dl=dmpair.A.train_dataloader(),
         raw_orig_data=reshaped_raw_train,
     )
     # train B
     _test_dl_transforms(
-        transforms_mock=train_transforms_mock,
+        transforms_mock=transforms_B_mock,
         batch_size=batch_size,
         dl=dmpair.B.train_dataloader(),
         raw_orig_data=reshaped_raw_train,
@@ -270,14 +270,14 @@ def test_transforms():
 
     # val A
     _test_dl_transforms(
-        transforms_mock=val_transforms_mock,
+        transforms_mock=transforms_A_mock,
         batch_size=batch_size,
         dl=dmpair.A.val_dataloader(),
         raw_orig_data=reshaped_raw_train,
     )
     # val B
     _test_dl_transforms(
-        transforms_mock=val_transforms_mock,
+        transforms_mock=transforms_B_mock,
         batch_size=batch_size,
         dl=dmpair.B.val_dataloader(),
         raw_orig_data=reshaped_raw_train,
@@ -317,13 +317,13 @@ def test_get_AB_data():
     val_split = 0.4
 
     # different transforms for train and val
-    train_transforms = torchvision.transforms.Compose(
+    transforms_A = torchvision.transforms.Compose(
         [
             torchvision.transforms.ToTensor(),
             torchvision.transforms.GaussianBlur(kernel_size=1),
         ]
     )
-    val_transforms = torchvision.transforms.Compose(
+    transforms_B = torchvision.transforms.Compose(
         [
             torchvision.transforms.ToTensor(),
             torchvision.transforms.GaussianBlur(kernel_size=3),
@@ -335,8 +335,8 @@ def test_get_AB_data():
         drop_percent_A=drop_A,
         drop_percent_B=drop_B,
         val_split=val_split,
-        train_transforms=train_transforms,
-        val_transforms=val_transforms,
+        transforms_A=transforms_A,
+        transforms_B=transforms_B,
         shuffle=False,
     )
 
