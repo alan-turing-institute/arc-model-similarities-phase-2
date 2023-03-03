@@ -30,7 +30,13 @@ python scripts/generate_train_scripts.py --experiment_group "drop-only"
 
 to generate bash scripts in `ROOT/train_scripts/`. Note additional optional arguments include `--dataset_config_path` and `--train_config_path` (see below).
 
-Once this is done, you can call each of the individual scripts individually, e.g.
+Once this is done, you can run all of the generated scripts for a given experiment group by calling `scripts/train_all.sh` followed by the name of the experiment group, e.g.
+
+```bash
+scripts/train_all.sh drop-only
+```
+
+Alternatively, you can call each of the individual scripts individually, e.g.
 
 ```bash
 trainer_scripts/drop-only_0_0_trainer.sh
