@@ -80,7 +80,7 @@ class CIFAR10DMSubset(CIFAR10DataModule):
 
         # Set the datasets directly - change from original CIFAR10 DM
         self.dataset_train = dataset_train
-        self.dataset_val = dataset_train
+        self.dataset_val = dataset_val
         # need to be able to set transforms on this dataset (underlying the subset)
         #  independently of any other subset so create a shallow copy
         self.dataset_train.dataset = copy.copy(self.dataset_train.dataset)

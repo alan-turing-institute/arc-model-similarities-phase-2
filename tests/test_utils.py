@@ -34,7 +34,7 @@ def test_metric_configs_structure_exists():
 
 def test_load_transform():
     transforms_config = CONFIGS["transforms_config"]
-    transforms = create_transforms(transforms_list=transforms_config["train"])
+    transforms = create_transforms(transforms_list=transforms_config["A"])
     assert type(transforms.transforms[0]) == torchvision.transforms.ToTensor
     assert type(transforms.transforms[1]) == torchvision.transforms.Normalize
     assert transforms.transforms[1].mean == [0.2, 0.3, 0.4]

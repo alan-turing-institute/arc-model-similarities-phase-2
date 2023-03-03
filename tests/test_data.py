@@ -32,32 +32,35 @@ def _test_dm_n_obs(
     )
 
 
-def test_cifar_empty_val():
+def test_cifar_empty_validation():
     drop_A = 0.2
+    drop_B = 0.0
     val_split = 0
     dmpair = DMPair(drop_percent_A=drop_A, val_split=val_split)
     # test A
     _test_dm_n_obs(datamodule_subset=dmpair.A, drop=drop_A, val_split=val_split)
     # test B
-    _test_dm_n_obs(datamodule_subset=dmpair.B, drop=0.0, val_split=val_split)
+    _test_dm_n_obs(datamodule_subset=dmpair.B, drop=drop_B, val_split=val_split)
 
 
 def test_cifar_A_n_obs():
     drop_A = 0.2
+    drop_B = 0.0
     val_split = 0.4
     dmpair = DMPair(drop_percent_A=drop_A, val_split=val_split)
     # test A
     _test_dm_n_obs(datamodule_subset=dmpair.A, drop=drop_A, val_split=val_split)
     # test B
-    _test_dm_n_obs(datamodule_subset=dmpair.B, drop=0.0, val_split=val_split)
+    _test_dm_n_obs(datamodule_subset=dmpair.B, drop=drop_B, val_split=val_split)
 
 
 def test_cifar_B_n_obs():
+    drop_A = 0.0
     drop_B = 0.3
     val_split = 0.4
     dmpair = DMPair(drop_percent_B=drop_B, val_split=val_split)
     # test A
-    _test_dm_n_obs(datamodule_subset=dmpair.A, drop=0.0, val_split=val_split)
+    _test_dm_n_obs(datamodule_subset=dmpair.A, drop=drop_A, val_split=val_split)
     # test B
     _test_dm_n_obs(datamodule_subset=dmpair.B, drop=drop_B, val_split=val_split)
 
