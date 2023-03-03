@@ -1,14 +1,25 @@
 # transforms as list and will be composed together
 # transforms should be valid torchvision.transform classes with appropriate args
 # example below demonstrates default CIFAR transforms as per pl_bolts.datamodules.cifar10_datamodule.py
+# in the example both A and B share the same transform
 
-train: # used for both train and val
+A: # used for both train and val
 - name: ToTensor # class name, no kwargs specified
 
 - name: Normalize # class name
   kwargs:
     mean: [0.4913725490196078, 0.4823529411764706, 0.4466666666666667] # init kwarg mean with values
     std: [0.24705882352941178, 0.24352941176470588, 0.2615686274509804] # init kwarg std with values
+
+
+B: # used for both train and val
+- name: ToTensor # class name, no kwargs specified
+
+- name: Normalize # class name
+  kwargs:
+    mean: [0.4913725490196078, 0.4823529411764706, 0.4466666666666667] # init kwarg mean with values
+    std: [0.24705882352941178, 0.24352941176470588, 0.2615686274509804] # init kwarg std with values
+
 
 test:
   - name: ToTensor # class name, no kwargs specified
