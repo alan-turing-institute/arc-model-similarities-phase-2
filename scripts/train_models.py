@@ -5,6 +5,7 @@ from pytorch_lightning import LightningDataModule, Trainer
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.callbacks.progress import TQDMProgressBar
 from pytorch_lightning.loggers import WandbLogger
+from pytorch_lightning.utilities.seed import seed_everything
 from utils import opts2dmpairArgs
 
 import wandb
@@ -20,6 +21,7 @@ def train_model(dm: LightningDataModule, experiment_name: str, trainer_config: d
         project=trainer_config["wandb"]["project"],
         name=experiment_name,
         mode=trainer_config["wandb"]["mode"],
+        log_model=True,
     )
 
     trainer = Trainer(
@@ -38,11 +40,13 @@ def train_model(dm: LightningDataModule, experiment_name: str, trainer_config: d
 
 def train_models(dmpair_kwargs: dict, trainer_config: dict, experiment_pair_name: str):
     dmpair = DMPair(**dmpair_kwargs)
+    seed_everything(seed=dmpair_kwargs["seed"])
     train_model(
         dm=dmpair.A,
         experiment_name=f"{experiment_pair_name}_A",
         trainer_config=trainer_config,
     )
+    seed_everything(seed=dmpair_kwargs["seed"])
     train_model(
         dm=dmpair.B,
         experiment_name=f"{experiment_pair_name}_B",
