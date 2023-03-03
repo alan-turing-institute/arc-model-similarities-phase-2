@@ -6,7 +6,7 @@
 #SBATCH --gpus 1  # Resource allocation on Baskerville is primarily based on GPU requirement
 #SBATCH --cpus-per-gpu 36  # This number should normally be fixed as "36" to ensure that the system resources are used effectively
 #SBATCH --job-name ms2-{{experiment_name}}  # Title for the job
-#SBATCH --output=/output/%j.out
+#SBATCH --output ./slurm_logs/%j.out
 
 module purge
 module load baskerville
