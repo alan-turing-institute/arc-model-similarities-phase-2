@@ -75,7 +75,8 @@ class ResnetModel(pl.LightningModule):
         x, y = batch
         logits = self(x)
         loss = F.nll_loss(logits, y)
-        preds = torch.argmax(logits, dim=1)
+        preds = torch.argmax(logits, dim=1).cpu()
+        y = y.cpu()
         accuracy = Accuracy(task=self.task, num_classes=self.num_classes, top_k=1)
         acc = accuracy(preds, y)
         self.log("val_loss", loss, on_epoch=True, prog_bar=True, logger=True)
