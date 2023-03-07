@@ -4,22 +4,25 @@ import yaml
 from pytorch_lightning import LightningDataModule, Trainer
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.callbacks.progress import TQDMProgressBar
-from pytorch_lightning.loggers import WandbLogger
+from pytorch_lightning.utilities.seed import seed_everything
 from utils import opts2dmpairArgs
 
 import wandb
 from modsim2.data.loader import DMPair
 from modsim2.model.resnet import ResnetModel
+from modsim2.model.wandb_logger import MS2WandbLogger
 
 
 def train_model(dm: LightningDataModule, experiment_name: str, trainer_config: dict):
     model = ResnetModel(**trainer_config["model"])
 
-    wandb_logger = WandbLogger(
+    wandb_logger = MS2WandbLogger(
         entity=trainer_config["wandb"]["entity"],
         project=trainer_config["wandb"]["project"],
         name=experiment_name,
         mode=trainer_config["wandb"]["mode"],
+        log_model=True,
+        checkpoint_name=experiment_name + "_model",
     )
 
     trainer = Trainer(
@@ -29,6 +32,7 @@ def train_model(dm: LightningDataModule, experiment_name: str, trainer_config: d
             LearningRateMonitor(logging_interval="step"),
             TQDMProgressBar(refresh_rate=10),
         ],
+        deterministic=True,
     )
 
     trainer.fit(model, dm)
@@ -38,11 +42,13 @@ def train_model(dm: LightningDataModule, experiment_name: str, trainer_config: d
 
 def train_models(dmpair_kwargs: dict, trainer_config: dict, experiment_pair_name: str):
     dmpair = DMPair(**dmpair_kwargs)
+    seed_everything(seed=dmpair_kwargs["seed"])
     train_model(
         dm=dmpair.A,
         experiment_name=f"{experiment_pair_name}_A",
         trainer_config=trainer_config,
     )
+    seed_everything(seed=dmpair_kwargs["seed"])
     train_model(
         dm=dmpair.B,
         experiment_name=f"{experiment_pair_name}_B",

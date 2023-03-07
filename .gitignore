@@ -147,3 +147,6 @@ ms2/
 metrics_scripts/
 train_scripts/
 results/
+
+# Slurm outputs
+slurm_logs/
