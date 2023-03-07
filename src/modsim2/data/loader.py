@@ -1,3 +1,4 @@
+import copy
 import logging
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
@@ -80,6 +81,10 @@ class CIFAR10DMSubset(CIFAR10DataModule):
         # Set the datasets directly - change from original CIFAR10 DM
         self.dataset_train = dataset_train
         self.dataset_val = dataset_val
+        # need to be able to set transforms on this dataset (underlying the subset)
+        #  independently of any other subset so create a shallow copy
+        self.dataset_train.dataset = copy.copy(self.dataset_train.dataset)
+        self.dataset_val.dataset = copy.copy(self.dataset_val.dataset)
 
     # Override original setup message to avoid restoring CIFAR observations
     def setup(self, stage: Optional[str] = None) -> None:
@@ -243,6 +248,7 @@ class DMPair:
         drop_percent_B: Union[int, float] = 0,
         transforms_A: Optional[Callable] = None,
         transforms_B: Optional[Callable] = None,
+        transforms_test: Optional[Callable] = None,
         data_dir: Optional[str] = None,
         val_split: Union[int, float] = 0.2,
         num_workers: int = 0,
@@ -321,7 +327,7 @@ class DMPair:
             drop_last=drop_last,
             train_transforms=transforms_A,
             val_transforms=transforms_A,
-            test_transforms=None,
+            test_transforms=transforms_test,
             *args,
             **kwargs,
         )
@@ -339,7 +345,7 @@ class DMPair:
             drop_last=drop_last,
             train_transforms=transforms_B,
             val_transforms=transforms_B,
-            test_transforms=None,
+            test_transforms=transforms_test,
             *args,
             **kwargs,
         )
