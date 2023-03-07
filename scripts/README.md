@@ -44,7 +44,7 @@ Alternatively, you can call each of the individual scripts individually, e.g.
 sbatch trainer_scripts/drop-only_0_0_trainer.sh
 ```
 
-to train models for that particular DMPair. Note that logging is performed with wadnb and so you will need this set up on your machine in order to proceed.
+to train models for that particular DMPair. Note that logging is performed with wandb and so you will need this set up on your machine in order to proceed.
 
 ### Requirements
 
