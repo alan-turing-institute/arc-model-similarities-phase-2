@@ -1,6 +1,6 @@
 # The code below taken from pytorch_lightning 1.9.3 and adapted
 # to the project's version of 1.8.3.post1 to avoid updating
-# and breaking everything
+# and breaking everything - see issue #37
 
 from pathlib import Path
 from typing import Any, Optional, Union
