@@ -32,6 +32,7 @@ def train_model(dm: LightningDataModule, experiment_name: str, trainer_config: d
             LearningRateMonitor(logging_interval="step"),
             TQDMProgressBar(refresh_rate=10),
         ],
+        deterministic=True,
     )
 
     trainer.fit(model, dm)
