@@ -1,6 +1,8 @@
 # Scripts
 
-For both calculation of metrics and model training, two scripts exist that generate bash/slurm scripts to be called individually. These bash scripts will land in a `ROOT/bash_scripts/` folder.
+For both calculation of metrics and model training, two scripts exist that generate bash/slurm scripts to be called individually.
+
+For training prerequisites, see [requirements](#requirements)
 
 ## Calculate Metrics
 
