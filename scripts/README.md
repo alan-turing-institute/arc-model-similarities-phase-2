@@ -1,6 +1,6 @@
 # Scripts
 
-For both calculation of metrics and model training, two scripts exist that generate bash scripts to be called individually. These bash scripts will land in a `ROOT/bash_scripts/` folder.
+For both calculation of metrics and model training, two scripts exist that generate bash/slurm scripts to be called individually. These bash scripts will land in a `ROOT/bash_scripts/` folder.
 
 ## Calculate Metrics
 
@@ -28,7 +28,7 @@ Call:
 python scripts/generate_train_scripts.py --experiment_group "drop-only"
 ```
 
-to generate bash scripts in `ROOT/train_scripts/`. Note additional optional arguments include `--dataset_config_path` and `--train_config_path` (see below).
+to generate slurm scripts in `ROOT/train_scripts/`. Note additional optional arguments include `--dataset_config_path`, `--metrics_config_path`, `--account_name`, and `--conda_env_path` (see below).
 
 Once this is done, you can run all of the generated scripts for a given experiment group by calling `scripts/train_all.sh` followed by the name of the experiment group, e.g.
 
@@ -39,10 +39,21 @@ scripts/train_all.sh drop-only
 Alternatively, you can call each of the individual scripts individually, e.g.
 
 ```bash
-trainer_scripts/drop-only_0_0_trainer.sh
+sbatch trainer_scripts/drop-only_0_0_trainer.sh
 ```
 
 to train models for that particular DMPair. Note that logging is performed with wadnb and so you will need this set up on your machine in order to proceed.
+
+### Requirements
+
+The slurm script generated here contains some arguments specific to our HPC, and the template will likely need some modifications to be appropriate to your own usage.
+
+Broadly, the requirements are:
+
+- slurm
+- an existing conda environment (passed to `--conda_env_path`)
+
+Please note in particular that the account name (passed to the generation script via `--account_name`) argument is specific to our HPC and may not be required for your usage.
 
 ## Config Files
 
