@@ -260,6 +260,25 @@ files = [
 six = ">=1.4.0"
 
 [[package]]
+name = "eagerpy"
+version = "0.30.0"
+description = "EagerPy is a thin wrapper around PyTorch, TensorFlow Eager, JAX and NumPy that unifies their interface and thus allows writing code that works natively across all of them."
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "eagerpy-0.30.0-py3-none-any.whl", hash = "sha256:79c461b04577f02bf3b48191b2f911b55521204df99ec02288d96bfa34f13d80"},
+    {file = "eagerpy-0.30.0.tar.gz", hash = "sha256:014c02b5a7f7e19f8471885cf8aa469f2e9cf518c88400f20b6b8db83d413106"},
+]
+
+[package.dependencies]
+numpy = "*"
+typing-extensions = ">=3.7.4.1"
+
+[package.extras]
+testing = ["pytest (>=5.3.5)", "pytest-cov (>=2.8.1)"]
+
+[[package]]
 name = "exceptiongroup"
 version = "1.0.4"
 description = "Backport of PEP 654 (exception groups)"
@@ -304,6 +323,30 @@ files = [
 [package.dependencies]
 six = "*"
 termcolor = "*"
+
+[[package]]
+name = "foolbox"
+version = "3.3.3"
+description = "Foolbox is an adversarial attacks library that works natively with PyTorch, TensorFlow and JAX"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "foolbox-3.3.3-py3-none-any.whl", hash = "sha256:30a5f0e9a63f5e0d82a5aabe849fdc62355f805bd49bc26dba3ba84fc3ae9b6f"},
+    {file = "foolbox-3.3.3.tar.gz", hash = "sha256:1a2ba1a2de06d64112a06cb5891c65e6161c4ef81e6ff74a789eb917fee6bfb9"},
+]
+
+[package.dependencies]
+eagerpy = ">=0.30.0"
+GitPython = ">=3.0.7"
+numpy = "*"
+requests = ">=2.24.0"
+scipy = "*"
+setuptools = "*"
+typing-extensions = ">=3.7.4.1"
+
+[package.extras]
+testing = ["pytest (>=7.1.1)", "pytest-cov (>=3.0.0)"]
 
 [[package]]
 name = "frozenlist"
@@ -1809,4 +1852,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "9ae3d74a6a416d0b1128992e904dbf2532606799b9fb0b7dd31e71bb5ca81dda"
+content-hash = "053fcaae143720fcd29cefe1e0fde96bd50737a54e93c2ee5fc637d955a17f60"
