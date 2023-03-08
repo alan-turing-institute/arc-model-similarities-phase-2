@@ -142,6 +142,7 @@ settings.json
 #wandb
 wandb/
 ms2/
+artifacts/
 
 # Generated bash scripts and outputs
 metrics_scripts/
