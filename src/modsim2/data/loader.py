@@ -14,6 +14,10 @@ from modsim2.similarity.constants import ARGUMENTS, FUNCTION, METRIC_FN_DICT
 logger = logging.getLogger(__name__)
 
 
+# Test dataset size constant
+CIFAR_TEST_SIZE = 10000
+
+
 class CIFAR10DMSubset(CIFAR10DataModule):
     def __init__(
         self,
