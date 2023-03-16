@@ -12,7 +12,7 @@ def generate_adversial_images(
     attack_fn_name: str,
     epsilons: list[float],
     **kwargs,
-):
+) -> torch.tensor:
     """
     Generates adversial images from bias images for either an L2 fast gradient
     attack or a boundary attack.
@@ -42,7 +42,7 @@ def generate_adversial_images(
     # Apply image selection based on attack choice
     advs_images = []
     num_epsilon = len(epsilons)
-    num_attack_images = len()
+    num_attack_images = len(images)
     for i in range(num_attack_images):
         for j in range(num_epsilon):
             if success[j][i] or j == (num_epsilon - 1):
