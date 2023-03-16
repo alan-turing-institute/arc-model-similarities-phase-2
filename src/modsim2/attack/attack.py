@@ -21,11 +21,10 @@ def generate_adversial_images(
         model: Resnet model object to train the adversial images on
         images: torch.tensor of base images to build the adversial images on
         labels: correct labels for each of the images
-        attack_fn_name: _description_
-        epsilons: _description_
-
-    Raises:
-        NotImplementedError: _description_
+        attack_fn_name: Name of the attack function in foolbox.attacks. Must be
+                        L2FastGradientAttack or BoundaryAttack
+        epsilons: Pertubation parameter for the attacks
+        **kwargs: Additional arguments based to attack setup
 
     Returns: a torch.tensor containing the adversial images
     """
