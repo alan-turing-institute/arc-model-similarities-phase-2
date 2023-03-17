@@ -84,7 +84,7 @@ def generate_over_combinations(
         attack_fn_name: String corresponding to the attack function to use
         **kwargs: Arguments passed to the attack function
 
-    Returns: dict[torch.tensor]: A dictionary of 4 sets of adverisal images
+    Returns: A dictionary of 4 sets of adverisal images
     """
     # Get num of images
     num_attack_images = len(images_A)
@@ -94,11 +94,16 @@ def generate_over_combinations(
     # Each element is a torch.tensor containing adversial images
     adversial_images_dict = {}
     for model in [(model_A, "model_A"), (model_B, "model_B")]:
-        for pair in [(images_A, labels_A, "dist_A"), (images_B, labels_B, "dist_B")]:
-            adversial_images_dict[f"{model[1]}_{pair[2]}"] = generate_adversial_images(
+        for image_set in [
+            (images_A, labels_A, "dist_A"),
+            (images_B, labels_B, "dist_B"),
+        ]:
+            adversial_images_dict[
+                f"{model[1]}_{image_set[2]}"
+            ] = generate_adversial_images(
                 model=model[0],
-                images=pair[0],
-                labels=pair[1],
+                images=image_set[0],
+                labels=image_set[1],
                 num_attack_images=num_attack_images,
                 attack_fn_name=attack_fn_name,
                 **kwargs,
