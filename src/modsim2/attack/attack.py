@@ -51,3 +51,58 @@ def generate_adversial_images(
 
     # Return images
     return torch.stack((advs_images))
+
+
+def generate_over_combinations(
+    model_A: ResnetModel,
+    model_B: ResnetModel,
+    images_A: torch.tensor,
+    labels_A: torch.tensor,
+    images_B: torch.tensor,
+    labels_B: torch.tensor,
+    attack_fn_name: str,
+    **kwargs,
+) -> dict[torch.tensor]:
+    """
+    This function loops over a 2*2 combination of models (A and B) and image/label
+    pairs (A and B) to produce 4 sets of adversial images.
+
+    The goal is to train a set of adversial images on each model, drawing the images
+    from the respective distributions of A and B.
+
+    The function returns a flat dictionary where each key:element pair is a torch.tensor
+    of the results of generate_adversial_images(). The key names follow a pattern of
+    model_A_dist_A for model A and images from the distribution of A.
+
+    Args:
+        model_A: ResNet model trained on dataset A
+        model_B: ResNet model trained on dataset B
+        images_A: torch.tensor of images from the distribution of dataset A
+        labels_A: torch.tensor of labels corresponding to images_A
+        images_B: torch.tensor of images from the distribution of dataset B
+        labels_B: torch.tensor of labels corresponding to images_B
+        attack_fn_name: String corresponding to the attack function to use
+        **kwargs: Arguments passed to the attack function
+
+    Returns: dict[torch.tensor]: A dictionary of 4 sets of adverisal images
+    """
+    # Get num of images
+    num_attack_images = len(images_A)
+
+    # Make dict of adversial images
+    # 4 elements, w/ keys like model_A_dist_A
+    # Each element is a torch.tensor containing adversial images
+    adversial_images_dict = {}
+    for model in [(model_A, "model_A"), (model_B, "model_B")]:
+        for pair in [(images_A, labels_A, "dist_A"), (images_B, labels_B, "dist_B")]:
+            adversial_images_dict[f"{model[1]}_{pair[2]}"] = generate_adversial_images(
+                model=model[0],
+                images=pair[0],
+                labels=pair[1],
+                num_attack_images=num_attack_images,
+                attack_fn_name=attack_fn_name,
+                **kwargs,
+            )
+
+    # Return
+    return adversial_images_dict
