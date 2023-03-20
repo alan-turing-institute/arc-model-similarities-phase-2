@@ -112,6 +112,29 @@ def test_cifar_stratification():
     _test_dm_stratification(full_val_labels, val_labels_B, drop=drop_B)
 
 
+def test_cifar_test_sample_stratification():
+    drop_A = 0
+    drop_B = 0
+    dmpair = DMPair(drop_percent_A=drop_A, drop_percent_B=drop_B)
+
+    # Sample from test
+    num_image = 20
+    _, test_labels_A, _, test_labels_B = dmpair.sample_from_test_pairs(num_image)
+
+    # Get full labels
+    full_test_labels = [image[1] for image in dmpair.cifar.dataset_test]
+
+    # Use the fact that sampling 20/100 is equiv to dropping 80
+    drop = (
+        testing_constants.DUMMY_CIFAR10_TEST_SIZE - num_image
+    ) / testing_constants.DUMMY_CIFAR10_TEST_SIZE
+
+    # test A
+    _test_dm_stratification(full_test_labels, test_labels_A.tolist(), drop=drop)
+    # test B
+    _test_dm_stratification(full_test_labels, test_labels_B.tolist(), drop=drop)
+
+
 def _test_dm_overlap_split(
     indices_A: list[int],
     indices_B: list[int],
