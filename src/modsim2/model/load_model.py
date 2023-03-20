@@ -28,7 +28,6 @@ def download_model(
     )
     artifact = run.use_artifact(folder + model_name + version, type="model")
     artifact_dir = artifact.download()
-    # run.finish()
 
     # Read in the model
     path = os.path.join(artifact_dir, "model.ckpt")
