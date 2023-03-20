@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 
 import torch
 
@@ -9,14 +8,28 @@ from modsim2.model.resnet import ResnetModel
 
 def download_model(
     experiment_name: str,
-    entity="turing-arc",
-    project_name="ms2",
-    version: Optional[str] = ":latest",  # TODO: argparse in script
-) -> ResnetModel:
-    # Names to use in restoring the model
+    entity: str,
+    project_name: str,
+    id_postfix: str,
+    version: str,
+) -> tuple(ResnetModel, wandb.run):
+    """
+    A function that restores a wandb run and downloads the corresponding model artifact,
+    then loads it as a ResnetModel.
+
+    Args:
+        experiment_name: Name of the experiment (e.g. drop-only_1_0_A)
+        entity: Wandb entity name
+        project_name: Wandb project name
+        id_postfix: Postfix added to experiment_name for the unique ID
+        version: Model version to use. Recommended :latest
+
+    Returns: The ResnetModel and wandb run
+    """
+    # Names to use in resuming the run and downloading the model
     model_name = experiment_name + "_model"
     folder = entity + "/" + project_name + "/"
-    experiment_id = experiment_name + "_test"  # TODO: change this to a config
+    experiment_id = experiment_name + id_postfix
 
     # Download the model
     run = wandb.init(

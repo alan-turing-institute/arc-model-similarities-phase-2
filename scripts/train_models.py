@@ -14,6 +14,7 @@ from modsim2.model.wandb_logger import MS2WandbLogger
 
 
 def train_model(dm: LightningDataModule, experiment_name: str, trainer_config: dict):
+
     model = ResnetModel(**trainer_config["model"])
 
     wandb_logger = MS2WandbLogger(
@@ -23,6 +24,7 @@ def train_model(dm: LightningDataModule, experiment_name: str, trainer_config: d
         mode=trainer_config["wandb"]["mode"],
         log_model=True,
         checkpoint_name=experiment_name + "_model",
+        id=experiment_name + trainer_config["wandb"]["id_postfix"],
     )
 
     trainer = Trainer(
