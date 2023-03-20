@@ -1,35 +1,44 @@
+import argparse
+
 import yaml
 from utils import opts2dmpairArgs
 
-from modsim2.attack import compute_transfer_attack, generate_adversial_images
+from modsim2.attack import compute_transfer_attack, generate_over_combinations
 from modsim2.data.loader import DMPair
 from modsim2.model.load_model import download_model
 
-# TODO: delete this, add argparse to this script, make generation script for calls
-project_path = "/Users/pswatton/Documents/Code/arc-model-similarities-phase-2/"
-dataset_config_path = project_path + "configs/datasets.yaml"
-experiment_group = "drop-only"
-seed_index = 0
-dataset_index = 1
-num_attack_images = 16
-
 
 def main(
-    dataset_config: str,
+    dataset_config: dict,
+    trainer_config: dict,
+    attack_config: dict,
     experiment_group: str,
     dataset_index: int,
     seed_index: int,
-    num_attack_images: int,
 ):
+    # Get attack vars
+    attack_names = attack_config["attack_names"]
+    epsilons = attack_config["epsilons"]
+    num_attack_images = attack_config["num_attack_images"]
 
     # Generate strings
     experiment_pair_name = f"{experiment_group}_{dataset_index}_{seed_index}"
-    model_name_A = experiment_pair_name + "_A_model"
-    model_name_B = experiment_pair_name + "_B_model"
+    run_name_A = experiment_pair_name + "_A"
+    run_name_B = experiment_pair_name + "_B"
 
     # Download and prepare models
-    model_A = download_model(model_name_A)
-    model_B = download_model(model_name_B)
+    model_A, run_A = download_model(
+        run_name_A,
+        entity=trainer_config["wandb"]["entity"],
+        project_name=trainer_config["wandb"]["project"],
+        version=attack_config["model_version"],
+    )
+    model_B, run_B = download_model(
+        run_name_B,
+        entity=trainer_config["wandb"]["entity"],
+        project_name=trainer_config["wandb"]["project"],
+        version=attack_config["model_version"],
+    )
     model_A.eval()
     model_B.eval()
 
@@ -40,52 +49,130 @@ def main(
     )
     dmpair = DMPair(**dmpair_kwargs)
 
-    # Get transfer images
-    images_A, labels_A, _, _ = dmpair.sample_from_test_pairs(num_attack_images)
-    # images_B, labels_B = get_transfer_images(test_dl_B, num_attack_images)
+    # Get base images from test datasets
+    images_A, labels_A, images_B, labels_B = dmpair.sample_from_test_pairs(
+        num_attack_images
+    )
 
-    # Generate attack images
-    # TODO: make this a loop over combos of A and B models/images
-    epsilons = [
-        0.0,
-        0.1,
-        0.3,
-        0.5,
-        1.0,
-    ]
-    model_A_dl_A_attacks = generate_adversial_images(
-        model=model_A,
-        images=images_A,
-        labels=labels_A,
-        num_attack_images=num_attack_images,
-        attack_fn_name="BoundaryAttack",
+    # Generate adversial images
+    # 2 models * 2 distributions * 2 attacks = 8
+    fga_images = generate_over_combinations(
+        model_A=model_A,
+        model_B=model_B,
+        images_A=images_A,
+        labels_A=labels_A,
+        images_B=images_B,
+        labels_B=labels_B,
+        attack_fn_name=attack_names[0],
+        epsilons=epsilons,
+    )
+    boundary_images = generate_over_combinations(
+        model_A=model_A,
+        model_B=model_B,
+        images_A=images_A,
+        labels_A=labels_A,
+        images_B=images_B,
+        labels_B=labels_B,
+        attack_fn_name=attack_names[1],
         epsilons=epsilons,
         steps=500,
     )
 
-    # Transfer the attack, compute metrics based on results
+    # Transfer attack over model*dist combinations, comptue succes
+    # Names: AB_to_B imples attack trained on model A with images from distribution B,
+    # transferred to model B
+    # TODO: make this a loop? or at least less copy/paste-y
     transfer_metrics_AA_to_B = compute_transfer_attack(
         model=model_B,
         images=images_A,
         labels=labels_A,
-        advs_images=model_A_dl_A_attacks,
+        advs_images=[fga_images["model_A_dist_A"], boundary_images["model_A_dist_A"]],
+        attack_names=attack_names,
+    )
+    transfer_metrics_AB_to_B = compute_transfer_attack(
+        model=model_B,
+        images=images_B,
+        labels=labels_B,
+        advs_images=[fga_images["model_A_dist_B"], boundary_images["model_A_dist_B"]],
+        attack_names=attack_names,
+    )
+    transfer_metrics_BA_to_A = compute_transfer_attack(
+        model=model_A,
+        images=images_A,
+        labels=labels_A,
+        advs_images=[fga_images["model_B_dist_A"], boundary_images["model_B_dist_A"]],
+        attack_names=attack_names,
+    )
+    transfer_metrics_BB_to_A = compute_transfer_attack(
+        model=model_A,
+        images=images_B,
+        labels=labels_B,
+        advs_images=[fga_images["model_B_dist_B"], boundary_images["model_B_dist_B"]],
+        attack_names=attack_names,
     )
 
     # Output
-    print(transfer_metrics_AA_to_B)
+    A_to_B_metrics = {
+        "dist_A": transfer_metrics_AA_to_B,
+        "dist_B": transfer_metrics_AB_to_B,
+    }
+    B_to_A_metrics = {
+        "dist_A": transfer_metrics_BA_to_A,
+        "dist_B": transfer_metrics_BB_to_A,
+    }
+    run_A.log({"A_to_B_metrics": A_to_B_metrics}, commit=True)
+    run_B.log({"B_to_A_metrics": B_to_A_metrics}, commit=True)
+
+    # Close once finished
+    run_A.finish()
+    run_B.finish()
+
+    return A_to_B_metrics, B_to_A_metrics
 
 
 if __name__ == "__main__":
-    # TODO: set this up via argparse
+    parser = argparse.ArgumentParser(description="Process some integers.")
+    parser.add_argument(
+        "--dataset_config", type=str, help="path to datasets config file", required=True
+    )
+    parser.add_argument(
+        "--trainer_config", type=str, help="path to trainer config file", required=True
+    )
+    parser.add_argument(
+        "--attack_config", type=str, help="path to attack config file", required=True
+    )
+    parser.add_argument(
+        "--experiment_group",
+        type=str,
+        help="which experiment group to run",
+        required=True,
+    )
+    parser.add_argument(
+        "--dataset_index",
+        type=int,
+        help="index of dataset options within group",
+        required=True,
+    )
+    parser.add_argument(
+        "--seed_index", type=int, help="index of seed within seeds", required=True
+    )
 
-    # with open(args.dataset_config, "r") as stream:
-    with open(dataset_config_path, "r") as stream:
+    args = parser.parse_args()
+
+    with open(args.dataset_config, "r") as stream:
         dataset_config = yaml.safe_load(stream)
+
+    with open(args.trainer_config, "r") as stream:
+        trainer_config = yaml.safe_load(stream)
+
+    with open(args.attack_config, "r") as stream:
+        attack_config = yaml.safe_load(stream)
 
     main(
         dataset_config=dataset_config,
-        experiment_group=experiment_group,
-        dataset_index=dataset_index,
-        seed_index=seed_index,
-        num_attack_images=num_attack_images,
+        trainer_config=trainer_config,
+        attack_config=attack_config,
+        experiment_group=args.experiment_group,
+        dataset_index=args.dataset_index,
+        seed_index=args.seed_index,
     )
