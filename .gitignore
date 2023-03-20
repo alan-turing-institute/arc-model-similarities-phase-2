@@ -147,6 +147,7 @@ artifacts/
 # Generated bash scripts and outputs
 metrics_scripts/
 train_scripts/
+attack_scripts/
 results/
 
 # Slurm outputs

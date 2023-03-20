@@ -1,8 +1,8 @@
 # Scripts
 
-For both calculation of metrics and model training, two scripts exist that generate bash/slurm scripts to be called individually.
+For calculation of metrics, model training, and transfer attacks, scripts exist that generate bash/slurm scripts to be called individually.
 
-For training prerequisites, see [requirements](#requirements)
+For training and attack prerequisites, see [requirements](#requirements)
 
 ## Calculate Metrics
 
@@ -46,16 +46,41 @@ sbatch trainer_scripts/drop-only_0_0_trainer.sh
 
 to train models for that particular DMPair. Note that logging is performed with wandb and so you will need this set up on your machine in order to proceed.
 
-### Requirements
+## Transfer Attacks
 
-The slurm script generated here contains some arguments specific to our HPC, and the template will likely need some modifications to be appropriate to your own usage.
+Call:
+
+```bash
+python scripts/generate_attack_scripts.py --experiment_group "drop-only"
+```
+
+to generate bash scripts in `ROOT/attack_scripts/`. Note additional optional arguments include `--dataset_config_path`, `--trainer_config_path`, and `--attack_config_path` (see below).
+
+Once this is done, you can call each of the individual scripts individually, e.g.
+
+```bash
+attack_scripts/drop-only_0_0_attack.sh
+```
+
+to perform a transfer attack and compute success metrics for that particular DMPair. Note that results will be logged back to wandb.
+
+## Requirements
+
+### Training Requirements
+
+The slurm script generated for model training contains some arguments specific to our HPC, and the template will likely need some modifications to be appropriate to your own usage.
 
 Broadly, the requirements are:
 
 - slurm
 - an existing conda environment (passed to `--conda_env_path`)
+- wandb
 
 Please note in particular that the account name (passed to the generation script via `--account_name`) argument is specific to our HPC and may not be required for your usage.
+
+### Transfer Attack Requirements
+
+For the transfer attack scripts to work, you will need models with the correct names and IDs on your wandb account.
 
 ## Config Files
 
@@ -90,3 +115,14 @@ This should be a YAML file containing the following elements:
 - wandb: arguments to pass directly to wandb
 
 You can see an example in the repository config folder as [trainer.yaml](/configs/trainer.yaml).
+
+### Attack Config File
+
+This should be a YAML file containing the following elements:
+
+- num_attack_images: the number of attack images to generate for each attack
+- attack names: a list of attack names. Note only `L2FastGradientAttack` and `BoundaryAttack` are implemented
+- epsilons: a list of values of epsilon to compute an attack for
+- model_version: wandb model version for downloading a model from wandb
+
+You can see an example in the repository config folder as [attack.yaml](/configs/attack.yaml).
