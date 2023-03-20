@@ -14,10 +14,6 @@ from modsim2.similarity.constants import ARGUMENTS, FUNCTION, METRIC_FN_DICT
 logger = logging.getLogger(__name__)
 
 
-# Test dataset size constant
-CIFAR_TEST_SIZE = 10000
-
-
 class CIFAR10DMSubset(CIFAR10DataModule):
     def __init__(
         self,
@@ -450,11 +446,12 @@ class DMPair:
 
         # Sample images from test stratified by class
         test = dm.dataset_test
-        test_indices = range(CIFAR_TEST_SIZE)
+        test_size = len(test)
+        test_indices = range(test_size)
         test_labels = test.targets
         keep, _ = train_test_split(
             test_indices,
-            test_size=CIFAR_TEST_SIZE - num_images,
+            test_size=test_size - num_images,
             stratify=test_labels,
             random_state=dm.seed,
         )
