@@ -7,7 +7,8 @@ def compute_transfer_attack(
     model: ResnetModel,
     images: torch.tensor,
     labels: list[int],
-    advs_images: torch.tensor,
+    advs_images: list[torch.tensor],
+    attack_names: str,
 ):
     """
     This function takes a model, base images, adversial images, and true labels
@@ -30,29 +31,38 @@ def compute_transfer_attack(
         labels: A list of correct labels corresponding to each image
         advs_images: A torch.tensor of adversial images, which corresponds to the base
                      images
+        attack_names: Output strings for the attack names
 
     Returns: a dictionary of attack success metrics
     """
     # Generate base image and attack image predictions
-    base_softmax = model.forward(images)  # TODO
-    advs_softmax = model.forward(advs_images)  # TODO: 2x
+    base_softmax = model.forward(images)
     base_preds = torch.max(base_softmax, dim=1)[1]
-    advs_preds = torch.max(advs_softmax, dim=1)[1]
+
+    # Values needed to compute attack success metrics
+    base_correct = labels == base_preds
+    base_loss = torch.nn.functional.nll_loss(base_softmax, labels)
+
+    advs_softmax = [model.forward(images) for images in advs_images]
+    advs_preds = [torch.max(softmax, dim=1)[1] for softmax in advs_softmax]
 
     # Compute transfer attack success metrics
     transfer_metrics = {}
 
-    # Success rate
-    base_correct = labels == base_preds
-    advs_correct = (labels == advs_preds)[base_correct]
-    transfer_metrics["success_rate"] = torch.sum(advs_correct) / torch.sum(base_correct)
+    # Loop over attacks, compute metrics for each attack
+    for index, attack_name in enumerate(attack_names):
+        # Dict to store metrics specific to that attack
+        transfer_metrics[attack_name] = {}
 
-    # Mean loss rate
-    base_loss = torch.nn.functional.nll_loss(
-        base_softmax, labels
-    )  # TODO: add convinience method to model
-    advs_loss = torch.nn.functional.nll_loss(advs_softmax, labels)
-    transfer_metrics["mean_loss_increase"] = advs_loss - base_loss
+        # Success rate
+        advs_correct = (labels == advs_preds[index])[base_correct]
+        transfer_metrics[attack_name]["success_rate"] = torch.sum(
+            advs_correct
+        ) / torch.sum(base_correct)
+
+        # Mean loss rate
+        advs_loss = torch.nn.functional.nll_loss(advs_softmax[index], labels)
+        transfer_metrics[attack_name]["mean_loss_increase"] = advs_loss - base_loss
 
     # Return
     return transfer_metrics
