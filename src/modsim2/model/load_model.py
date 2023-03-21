@@ -12,7 +12,7 @@ def download_model(
     project_name: str,
     id_postfix: str,
     version: str,
-) -> tuple(ResnetModel, wandb.run):
+) -> tuple[ResnetModel, wandb.run]:
     """
     A function that restores a wandb run and downloads the corresponding model artifact,
     then loads it as a ResnetModel.
