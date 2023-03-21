@@ -10,3 +10,4 @@ wandb:
   entity: turing-arc
   project: ms2
   mode: online
+  id_postfix: _test_run #this postfix MUST be changed on each run
