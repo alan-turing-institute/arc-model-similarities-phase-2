@@ -83,7 +83,6 @@ def main(
     # Transfer attack over model*dist combinations, comptue succes
     # Names: AB_to_B imples attack trained on model A with images from distribution B,
     # transferred to model B
-    # TODO: make this a loop? or at least less copy/paste-y
     transfer_metrics_AA_to_B = compute_transfer_attack(
         model=model_B,
         images=images_A,
