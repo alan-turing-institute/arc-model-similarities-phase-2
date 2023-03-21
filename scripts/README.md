@@ -2,6 +2,8 @@
 
 For calculation of metrics, model training, and transfer attacks, scripts exist that generate bash/slurm scripts to be called individually.
 
+**Important:** because these scripts use wandb IDs to re-access trained models, the IDs must be unique and cannot be re-used. If needing to re-train models, the IDs *will need to be changed*. In the current setup, this can be done by changing the `id_postfix` in the trainer config (see [configs](#configs) below).
+
 For training and attack prerequisites, see [requirements](#requirements)
 
 ## Calculate Metrics
@@ -82,7 +84,7 @@ Please note in particular that the account name (passed to the generation script
 
 For the transfer attack scripts to work, you will need models with the correct names and IDs on your wandb account.
 
-## Config Files
+## Configs
 
 Three config files need to be setup for the scripts to work. A dataset config file, a metrics config file, and a trainer config file.
 
