@@ -45,7 +45,7 @@ def main(
         for dataset_index in range(NUM_PAIRS)
     ]
     script_names = [
-        scripts_path + "/" + experiment_name + "_attack.sh"
+        os.path.join(scripts_path, experiment_name + "_attack.sh")
         for experiment_name in experiment_names
     ]
 
