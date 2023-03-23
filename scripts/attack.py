@@ -32,14 +32,12 @@ def main(
         entity=trainer_config["wandb"]["entity"],
         project_name=trainer_config["wandb"]["project"],
         version=attack_config["model_version"],
-        id_postfix=trainer_config["wandb"]["id_postfix"],
     )
     model_B, run_B = download_model(
         run_name_B,
         entity=trainer_config["wandb"]["entity"],
         project_name=trainer_config["wandb"]["project"],
         version=attack_config["model_version"],
-        id_postfix=trainer_config["wandb"]["id_postfix"],
     )
     model_A.eval()
     model_B.eval()
@@ -127,8 +125,6 @@ def main(
     # Close once finished
     run_A.finish()
     run_B.finish()
-
-    return A_to_B_metrics, B_to_A_metrics
 
 
 if __name__ == "__main__":

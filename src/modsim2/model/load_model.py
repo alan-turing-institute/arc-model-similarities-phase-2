@@ -4,13 +4,13 @@ import torch
 
 import wandb
 from modsim2.model.resnet import ResnetModel
+from modsim2.model.utils import get_run_from_name
 
 
 def download_model(
     experiment_name: str,
     entity: str,
     project_name: str,
-    id_postfix: str,
     version: str,
 ) -> tuple[ResnetModel, wandb.run]:
     """
@@ -28,18 +28,15 @@ def download_model(
     """
     # Names to use in resuming the run and downloading the model
     model_name = experiment_name + "_model"
-    folder = entity + "/" + project_name + "/"
-    experiment_id = experiment_name + id_postfix
+    folder = os.path.join(entity, project_name)
 
     # Download the model
-    run = wandb.init(
-        project=project_name,
-        entity=entity,
-        name=experiment_name,
-        id=experiment_id,
-        resume=True,
+    run = get_run_from_name(
+        run_name=experiment_name, entity=entity, project_name=project_name
     )
-    artifact = run.use_artifact(folder + model_name + version, type="model")
+    artifact = run.use_artifact(
+        os.path.join(folder, model_name + version), type="model"
+    )
     artifact_dir = artifact.download()
 
     # Read in the model
