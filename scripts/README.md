@@ -72,13 +72,15 @@ python scripts/generate_attack_scripts.py --experiment_group "drop-only"
 
 where `"drop-only"` is an example of an exerperiment group in our dataset config (see below for more information on configs). It will generate bash scripts in `ROOT/attack_scripts/`. Note additional optional arguments include `--dataset_config_path`, `--trainer_config_path`, and `--attack_config_path` (see below).
 
-Once this is done, you can call each of the individual scripts individually, e.g.
+Once this is done, you can call each of the bash scripts individually, e.g.
 
 ```bash
 attack_scripts/drop-only_0_0_attack.sh
 ```
 
-to perform a transfer attack and compute success metrics for that particular DMPair. Note that results will be logged back to wandb.
+to perform transfer attacks for that particular dataset pair, where `drop-only_0_0_trainer` is one of the bash scripts generated for the `drop-only` experiment group, with dataset pair index `0` and seed index `0`.
+
+As stated above, note that a unique run must exist on wandb for the transfer attack to be performed. Results for model A as the surrogate model (i.e. with B as the target model) will be logged to model A on wandb, and vice versa for model B
 
 ## Requirements
 
