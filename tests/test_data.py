@@ -124,7 +124,8 @@ def test_cifar_test_sample_stratification():
     # Get full labels
     full_test_labels = [image[1] for image in dmpair.cifar.dataset_test]
 
-    # Use the fact that sampling 20/100 is equiv to dropping 80
+    # We can reuse _test_dm_stratification because sampling 20% of the data is
+    # equivalent to dropping 20%
     drop = (
         testing_constants.DUMMY_CIFAR10_TEST_SIZE - num_image
     ) / testing_constants.DUMMY_CIFAR10_TEST_SIZE
