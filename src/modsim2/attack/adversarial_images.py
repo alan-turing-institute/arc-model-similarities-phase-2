@@ -4,6 +4,44 @@ import torch
 from modsim2.model.resnet import ResnetModel
 
 
+def select_best_attack(
+    images: list[torch.tensor],
+    success: torch.tensor,
+    epsilons: list[float],
+):
+    """
+    A function to perform best attack selection. The criteria for each images is
+    the first successful attack with the smallest possible value of epsilon. If no
+    image is sucessful, it will select the image with the highest epsilon value.
+    Returns a torch.tensor of adversarial images with
+
+    Args:
+        images: A list of torch.tensors of length num_epsilon. Each tensor contains
+                the adversarial images generated for the corresponding value of
+                epsilon in the list epsilons.
+        success: A torch.tensor of shape num_epsilon x num_images, containing True and
+                 False values denoting whether the corresponding image in images is
+                 successfully adversarial
+        epsilons: A list of values of epsilon used to generate the list of images
+    """
+    # Sort into order from lowest to highest epsilon to allow arbitary input order
+    num_epsilon = len(epsilons)
+    sort_indices = sorted(range(num_epsilon), key=lambda k: epsilons[k])
+    epsilons = [epsilons[index] for index in sort_indices]
+    success = success[sort_indices, :]
+    images = [images[index] for index in sort_indices]
+
+    # Best attack selection loop
+    advs_images = []
+    num_attack_images = len(images[0])
+    for i in range(num_attack_images):
+        for j in range(num_epsilon):
+            if success[j][i] or j == (num_epsilon - 1):
+                advs_images.append(images[j][i])
+                break
+    return torch.stack((advs_images))
+
+
 def generate_adversarial_images(
     model: ResnetModel,
     images: torch.tensor,
@@ -40,17 +78,12 @@ def generate_adversarial_images(
     _, clipped_advs, success = attack(fmodel, images, labels, epsilons=epsilons)
 
     # Apply image selection based on attack choice
-    advs_images = []
-    num_epsilon = len(epsilons)
-    num_attack_images = len(images)
-    for i in range(num_attack_images):
-        for j in range(num_epsilon):
-            if success[j][i] or j == (num_epsilon - 1):
-                advs_images.append(clipped_advs[j][i])
-                break
+    advs_images = select_best_attack(
+        images=clipped_advs, success=success, epsilons=epsilons
+    )
 
     # Return images
-    return torch.stack((advs_images))
+    return advs_images
 
 
 def generate_over_combinations(
@@ -64,8 +97,13 @@ def generate_over_combinations(
     **kwargs,
 ) -> dict[torch.tensor]:
     """
-    This function loops over a 2*2 combination of models (A and B) and image/label
-    pairs (A and B) to produce 4 sets of adversarial images.
+    This function loops over models and images to produce the four sets of adversarial
+    attacks. These combinations are:
+
+    model A, images A
+    model A, images B
+    model B, images A
+    model B, images B
 
     The goal is to train a set of adversarial images on each model, drawing the images
     from the respective distributions of A and B.
@@ -93,17 +131,17 @@ def generate_over_combinations(
     # 4 elements, w/ keys like model_A_dist_A
     # Each element is a torch.tensor containing adversarial images
     adversarial_images_dict = {}
-    for model in [(model_A, "model_A"), (model_B, "model_B")]:
-        for image_set in [
+    for model, model_name in [(model_A, "model_A"), (model_B, "model_B")]:
+        for images, labels, distribution_name in [
             (images_A, labels_A, "dist_A"),
             (images_B, labels_B, "dist_B"),
         ]:
             adversarial_images_dict[
-                f"{model[1]}_{image_set[2]}"
+                f"{model_name}_{distribution_name}"
             ] = generate_adversarial_images(
-                model=model[0],
-                images=image_set[0],
-                labels=image_set[1],
+                model=model,
+                images=images,
+                labels=labels,
                 num_attack_images=num_attack_images,
                 attack_fn_name=attack_fn_name,
                 **kwargs,
