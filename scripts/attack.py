@@ -56,7 +56,7 @@ def main(
         num_attack_images
     )
 
-    # Generate adversial images
+    # Generate adversarial images
     # 2 models * 2 distributions * 2 attacks = 8
     fga_images = generate_over_combinations(
         model_A=model_A,

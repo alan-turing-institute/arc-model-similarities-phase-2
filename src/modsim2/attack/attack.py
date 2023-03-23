@@ -4,7 +4,7 @@ import torch
 from modsim2.model.resnet import ResnetModel
 
 
-def generate_adversial_images(
+def generate_adversarial_images(
     model: ResnetModel,
     images: torch.tensor,
     labels: list[int],
@@ -14,19 +14,19 @@ def generate_adversial_images(
     **kwargs,
 ) -> torch.tensor:
     """
-    Generates adversial images from bias images for either an L2 fast gradient
+    Generates adversarial images from bias images for either an L2 fast gradient
     attack or a boundary attack.
 
     Args:
-        model: Resnet model object to train the adversial images on
-        images: torch.tensor of base images to build the adversial images on
+        model: Resnet model object to train the adversarial images on
+        images: torch.tensor of base images to build the adversarial images on
         labels: correct labels for each of the images
         attack_fn_name: Name of the attack function in foolbox.attacks. Must be
                         L2FastGradientAttack or BoundaryAttack
         epsilons: Pertubation parameter for the attacks
         **kwargs: Additional arguments based to attack setup
 
-    Returns: a torch.tensor containing the adversial images
+    Returns: a torch.tensor containing the adversarial images
     """
     # Check for valid attack choices
     if attack_fn_name not in ["L2FastGradientAttack", "BoundaryAttack"]:
@@ -65,13 +65,13 @@ def generate_over_combinations(
 ) -> dict[torch.tensor]:
     """
     This function loops over a 2*2 combination of models (A and B) and image/label
-    pairs (A and B) to produce 4 sets of adversial images.
+    pairs (A and B) to produce 4 sets of adversarial images.
 
-    The goal is to train a set of adversial images on each model, drawing the images
+    The goal is to train a set of adversarial images on each model, drawing the images
     from the respective distributions of A and B.
 
     The function returns a flat dictionary where each key:element pair is a torch.tensor
-    of the results of generate_adversial_images(). The key names follow a pattern of
+    of the results of generate_adversarial_images(). The key names follow a pattern of
     model_A_dist_A for model A and images from the distribution of A.
 
     Args:
@@ -89,18 +89,18 @@ def generate_over_combinations(
     # Get num of images
     num_attack_images = len(images_A)
 
-    # Make dict of adversial images
+    # Make dict of adversarial images
     # 4 elements, w/ keys like model_A_dist_A
-    # Each element is a torch.tensor containing adversial images
-    adversial_images_dict = {}
+    # Each element is a torch.tensor containing adversarial images
+    adversarial_images_dict = {}
     for model in [(model_A, "model_A"), (model_B, "model_B")]:
         for image_set in [
             (images_A, labels_A, "dist_A"),
             (images_B, labels_B, "dist_B"),
         ]:
-            adversial_images_dict[
+            adversarial_images_dict[
                 f"{model[1]}_{image_set[2]}"
-            ] = generate_adversial_images(
+            ] = generate_adversarial_images(
                 model=model[0],
                 images=image_set[0],
                 labels=image_set[1],
@@ -110,4 +110,4 @@ def generate_over_combinations(
             )
 
     # Return
-    return adversial_images_dict
+    return adversarial_images_dict

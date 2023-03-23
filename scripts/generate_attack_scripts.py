@@ -23,9 +23,9 @@ def main(
     combinations = [
         f"--dataset_config {dataset_config_path} "
         + f"--trainer_config {trainer_config_path} "
-        + f"--attack_config {attack_config_path}"
+        + f"--attack_config {attack_config_path} "
         + f"--experiment_group {experiment_group} "
-        + f"--dataset_index {dataset_index}"
+        + f"--dataset_index {dataset_index} "
         + f"--seed_index {seed_index} "
         for seed_index in range(NUM_SEEDS)
         for dataset_index in range(NUM_PAIRS)
