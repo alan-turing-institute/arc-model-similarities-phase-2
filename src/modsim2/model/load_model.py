@@ -31,8 +31,15 @@ def download_model(
     folder = os.path.join(entity, project_name)
 
     # Download the model
-    run = get_run_from_name(
+    run_info = get_run_from_name(
         run_name=experiment_name, entity=entity, project_name=project_name
+    )
+    run = wandb.init(
+        project=project_name,
+        entity=entity,
+        name=experiment_name,
+        id=run_info.id,
+        resume=True,
     )
     artifact = run.use_artifact(
         os.path.join(folder, model_name + version), type="model"
