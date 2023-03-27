@@ -1,6 +1,7 @@
 from typing import Callable
 
 import torch
+from pytorch_lightning import Trainer
 
 from modsim2.model.resnet import ResnetModel
 
@@ -54,7 +55,7 @@ def compute_transfer_attack(
     advs_images: list[torch.tensor],
     attack_names: str,
     loss_function: Callable = torch.nn.functional.nll_loss,
-):
+) -> dict[dict[float]]:
     """
     This function takes a model, base images, adversial images, and true labels
     as inputs, and attacks the model. Where the images were generated on a
@@ -82,7 +83,12 @@ def compute_transfer_attack(
     Returns: a dictionary of attack success metrics
     """
     # Generate base image and attack image softmax and predictions
-    base_softmax = model.forward(images)
+    # 128
+    images_dl = torch.utils.data.DataLoader(
+        images, batch_size=8, shuffle=False, sampler=None
+    )
+    trainer = Trainer()
+    base_softmax = torch.cat(trainer.predict(model, images_dl))
     base_preds = torch.max(base_softmax, dim=1)[1]
 
     # These are recycled for each attack, worth computing now
@@ -90,7 +96,11 @@ def compute_transfer_attack(
     base_loss = loss_function(base_softmax, labels)
 
     # Generate adversarial softmax and predictions
-    advs_softmax = [model.forward(images) for images in advs_images]
+    advs_dl = [
+        torch.utils.data.DataLoader(images, batch_size=128, shuffle=False, sampler=None)
+        for images in advs_images
+    ]
+    advs_softmax = [torch.cat(trainer.predict(model, dl)) for dl in advs_dl]
     advs_preds = [torch.max(softmax, dim=1)[1] for softmax in advs_softmax]
 
     # Compute transfer attack success metrics
