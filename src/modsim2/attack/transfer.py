@@ -42,6 +42,7 @@ def compute_mean_loss_rate(
         base_correct: List denoting which base images the network correctly
                       predicts
         advs_preds: List of predictions for the adversial images
+        loss_function: Loss function to use in computing mean_loss_rate
     """
     advs_loss = loss_function(advs_softmax, labels)
     mean_loss_rate = advs_loss - base_loss
@@ -54,6 +55,7 @@ def compute_transfer_attack(
     labels: torch.tensor,
     advs_images: list[torch.tensor],
     attack_names: str,
+    batch_size: int,
     loss_function: Callable = torch.nn.functional.nll_loss,
 ) -> dict[dict[float]]:
     """
@@ -78,6 +80,7 @@ def compute_transfer_attack(
         advs_images: A torch.tensor of adversial images, which corresponds to the base
                      images
         attack_names: Output strings for the attack names
+        batch_size: Batch size for the dataloader used in predicting outputs
         loss_function: Loss function to use in computing mean_loss_rate
 
     Returns: a dictionary of attack success metrics
@@ -85,7 +88,7 @@ def compute_transfer_attack(
     # Generate base image and attack image softmax and predictions
     # 128
     images_dl = torch.utils.data.DataLoader(
-        images, batch_size=8, shuffle=False, sampler=None
+        images, batch_size=batch_size, shuffle=False, sampler=None
     )
     trainer = Trainer()
     base_softmax = torch.cat(trainer.predict(model, images_dl))
@@ -97,7 +100,9 @@ def compute_transfer_attack(
 
     # Generate adversarial softmax and predictions
     advs_dl = [
-        torch.utils.data.DataLoader(images, batch_size=128, shuffle=False, sampler=None)
+        torch.utils.data.DataLoader(
+            images, batch_size=batch_size, shuffle=False, sampler=None
+        )
         for images in advs_images
     ]
     advs_softmax = [torch.cat(trainer.predict(model, dl)) for dl in advs_dl]

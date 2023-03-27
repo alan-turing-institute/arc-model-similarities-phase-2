@@ -87,6 +87,7 @@ def main(
         labels=labels_A,
         advs_images=[fga_images["model_A_dist_A"], boundary_images["model_A_dist_A"]],
         attack_names=attack_names,
+        batch_size=attack_config["batch_size"],
     )
     transfer_metrics_AB_to_B = compute_transfer_attack(
         model=model_B,
@@ -94,6 +95,7 @@ def main(
         labels=labels_B,
         advs_images=[fga_images["model_A_dist_B"], boundary_images["model_A_dist_B"]],
         attack_names=attack_names,
+        batch_size=attack_config["batch_size"],
     )
     transfer_metrics_BA_to_A = compute_transfer_attack(
         model=model_A,
@@ -101,6 +103,7 @@ def main(
         labels=labels_A,
         advs_images=[fga_images["model_B_dist_A"], boundary_images["model_B_dist_A"]],
         attack_names=attack_names,
+        batch_size=attack_config["batch_size"],
     )
     transfer_metrics_BB_to_A = compute_transfer_attack(
         model=model_A,
@@ -108,6 +111,7 @@ def main(
         labels=labels_B,
         advs_images=[fga_images["model_B_dist_B"], boundary_images["model_B_dist_B"]],
         attack_names=attack_names,
+        batch_size=attack_config["batch_size"],
     )
 
     # Output
