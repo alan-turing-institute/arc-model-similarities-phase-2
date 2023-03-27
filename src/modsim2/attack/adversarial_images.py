@@ -1,5 +1,6 @@
 import foolbox as fb
 import torch
+from tqdm import tqdm
 
 from modsim2.model.resnet import ResnetModel
 
@@ -131,11 +132,13 @@ def generate_over_combinations(
     # 4 elements, w/ keys like model_A_dist_A
     # Each element is a torch.tensor containing adversarial images
     adversarial_images_dict = {}
-    for model, model_name in [(model_A, "model_A"), (model_B, "model_B")]:
-        for images, labels, distribution_name in [
-            (images_A, labels_A, "dist_A"),
-            (images_B, labels_B, "dist_B"),
-        ]:
+    for model, model_name in tqdm([(model_A, "model_A"), (model_B, "model_B")]):
+        for images, labels, distribution_name in tqdm(
+            [
+                (images_A, labels_A, "dist_A"),
+                (images_B, labels_B, "dist_B"),
+            ]
+        ):
             adversarial_images_dict[
                 f"{model_name}_{distribution_name}"
             ] = generate_adversarial_images(
