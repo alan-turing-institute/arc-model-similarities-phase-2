@@ -1,3 +1,5 @@
+import functools
+
 import torch
 
 from modsim2.attack.adversarial_images import select_best_attack
@@ -26,4 +28,5 @@ def test_best_attack_selection():
     # second image in the list (as this corresponds to the lowest epsilon 0.3
     # that is still success)
     best_images = select_best_attack(images=images, success=success, epsilons=epsilons)
-    assert torch.all(images[1] == best_images).item()
+    assert_equal = functools.partial(torch.testing.assert_close, rtol=0, atol=0)
+    assert_equal(images[1], best_images)
