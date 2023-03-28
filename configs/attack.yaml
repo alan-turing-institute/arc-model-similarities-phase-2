@@ -1,0 +1,5 @@
+num_attack_images: 1000
+attack_names: ["L2FastGradientAttack","BoundaryAttack"]
+epsilons: [0.0, 0.1, 0.3, 0.5, 1.0]
+model_version: ":latest"
+batch_size: 128

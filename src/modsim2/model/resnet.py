@@ -82,6 +82,11 @@ class ResnetModel(pl.LightningModule):
         self.log("val_loss", loss, on_epoch=True, prog_bar=True, logger=True)
         self.log("val_acc", acc, on_epoch=True, prog_bar=True, logger=True)
 
+    def predict_step(self, batch, batch_idx):
+        softmax = torch.nn.Softmax(dim=1)
+        logits = self.model(batch)
+        return softmax(logits)
+
     def on_train_epoch_end(self):
         self.log(
             "lr",

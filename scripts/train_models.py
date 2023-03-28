@@ -10,10 +10,21 @@ from utils import opts2dmpairArgs
 import wandb
 from modsim2.data.loader import DMPair
 from modsim2.model.resnet import ResnetModel
+from modsim2.model.utils import run_exists
 from modsim2.model.wandb_logger import MS2WandbLogger
 
 
 def train_model(dm: LightningDataModule, experiment_name: str, trainer_config: dict):
+
+    if run_exists(
+        run_name=experiment_name,
+        entity=trainer_config["wandb"]["entity"],
+        project_name=trainer_config["wandb"]["project"],
+    ):
+        raise Exception(
+            "A run with this name already exists on wandb. Please rename or delete it."
+        )
+
     model = ResnetModel(**trainer_config["model"])
 
     wandb_logger = MS2WandbLogger(

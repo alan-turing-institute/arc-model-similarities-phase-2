@@ -433,3 +433,39 @@ class DMPair:
     def get_B_labels(self) -> Tuple[List, List]:
         """returns train and val labels for A"""
         return self._get_subset_labels(self.B)
+
+    @staticmethod
+    def _sample_from_test(
+        dm: CIFAR10DMSubset, num_images: int = 16
+    ) -> tuple[torch.tensor, torch.tensor]:
+
+        # Check if dataset_test exists. If not, call .setup()
+        if not hasattr(dm, "dataset_test"):
+            logging.info("Loading test dataset")
+            dm.setup("test")
+
+        # Sample images from test stratified by class
+        test = dm.dataset_test
+        test_size = len(test)
+        test_indices = range(test_size)
+        test_labels = test.targets
+        keep, _ = train_test_split(
+            test_indices,
+            test_size=test_size - num_images,
+            stratify=test_labels,
+            random_state=dm.seed,
+        )
+
+        # Extract images and labels
+        images = torch.stack([test[index][0] for index in keep])  # force __getitem___
+        labels = torch.tensor([test_labels[index] for index in keep])
+        return images, labels
+
+    def sample_from_test_pairs(
+        self,
+        num_images: int,
+    ) -> tuple[torch.tensor, torch.tensor, torch.tensor, torch.tensor]:
+        """returns images and labels from test datasets for transfer attacks"""
+        images_A, labels_A = self._sample_from_test(self.A, num_images)
+        images_B, labels_B = self._sample_from_test(self.B, num_images)
+        return images_A, labels_A, images_B, labels_B
