@@ -8,6 +8,17 @@ def _get_runs(
     entity: str,
     project_name: str,
 ) -> wandb.Api.runs:
+    """
+    A private function to extract all wandb runs for a given run_name
+
+    Args:
+        run_name: The run name to get runs for
+        entity: The wandb entity name
+        project_name: The wandb project name
+
+    Returns:
+        wandb.Api.runs: _description_
+    """
     api = wandb.Api()
     path = os.path.join(entity, project_name)
     runs = api.runs(path=path, filters={"display_name": run_name})
@@ -24,7 +35,9 @@ def run_exists(
     on wandb. Returns True or False
 
     Args:
-        run_name: the name of the run to check for existence
+        run_name: The name of the run to check for existence
+        entity: The wandb entity name
+        project_name: The wandb project name
     """
     runs = _get_runs(run_name=run_name, entity=entity, project_name=project_name)
     return len(runs) > 0
@@ -38,12 +51,12 @@ def get_run_from_name(
     """
     A convinience function for return a wandb run based on its name. Exceptions in
     the function mean that the run name must be unique. Returns the corresponding
-    wandb run if its name is unique
+    wandb run if its name is unique.
 
     Args:
-        run_name (str): _description_
-        entity (str): _description_
-        project_name (str): _description_
+        run_name: The name of the run to return
+        entity: The wandb entity name
+        project_name: The wandb project name
     """
     runs = _get_runs(run_name=run_name, entity=entity, project_name=project_name)
 
