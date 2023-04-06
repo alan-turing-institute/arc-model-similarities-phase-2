@@ -225,11 +225,9 @@ def _setup_transforms_test(
 
     output_A = torch.rand((3, 2, 2))
     output_B = torch.rand((3, 2, 2))
-    test_output = torch.rand((3, 2, 2))
 
     transforms_A_mock = MagicMock(return_value=output_A)
     transforms_B_mock = MagicMock(return_value=output_B)
-    test_transforms_mock = MagicMock(return_value=test_output)
 
     dmpair = DMPair(
         drop_percent_A=drop_A,
@@ -237,13 +235,12 @@ def _setup_transforms_test(
         val_split=val_split,
         transforms_A=transforms_A_mock,
         transforms_B=transforms_B_mock,
-        transforms_test=test_transforms_mock,
         batch_size=batch_size,
         drop_last=True,
     )
     dmpair.A.setup()
     dmpair.B.setup()
-    return dmpair, transforms_A_mock, transforms_B_mock, test_transforms_mock
+    return dmpair, transforms_A_mock, transforms_B_mock
 
 
 def _test_dl_transforms(
@@ -271,7 +268,6 @@ def test_transforms():
         dmpair,
         transforms_A_mock,
         transforms_B_mock,
-        test_transforms_mock,
     ) = _setup_transforms_test(batch_size=batch_size)
 
     # load orig raw data - for checking transforms called with orig data
@@ -312,14 +308,14 @@ def test_transforms():
 
     # test A
     _test_dl_transforms(
-        transforms_mock=test_transforms_mock,
+        transforms_mock=transforms_A_mock,
         batch_size=batch_size,
         dl=dmpair.A.test_dataloader(),
         raw_orig_data=reshaped_raw_test,
     )
     # test B
     _test_dl_transforms(
-        transforms_mock=test_transforms_mock,
+        transforms_mock=transforms_B_mock,
         batch_size=batch_size,
         dl=dmpair.B.test_dataloader(),
         raw_orig_data=reshaped_raw_test,
