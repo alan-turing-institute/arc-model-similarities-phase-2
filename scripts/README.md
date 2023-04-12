@@ -83,7 +83,7 @@ where once again `drop-only` is an example of an exerperiment group in our datas
 Alternatively, you can call each of the scripts individually, e.g.
 
 ```bash
-attack_scripts/drop-only_0_0_attack.sh
+sbatch attack_scripts/drop-only_0_0_attack.sh
 ```
 
 to perform transfer attacks for that particular dataset pair, where `drop-only_0_0_trainer` is one of the bash scripts generated for the `drop-only` experiment group, with dataset pair index `0` and seed index `0`.
