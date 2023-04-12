@@ -68,7 +68,6 @@ def main(
             conda_env_path=conda_env_path,
             python_call=python_call,
         )
-        python_call = f"python scripts/train_models.py {combo}"
         with open(script_names[index], "w") as f:
             f.write(script_content)
 
