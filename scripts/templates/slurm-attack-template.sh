@@ -5,7 +5,7 @@
 #SBATCH --nodes 1
 #SBATCH --gpus 1
 #SBATCH --cpus-per-gpu 36
-#SBATCH --job-name ms2-{{experiment_name}}-transfer
+#SBATCH --job-name ms2-{{experiment_name}}-attack
 #SBATCH --output ./slurm_logs/%j.out
 
 module purge
