@@ -14,11 +14,3 @@ B: # used for both train and val
   kwargs:
     mean: [0.3, 0.4 ,0.5] # init kwarg mean with values (different to A)
     std: [0.1, 0.2, 0.3] # init kwarg std with values
-
-test:
-  - name: ToTensor # class name, no kwargs specified
-
-  - name: Normalize # class name
-    kwargs:
-      mean: [0.2, 0.3 ,0.4] # init kwarg mean with values
-      std: [0.1, 0.2, 0.3] # init kwarg std with values
