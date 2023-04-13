@@ -248,7 +248,6 @@ class DMPair:
         drop_percent_B: Union[int, float] = 0,
         transforms_A: Optional[Callable] = None,
         transforms_B: Optional[Callable] = None,
-        transforms_test: Optional[Callable] = None,
         data_dir: Optional[str] = None,
         val_split: Union[int, float] = 0.2,
         num_workers: int = 0,
@@ -327,7 +326,7 @@ class DMPair:
             drop_last=drop_last,
             train_transforms=transforms_A,
             val_transforms=transforms_A,
-            test_transforms=transforms_test,
+            test_transforms=transforms_A,
             *args,
             **kwargs,
         )
@@ -345,7 +344,7 @@ class DMPair:
             drop_last=drop_last,
             train_transforms=transforms_B,
             val_transforms=transforms_B,
-            test_transforms=transforms_test,
+            test_transforms=transforms_B,
             *args,
             **kwargs,
         )
