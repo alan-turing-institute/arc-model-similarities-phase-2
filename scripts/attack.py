@@ -21,6 +21,10 @@ def main(
     epsilons = attack_config["epsilons"]
     num_attack_images = attack_config["num_attack_images"]
 
+    # Get trainer vars
+    devices = trainer_config["trainer_kwargs"]["devices"]
+    accelerator = trainer_config["trainer_kwargs"]["accelerator"]
+
     # Generate strings
     experiment_pair_name = f"{experiment_group}_{dataset_index}_{seed_index}"
     run_name_A = experiment_pair_name + "_A"
@@ -88,6 +92,8 @@ def main(
         advs_images=[fga_images["model_A_dist_A"], boundary_images["model_A_dist_A"]],
         attack_names=attack_names,
         batch_size=attack_config["batch_size"],
+        devices=devices,
+        accelerator=accelerator,
     )
     transfer_metrics_AB_to_B = compute_transfer_attack(
         model=model_B,
@@ -96,6 +102,8 @@ def main(
         advs_images=[fga_images["model_A_dist_B"], boundary_images["model_A_dist_B"]],
         attack_names=attack_names,
         batch_size=attack_config["batch_size"],
+        devices=devices,
+        accelerator=accelerator,
     )
     transfer_metrics_BA_to_A = compute_transfer_attack(
         model=model_A,
@@ -104,6 +112,8 @@ def main(
         advs_images=[fga_images["model_B_dist_A"], boundary_images["model_B_dist_A"]],
         attack_names=attack_names,
         batch_size=attack_config["batch_size"],
+        devices=devices,
+        accelerator=accelerator,
     )
     transfer_metrics_BB_to_A = compute_transfer_attack(
         model=model_A,
@@ -112,6 +122,8 @@ def main(
         advs_images=[fga_images["model_B_dist_B"], boundary_images["model_B_dist_B"]],
         attack_names=attack_names,
         batch_size=attack_config["batch_size"],
+        devices=devices,
+        accelerator=accelerator,
     )
 
     # Output
