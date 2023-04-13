@@ -1,8 +1,8 @@
 import os
 
 import torch
-
 import wandb
+
 from modsim2.model.resnet import ResnetModel
 from modsim2.model.utils import get_run_from_name
 

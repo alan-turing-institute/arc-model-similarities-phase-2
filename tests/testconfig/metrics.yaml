@@ -8,3 +8,4 @@ mmd_laplace:
   arguments:
     embedding_name: matrix
     kernel_name: laplace
+# To do: add in configs for OT
