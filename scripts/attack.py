@@ -69,6 +69,7 @@ def main(
         labels_B=labels_B,
         attack_fn_name=attack_names[0],
         epsilons=epsilons,
+        device=accelerator,
     )
     boundary_images = generate_over_combinations(
         model_A=model_A,
@@ -79,6 +80,7 @@ def main(
         labels_B=labels_B,
         attack_fn_name=attack_names[1],
         epsilons=epsilons,
+        device=accelerator,
         steps=500,
     )
 

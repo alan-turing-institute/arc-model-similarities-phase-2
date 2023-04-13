@@ -3,6 +3,7 @@ import torch
 from tqdm import tqdm
 
 from modsim2.model.resnet import ResnetModel
+from modsim2.utils.accelerator import choose_auto_accelerator
 
 
 def select_best_attack(
@@ -46,10 +47,10 @@ def select_best_attack(
 def generate_adversarial_images(
     model: ResnetModel,
     images: torch.tensor,
-    labels: list[int],
-    num_attack_images: int,
+    labels: torch.tensor,
     attack_fn_name: str,
     epsilons: list[float],
+    device: str,
     **kwargs,
 ) -> torch.tensor:
     """
@@ -63,6 +64,7 @@ def generate_adversarial_images(
         attack_fn_name: Name of the attack function in foolbox.attacks. Must be
                         L2FastGradientAttack or BoundaryAttack
         epsilons: Pertubation parameter for the attacks
+        device: String passed to fb.PyTorchModel for computation
         **kwargs: Additional arguments based to attack setup
 
     Returns: a torch.tensor containing the adversarial images
@@ -71,8 +73,21 @@ def generate_adversarial_images(
     if attack_fn_name not in ["L2FastGradientAttack", "BoundaryAttack"]:
         raise NotImplementedError("This attack has not been implemented")
 
+    # If needed, auto select pytorch device/accelerator
+    if device == "auto":
+        device = choose_auto_accelerator()
+    # Depenency chain leads to float64 being created which is incompatible with MPS
+    if device == "mps" and attack_fn_name == "BoundaryAttack":
+        device = "cpu"
+
+    # Make sure images are on correct device
+    if str(images.device) != device:
+        images = images.to(device=device)
+    if str(labels.device) != device:
+        labels = labels.to(device=device)
+
     # Put model into foolbox format
-    fmodel = fb.PyTorchModel(model, bounds=(0, 1))
+    fmodel = fb.PyTorchModel(model, bounds=(0, 1), device=device)
 
     # Generate attack images
     attack = getattr(fb.attacks, attack_fn_name)(**kwargs)
@@ -125,9 +140,6 @@ def generate_over_combinations(
 
     Returns: A dictionary of 4 sets of adverisal images
     """
-    # Get num of images
-    num_attack_images = len(images_A)
-
     # Make dict of adversarial images
     # 4 elements, w/ keys like model_A_dist_A
     # Each element is a torch.tensor containing adversarial images
@@ -145,7 +157,6 @@ def generate_over_combinations(
                 model=model,
                 images=images,
                 labels=labels,
-                num_attack_images=num_attack_images,
                 attack_fn_name=attack_fn_name,
                 **kwargs,
             )
