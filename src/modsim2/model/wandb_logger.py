@@ -5,6 +5,7 @@
 from pathlib import Path
 from typing import Any, Optional, Union
 
+import wandb
 from lightning_lite.utilities.types import _PATH
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers.wandb import _WANDB_GREATER_EQUAL_0_10_22, WandbLogger
@@ -12,8 +13,6 @@ from pytorch_lightning.utilities.logger import _scan_checkpoints
 from torch import Tensor
 from wandb.sdk.lib import RunDisabled
 from wandb.wandb_run import Run
-
-import wandb
 
 
 class MS2WandbLogger(WandbLogger):

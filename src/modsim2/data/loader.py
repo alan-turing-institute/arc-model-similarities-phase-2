@@ -41,7 +41,7 @@ class CIFAR10DMSubset(CIFAR10DataModule):
         Args:
             dataset_train: Dataset or Subset class object to replace
                            original dataset_train with
-            dataset_train: Dataset or Subset class object to replace
+            dataset_val: Dataset or Subset class object to replace
                            original dataset_val with
             data_dir: Where to save/load the data
             val_split: Percent (float) or number (int) of samples to use
@@ -184,7 +184,6 @@ def split_indices(
 
     # If needing to drop observations
     if sum_drop_percentage > 0:
-
         # Numbers to be used
         num_obs = len(indices)
         num_drop_A = round(num_obs * drop_percent_A)
@@ -194,7 +193,6 @@ def split_indices(
 
         # If there will be shared observations between A and B
         if sum_drop_percentage < 1:
-
             # Split (drop_A + drop_B)% of the training data
             shared_AB_indices, drop_indices = train_test_split(
                 shared_AB_indices,
@@ -214,7 +212,6 @@ def split_indices(
 
             # If dropping from both
             if (drop_percent_A > 0) and (drop_percent_B > 0):
-
                 # Split the unselected component into parts to keep/drop in A vs B
                 # since B is test, test amount is proportion of unselected that is B
                 indices_kept_A_dropped_B, indices_kept_B_dropped_A = train_test_split(
@@ -260,7 +257,6 @@ class DMPair:
         *args: Any,
         **kwargs: Any,
     ) -> None:
-
         """
         A class to generate and manage two paired datamodules, including
         specifying non-overlapping portions of the original dataset to be dropped.
@@ -437,7 +433,6 @@ class DMPair:
     def _sample_from_test(
         dm: CIFAR10DMSubset, num_images: int = 16
     ) -> tuple[torch.tensor, torch.tensor]:
-
         # Check if dataset_test exists. If not, call .setup()
         if not hasattr(dm, "dataset_test"):
             logging.info("Loading test dataset")

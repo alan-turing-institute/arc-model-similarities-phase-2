@@ -9,3 +9,4 @@ mmd_laplace:
   arguments:
     embedding_name: matrix
     kernel_name: laplace
+# To do: Add in configs for OT metric
