@@ -57,7 +57,7 @@ def compute_transfer_attack(
     attack_names: str,
     batch_size: int,
     loss_function: Callable = torch.nn.functional.nll_loss,
-    **kwargs,
+    **trainer_kwargs,
 ) -> dict[dict[float]]:
     """
     This function takes a model, base images, adversial images, and true labels
@@ -83,7 +83,7 @@ def compute_transfer_attack(
         attack_names: Output strings for the attack names
         batch_size: Batch size for the dataloader used in predicting outputs
         loss_function: Loss function to use in computing mean_loss_rate
-        **kwargs: Keyword arguments passed to pytorch_lightning.Trainer()
+        **trainer_kwargs: Keyword arguments passed to pytorch_lightning.Trainer()
 
     Returns: a dictionary of attack success metrics
     """
@@ -92,7 +92,7 @@ def compute_transfer_attack(
     images_dl = torch.utils.data.DataLoader(
         images, batch_size=batch_size, shuffle=False, sampler=None
     )
-    trainer = Trainer(**kwargs)
+    trainer = Trainer(**trainer_kwargs)
     base_softmax = torch.cat(trainer.predict(model, images_dl))
     base_preds = torch.max(base_softmax, dim=1)[1]
 
