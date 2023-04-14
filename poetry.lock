@@ -1319,7 +1319,7 @@ tqdm = "*"
 [package.source]
 type = "git"
 url = "https://github.com/alan-turing-institute/arc-otdd.git"
-reference = "HEAD"
+reference = "v1.0.0"
 resolved_reference = "72f1b22d6c688e15db416194c9fe42262d927303"
 
 [[package]]
@@ -2516,4 +2516,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "70f1c4d60b6202f1b523917e1fa025425c6bcfdb8301fa5308b23159d9aa66f7"
+content-hash = "8b9d84e0d74018a324d13d68856f92118e4167febca10c0a75ec9829a475b4c6"
