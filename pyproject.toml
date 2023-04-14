@@ -21,6 +21,7 @@ foolbox = "^3.3.3"
 tqdm = "^4.65.0"
 numpy = "~1.23.5"
 matplotlib = "^3.7.1"
+otdd = {git = "https://github.com/alan-turing-institute/arc-otdd.git"}
 
 [build-system]
 requires = ["poetry-core"]
