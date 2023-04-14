@@ -18,7 +18,8 @@ def main(
 ):
     # Get attack vars
     attack_names = attack_config["attack_names"]
-    epsilons = attack_config["epsilons"]
+    fga_epsilons = attack_config["fga_epsilons"]
+    ba_epsilons = attack_config["ba_epsilons"]
     num_attack_images = attack_config["num_attack_images"]
 
     # Get trainer vars
@@ -68,7 +69,7 @@ def main(
         images_B=images_B,
         labels_B=labels_B,
         attack_fn_name=attack_names[0],
-        epsilons=epsilons,
+        epsilons=fga_epsilons,
         device=accelerator,
     )
     boundary_images = generate_over_combinations(
@@ -79,7 +80,7 @@ def main(
         images_B=images_B,
         labels_B=labels_B,
         attack_fn_name=attack_names[1],
-        epsilons=epsilons,
+        epsilons=ba_epsilons,
         device=accelerator,
         steps=500,
     )
