@@ -76,7 +76,7 @@ def generate_adversarial_images(
     # If needed, auto select pytorch device/accelerator
     if device == "auto":
         device = choose_auto_accelerator()
-    # Depenency chain leads to float64 being created which is incompatible with MPS
+    # Issue #44: Depenency chain leads to float64 error on MPS
     if device == "mps" and attack_fn_name == "BoundaryAttack":
         device = "cpu"
 
