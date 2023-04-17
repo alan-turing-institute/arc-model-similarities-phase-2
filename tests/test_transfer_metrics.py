@@ -41,7 +41,7 @@ def test_mean_loss_rate():
         == 0
     )
 
-    advs_softmax_different = base_softmax = torch.tensor([[0.5, 0.5], [0.5, 0.5]])
+    advs_softmax_different = torch.tensor([[0.5, 0.5], [0.5, 0.5]])
     assert (
         compute_mean_loss_rate(
             labels=labels,

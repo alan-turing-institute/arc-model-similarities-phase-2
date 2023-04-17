@@ -3,6 +3,7 @@ import os
 
 import constants
 import yaml
+from jinja2 import Environment, FileSystemLoader
 
 
 def main(
@@ -10,6 +11,8 @@ def main(
     dataset_config_path,
     trainer_config_path,
     attack_config_path,
+    account_name,
+    conda_env_path,
 ):
     # Dataset config
     with open(dataset_config_path, "r") as stream:
@@ -49,11 +52,26 @@ def main(
         for experiment_name in experiment_names
     ]
 
+    # Jinja env
+    template_path = os.path.join(
+        constants.PROJECT_ROOT,
+        "scripts",
+        "templates",
+    )
+    environment = Environment(loader=FileSystemLoader(template_path))
+    template = environment.get_template("slurm-attack-template.sh")
+
     # For each combination, write bash script with params
     for index, combo in enumerate(combinations):
         python_call = f"python scripts/attack.py {combo}"
+        script_content = template.render(
+            account_name=account_name,
+            experiment_name=experiment_names[index],
+            conda_env_path=conda_env_path,
+            python_call=python_call,
+        )
         with open(script_names[index], "w") as f:
-            f.write(python_call)
+            f.write(script_content)
 
 
 if __name__ == "__main__":
@@ -84,10 +102,21 @@ if __name__ == "__main__":
         help="path to attack config file",
         default=constants.ATTACK_CONFIG_PATH,
     )
+    parser.add_argument(
+        "--account_name", type=str, help="", default="vjgo8416-mod-sim-2"
+    )
+    parser.add_argument(
+        "--conda_env_path",
+        type=str,
+        help="path to conda env",
+        default="/bask/projects/v/vjgo8416-mod-sim-2/ms2env",
+    )
     args = parser.parse_args()
     main(
         experiment_group=args.experiment_group,
         dataset_config_path=args.dataset_config_path,
         trainer_config_path=args.trainer_config_path,
         attack_config_path=args.attack_config_path,
+        account_name=args.account_name,
+        conda_env_path=args.conda_env_path,
     )
