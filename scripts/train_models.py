@@ -25,7 +25,7 @@ def train_model(dm: LightningDataModule, experiment_name: str, trainer_config: d
             "A run with this name already exists on wandb. Please rename or delete it."
         )
 
-    model = ResnetModel(**trainer_config["model"])
+    model = ResnetModel(**trainer_config["model"], train_size=len(dm.dataset_train))
 
     wandb_logger = MS2WandbLogger(
         entity=trainer_config["wandb"]["entity"],
