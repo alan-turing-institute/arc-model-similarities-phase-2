@@ -361,23 +361,43 @@ class DMPair:
             cifar=self.cifar,
         )
 
-    def compute_similarity(self, only_train: bool = False):
+    def compute_similarity(
+        self, only_train: bool = False, return_dataset: bool = False
+    ):
         """
         compute similarity between data of A and B
         only_train removes the validation data from this comparison
         """
-
-        # coerce data into single tensor (not subset)
-        # TODO issue-15 want to get data post-transform
-        train_data_A, val_data_A = self.get_A_data()
-        train_data_B, val_data_B = self.get_B_data()
+        if not return_dataset:
+            # coerce data into single tensor (not subset)
+            # TODO issue-15 want to get data post-transform
+            train_data_A, val_data_A = self.get_A_data()
+            train_data_B, val_data_B = self.get_B_data()
+        else:
+            train_data_A, val_data_A = self.A.dataset_train, self.A.dataset_val
+            train_data_B, val_data_B = self.B.dataset_train, self.B.dataset_val
 
         if not only_train:
-            data_A = np.concatenate((train_data_A, val_data_A), axis=0)
-            data_B = np.concatenate((train_data_B, val_data_B), axis=0)
+            if return_dataset:
+                raise NotImplementedError(
+                    "Can't yet compute similarity when only_train = False and "
+                    "return_dataset = True"
+                )
+            else:
+                data_A = np.concatenate((train_data_A, val_data_A), axis=0)
+                data_B = np.concatenate((train_data_B, val_data_B), axis=0)
         else:
             data_A = train_data_A
             data_B = train_data_B
+            if return_dataset:
+                data_A.dataset.targets = torch.Tensor(data_A.dataset.targets).long()
+                data_B.dataset.targets = torch.Tensor(data_B.dataset.targets).long()
+                data_A.dataset.classes = torch.sort(
+                    torch.unique(data_A.dataset.targets)
+                ).values.long()
+                data_B.dataset.classes = torch.sort(
+                    torch.unique(data_B.dataset.targets)
+                ).values.long()
 
         # Loop over dict, compute metrics
         similarity_dict = {}
