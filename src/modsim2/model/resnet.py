@@ -53,7 +53,7 @@ class ResnetModel(pl.LightningModule):
             self.task = "multiclass"
         self.lr = lr
         self.weight_decay = weight_decay
-        self.momentum = self.momentum
+        self.momentum = momentum
         self.steps_per_epoch = train_size // batch_size
         self.optimizer = None
 
