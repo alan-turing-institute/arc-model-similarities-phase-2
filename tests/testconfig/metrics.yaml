@@ -8,4 +8,13 @@ mmd_laplace:
   arguments:
     embedding_name: matrix
     kernel_name: laplace
-# To do: add in configs for OT
+otdd_vanilla:
+  function: ot
+  arguments:
+    implementation: otdd
+    inner_ot_method: exact
+    debiased_loss: True
+    p: 2
+    entreg: 0.1
+    device: cpu
+    max_samples: 10000
