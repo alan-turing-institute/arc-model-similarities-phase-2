@@ -19,4 +19,4 @@ def test_cifar_ot_same():
     similarity_dict = dmpair.compute_similarity(only_train=True, return_dataset=True)
     for k in similarity_dict:
         print(k + " similarity distance:", float(similarity_dict[k]))
-        assert similarity_dict[k] == 0
+        assert float(similarity_dict[k]) == 0
