@@ -26,24 +26,33 @@ def main(
     devices = trainer_config["trainer_kwargs"]["devices"]
     accelerator = trainer_config["trainer_kwargs"]["accelerator"]
 
-    # Generate strings
+    # Generate experiment pair name string
     experiment_pair_name = f"{experiment_group}_{dataset_index}_{seed_index}"
-    run_name_A = experiment_pair_name + "_A"
-    run_name_B = experiment_pair_name + "_B"
 
-    # Download and prepare models
-    model_A, run_A = download_model(
-        run_name_A,
-        entity=trainer_config["wandb"]["entity"],
-        project_name=trainer_config["wandb"]["project"],
-        version=attack_config["model_version"],
-    )
-    model_B, run_B = download_model(
-        run_name_B,
-        entity=trainer_config["wandb"]["entity"],
-        project_name=trainer_config["wandb"]["project"],
-        version=attack_config["model_version"],
-    )
+    # Convinience functions to get runs + models for A and B respectively
+    def download_model_A():
+        model_A, run_A = download_model(
+            experiment_name=experiment_pair_name + "_A",
+            entity=trainer_config["wandb"]["entity"],
+            project_name=trainer_config["wandb"]["project"],
+            version=attack_config["model_version"],
+        )
+        return model_A, run_A
+
+    def download_model_B():
+        model_B, run_B = download_model(
+            experiment_name=experiment_pair_name + "_B",
+            entity=trainer_config["wandb"]["entity"],
+            project_name=trainer_config["wandb"]["project"],
+            version=attack_config["model_version"],
+        )
+        return model_B, run_B
+
+    # Download and prepare models - only one wandb process allowed at a time
+    model_A, run_A = download_model_A()
+    run_A.finish()
+    model_B, run_B = download_model_B()
+    run_B.finish()
     model_A.eval()
     model_B.eval()
 
@@ -138,16 +147,19 @@ def main(
         "dist_A": transfer_metrics_BA_to_A,
         "dist_B": transfer_metrics_BB_to_A,
     }
-    run_A.log({"A_to_B_metrics": A_to_B_metrics}, commit=True)
-    run_B.log({"B_to_A_metrics": B_to_A_metrics}, commit=True)
 
     # Close once finished
+    _, run_A = download_model_A()
+    run_A.log({"A_to_B_metrics": A_to_B_metrics}, commit=True)
     run_A.finish()
+
+    _, run_B = download_model_B()
+    run_B.log({"B_to_A_metrics": B_to_A_metrics}, commit=True)
     run_B.finish()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Process some integers.")
+    parser = argparse.ArgumentParser(description="Process some inputs.")
     parser.add_argument(
         "--dataset_config", type=str, help="path to datasets config file", required=True
     )
