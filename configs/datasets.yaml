@@ -16,3 +16,10 @@ experiment_groups:
       B:
         drop: 0.5
         transforms: null
+
+    - A:
+        drop: 0.25
+        transforms: null
+      B:
+        drop: 0.75
+        transforms: null
