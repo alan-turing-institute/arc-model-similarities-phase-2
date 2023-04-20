@@ -3,7 +3,7 @@ import os
 import torch
 
 from modsim2.model.resnet import ResnetModel
-from modsim2.model.utils import get_run_from_name
+from modsim2.model.utils import get_wandb_run
 
 
 def _download_model(
@@ -32,7 +32,7 @@ def _download_model(
     folder = os.path.join(entity, project_name)
 
     # Reinitialise the run
-    run = get_run_from_name(
+    run = get_wandb_run(
         model_suffix=model_suffix,
         experiment_pair_name=experiment_pair_name,
         entity=entity,

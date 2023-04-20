@@ -6,7 +6,7 @@ from utils import opts2dmpairArgs
 from modsim2.attack import compute_transfer_attack, generate_over_combinations
 from modsim2.data.loader import DMPair
 from modsim2.model.load_model import download_AB_models
-from modsim2.model.utils import get_run_from_name
+from modsim2.model.utils import get_wandb_run
 
 
 def main(
@@ -138,7 +138,7 @@ def main(
     }
 
     # Close once finished
-    run_A = get_run_from_name(
+    run_A = get_wandb_run(
         model_suffix="A",
         experiment_pair_name=experiment_pair_name,
         entity=entity,
@@ -147,7 +147,7 @@ def main(
     run_A.log({"A_to_B_metrics": A_to_B_metrics}, commit=True)
     run_A.finish()
 
-    run_B = get_run_from_name(
+    run_B = get_wandb_run(
         model_suffix="B",
         experiment_pair_name=experiment_pair_name,
         entity=entity,

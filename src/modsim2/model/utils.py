@@ -30,7 +30,7 @@ def run_exists(
     project_name: str,
 ) -> bool:
     """
-    A convinience function for checking if a given wandb run name already exists
+    A convenience function for checking if a given wandb run name already exists
     on wandb. Returns True or False
 
     Args:
@@ -50,7 +50,7 @@ def _get_run_info_from_name(
     project_name: str,
 ) -> wandb.Api.run:
     """
-    A convinience function for returning a wandb.API.run based on its name.
+    A convenience function for returning a wandb.API.run based on its name.
     Exceptions in the function mean that the run name must be unique. Returns
     the corresponding wandb.API.run if its name is unique.
 
@@ -73,11 +73,11 @@ def _get_run_info_from_name(
     return runs[0]
 
 
-def get_run_from_name(
+def get_wandb_run(
     model_suffix: str, experiment_pair_name: str, entity: str, project_name: str
 ) -> wandb.run:
     """
-    A convinience function for returning a wandb.run based on its name. The run
+    A convenience function for returning a wandb.run based on its name. The run
     name must be unique. The run name is described by a combination of the
     experiment_pair_name and the model_suffix. Returns the corresponding wandb.run
     if its name is unique.
