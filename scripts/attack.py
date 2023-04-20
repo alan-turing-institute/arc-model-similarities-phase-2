@@ -5,7 +5,8 @@ from utils import opts2dmpairArgs
 
 from modsim2.attack import compute_transfer_attack, generate_over_combinations
 from modsim2.data.loader import DMPair
-from modsim2.model.load_model import download_model
+from modsim2.model.load_model import download_AB_models
+from modsim2.model.utils import get_wandb_run
 
 
 def main(
@@ -26,23 +27,20 @@ def main(
     devices = trainer_config["trainer_kwargs"]["devices"]
     accelerator = trainer_config["trainer_kwargs"]["accelerator"]
 
-    # Generate strings
+    # Generate experiment pair name string
     experiment_pair_name = f"{experiment_group}_{dataset_index}_{seed_index}"
-    run_name_A = experiment_pair_name + "_A"
-    run_name_B = experiment_pair_name + "_B"
 
-    # Download and prepare models
-    model_A, run_A = download_model(
-        run_name_A,
-        entity=trainer_config["wandb"]["entity"],
-        project_name=trainer_config["wandb"]["project"],
-        version=attack_config["model_version"],
-    )
-    model_B, run_B = download_model(
-        run_name_B,
-        entity=trainer_config["wandb"]["entity"],
-        project_name=trainer_config["wandb"]["project"],
-        version=attack_config["model_version"],
+    # Get model vars
+    entity = trainer_config["wandb"]["entity"]
+    project_name = trainer_config["wandb"]["project"]
+    version = attack_config["model_version"]
+
+    # Download and prepare models - only one wandb process allowed at a time
+    model_A, model_B = download_AB_models(
+        experiment_pair_name=experiment_pair_name,
+        entity=entity,
+        project_name=project_name,
+        version=version,
     )
     model_A.eval()
     model_B.eval()
@@ -138,16 +136,38 @@ def main(
         "dist_A": transfer_metrics_BA_to_A,
         "dist_B": transfer_metrics_BB_to_A,
     }
-    run_A.log({"A_to_B_metrics": A_to_B_metrics}, commit=True)
-    run_B.log({"B_to_A_metrics": B_to_A_metrics}, commit=True)
 
     # Close once finished
+    run_A = get_wandb_run(
+        model_suffix="A",
+        experiment_pair_name=experiment_pair_name,
+        entity=entity,
+        project_name=project_name,
+    )
+    run_A.log({"A_to_B_metrics": A_to_B_metrics}, commit=True)
     run_A.finish()
+
+    run_B = get_wandb_run(
+        model_suffix="B",
+        experiment_pair_name=experiment_pair_name,
+        entity=entity,
+        project_name=project_name,
+    )
+    run_B.log({"B_to_A_metrics": B_to_A_metrics}, commit=True)
     run_B.finish()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Process some integers.")
+    parser = argparse.ArgumentParser(
+        description="""
+        This script takes some paths to dataset, trainer, and attack configs,
+        along with arguments to the dataset config as inputs. The arguments to
+        the dataset config specify which dataset pair to perform the experiment on.
+
+        It then performs the transfer attacks specified in the attack config, and
+        logs the results to wandb. See README for more information.
+        """
+    )
     parser.add_argument(
         "--dataset_config", type=str, help="path to datasets config file", required=True
     )

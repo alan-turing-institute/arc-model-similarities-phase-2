@@ -39,6 +39,7 @@ class ResnetModel(pl.LightningModule):
         num_classes=10,
         lr=0.05,
         weight_decay=0.0005,
+        momentum=0.9,
         batch_size=32,
         train_size=50000,
         channels=3,
@@ -52,6 +53,7 @@ class ResnetModel(pl.LightningModule):
             self.task = "multiclass"
         self.lr = lr
         self.weight_decay = weight_decay
+        self.momentum = momentum
         self.steps_per_epoch = train_size // batch_size
         self.optimizer = None
 
@@ -101,7 +103,7 @@ class ResnetModel(pl.LightningModule):
         self.optimizer = torch.optim.SGD(
             self.parameters(),
             lr=self.lr,
-            momentum=0.9,
+            momentum=self.momentum,
             weight_decay=self.weight_decay,
         )
         scheduler_dict = {
