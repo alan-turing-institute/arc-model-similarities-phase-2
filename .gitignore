@@ -152,3 +152,5 @@ results/
 
 # Slurm outputs
 slurm_logs/
+slurm_train_logs/
+slurm_attack_logs/
