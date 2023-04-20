@@ -65,8 +65,9 @@ def download_AB_models(
     version: str,
 ) -> tuple[ResnetModel, ResnetModel]:
     """
-    A function that takes as input a description of a set of two experiment
-    pairs on wandb, and returns both corresponding model artifacts as ResnetModels.
+    A function that takes as input a description of a set of two models corresponding
+    to an experiment pair on wandb, and returns both corresponding model artifacts as
+    ResnetModels.
 
     Args:
         experiment_pair_name: Name of the experiment (e.g. drop-only_1_0)
