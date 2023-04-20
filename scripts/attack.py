@@ -5,7 +5,8 @@ from utils import opts2dmpairArgs
 
 from modsim2.attack import compute_transfer_attack, generate_over_combinations
 from modsim2.data.loader import DMPair
-from modsim2.model.load_model import download_model
+from modsim2.model.load_model import download_AB_models
+from modsim2.model.utils import get_run_from_name
 
 
 def main(
@@ -29,30 +30,18 @@ def main(
     # Generate experiment pair name string
     experiment_pair_name = f"{experiment_group}_{dataset_index}_{seed_index}"
 
-    # Convinience functions to get runs + models for A and B respectively
-    def download_model_A():
-        model_A, run_A = download_model(
-            experiment_name=experiment_pair_name + "_A",
-            entity=trainer_config["wandb"]["entity"],
-            project_name=trainer_config["wandb"]["project"],
-            version=attack_config["model_version"],
-        )
-        return model_A, run_A
-
-    def download_model_B():
-        model_B, run_B = download_model(
-            experiment_name=experiment_pair_name + "_B",
-            entity=trainer_config["wandb"]["entity"],
-            project_name=trainer_config["wandb"]["project"],
-            version=attack_config["model_version"],
-        )
-        return model_B, run_B
+    # Get model vars
+    entity = trainer_config["wandb"]["entity"]
+    project_name = trainer_config["wandb"]["project"]
+    version = attack_config["model_version"]
 
     # Download and prepare models - only one wandb process allowed at a time
-    model_A, run_A = download_model_A()
-    run_A.finish()
-    model_B, run_B = download_model_B()
-    run_B.finish()
+    model_A, model_B = download_AB_models(
+        experiment_pair_name=experiment_pair_name,
+        entity=entity,
+        project_name=project_name,
+        version=version,
+    )
     model_A.eval()
     model_B.eval()
 
@@ -149,11 +138,21 @@ def main(
     }
 
     # Close once finished
-    _, run_A = download_model_A()
+    run_A = get_run_from_name(
+        model_suffix="A",
+        experiment_pair_name=experiment_pair_name,
+        entity=entity,
+        project_name=project_name,
+    )
     run_A.log({"A_to_B_metrics": A_to_B_metrics}, commit=True)
     run_A.finish()
 
-    _, run_B = download_model_B()
+    run_B = get_run_from_name(
+        model_suffix="B",
+        experiment_pair_name=experiment_pair_name,
+        entity=entity,
+        project_name=project_name,
+    )
     run_B.log({"B_to_A_metrics": B_to_A_metrics}, commit=True)
     run_B.finish()
 
