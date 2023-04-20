@@ -6,7 +6,7 @@ Note that while measuring dataset similarity and model training can be performed
 
 For each of these three tasks, a generation script exists which will generate bash/slurm scripts that can be called individually for a given dataset pair.
 
-**Requirements:** For broad requirements beyond installing the project source code, see see [requirements](#requirements) below.
+**Requirements:** For broad requirements beyond installing the project source code, see [requirements](#requirements) below.
 
 **Important:** for model training and transfer attacks, we use wandb to store our results (see more in [requirements](#requirements) below). Our training script will produce an exception if the run name already exists on wandb, and the attack script will produce an exception if the run name is not unique on wandb. To perform the same run again, it will be necessary to either rename the old run, rename the new run, or delete the old run.
 
@@ -56,7 +56,7 @@ Alternatively, you can call each of the scripts individually, e.g.
 sbatch trainer_scripts/drop-only_0_0_trainer.sh
 ```
 
-to train models for that particular dataset pair, where `drop-only_0_0_trainer` is one of the bash scripts generated for the `drop-only` experiment group, with dataset pair index `0` and seed index `0`. Note that logging is performed with wandb and so you will need this set up on your machine in order to proceed.
+to train models for that particular dataset pair, where `drop-only_0_0_trainer` is one of the bash scripts generated for the `drop-only` experiment group, with dataset pair index `0` and seed index `0`. Note that logging is performed with wandb and so you will need this set up on your machine in order to proceed. Note also that the output directory specified in the slurm template (see [requirements](#requirements) below.)
 
 ## Transfer Attacks
 
@@ -88,13 +88,13 @@ sbatch attack_scripts/drop-only_0_0_attack.sh
 
 to perform transfer attacks for that particular dataset pair, where `drop-only_0_0_trainer` is one of the bash scripts generated for the `drop-only` experiment group, with dataset pair index `0` and seed index `0`.
 
-As stated above, note that a unique run must exist on wandb for the transfer attack to be performed. Results for model A as the surrogate model (i.e. with B as the target model) will be logged to model A on wandb, and vice versa for model B
+As stated above, note that a unique run must exist on wandb for the transfer attack to be performed. Results for model A as the surrogate model (i.e. with B as the target model) will be logged to model A on wandb, and vice versa for model B.  Note also that the output directory specified in the slurm template (see [requirements](#requirements) below.)
 
 ## Requirements
 
 ### Training Requirements
 
-The slurm scripts generated for model training contain some arguments specific to our HPC, and the templates will likely need some modifications to be appropriate to your own usage.
+The slurm scripts generated for model training contain some arguments specific to our HPC, and the templates will likely need some modifications to be appropriate to your own usage. See our [train template](/scripts/templates/slurm-train-template.sh) for specific arguments.
 
 Broadly, the requirements are:
 
@@ -105,6 +105,8 @@ Broadly, the requirements are:
 Please note in particular that the account name (passed to the generation script via `--account_name`) argument is specific to our HPC and may not be required for your usage.
 
 ### Transfer Attack Requirements
+
+The slurm scripts generated for the transfer attacks contain some arguments specific to our HPC, and the templates will likely need some modifications to be appropriate to your own usage. See our [transfer attack template](/scripts/templates/slurm-attack-template.sh) for specific arguments.
 
 For the transfer attack scripts to work, you will need models with the correct names and IDs on your wandb account.
 
