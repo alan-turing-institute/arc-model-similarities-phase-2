@@ -158,7 +158,16 @@ def main(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Process some inputs.")
+    parser = argparse.ArgumentParser(
+        description="""
+        This script takes some paths to dataset, trainer, and attack configs,
+        along with arguments to the dataset config as inputs. The arguments to
+        the dataset config specify which dataset pair to perform the experiment on.
+
+        It then performs the transfer attacks specified in the attack config, and
+        logs the results to wandb. See README for more information.
+        """
+    )
     parser.add_argument(
         "--dataset_config", type=str, help="path to datasets config file", required=True
     )
