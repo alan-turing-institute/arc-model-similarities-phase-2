@@ -56,7 +56,7 @@ Alternatively, you can call each of the scripts individually, e.g.
 sbatch trainer_scripts/drop-only_0_0_trainer.sh
 ```
 
-to train models for that particular dataset pair, where `drop-only_0_0_trainer` is one of the bash scripts generated for the `drop-only` experiment group, with dataset pair index `0` and seed index `0`. Note that logging is performed with wandb and so you will need this set up on your machine in order to proceed. Note also that the output directory specified in the slurm template (see [requirements](#requirements) below.)
+to train models for that particular dataset pair, where `drop-only_0_0_trainer` is one of the bash scripts generated for the `drop-only` experiment group, with dataset pair index `0` and seed index `0`. Note that logging is performed with wandb and so you will need this set up on your machine in order to proceed. Note also that the output directory specified in the slurm template (see [requirements](#requirements) below.) must exist prior to running the scripts.
 
 ## Transfer Attacks
 
@@ -88,7 +88,7 @@ sbatch attack_scripts/drop-only_0_0_attack.sh
 
 to perform transfer attacks for that particular dataset pair, where `drop-only_0_0_trainer` is one of the bash scripts generated for the `drop-only` experiment group, with dataset pair index `0` and seed index `0`.
 
-As stated above, note that a unique run must exist on wandb for the transfer attack to be performed. Results for model A as the surrogate model (i.e. with B as the target model) will be logged to model A on wandb, and vice versa for model B.  Note also that the output directory specified in the slurm template (see [requirements](#requirements) below.)
+As stated above, note that a unique run must exist on wandb for the transfer attack to be performed. Results for model A as the surrogate model (i.e. with B as the target model) will be logged to model A on wandb, and vice versa for model B.  Note also that the output directory specified in the slurm template (see [requirements](#requirements) below.) must exist prior to running the scripts.
 
 ## Requirements
 
