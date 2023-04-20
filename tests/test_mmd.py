@@ -10,7 +10,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir
 METRICS_CONFIG_PATH = os.path.join(PROJECT_ROOT, "tests", "testconfig", "metrics.yaml")
 CONFIGS = load_configs(METRICS_CONFIG_PATH)
 METRIC_CONFIG = CONFIGS["metric_config"]
-METRIC_CONFIG = {k: v for k, v in METRIC_CONFIG.items() if v["function"] == "mmd"}
+METRIC_CONFIG = {k: v for k, v in METRIC_CONFIG.items() if v["class"] == "mmd"}
 
 
 def test_cifar_mmd_same():

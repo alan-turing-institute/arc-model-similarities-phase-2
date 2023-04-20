@@ -8,7 +8,7 @@ from pl_bolts.datamodules import CIFAR10DataModule
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, Subset
 
-from modsim2.similarity.constants import ARGUMENTS, FUNCTION, METRIC_FN_DICT
+from modsim2.similarity.constants import ARGUMENTS, CLASS, METRIC_CLS_DICT
 
 # Set module logger
 logger = logging.getLogger(__name__)
@@ -362,48 +362,39 @@ class DMPair:
         )
 
     def compute_similarity(
-        self, only_train: bool = False, return_dataset: bool = False
-    ):
+        self, only_train: bool = False, metric_seed: int = 42
+    ) -> Dict:
         """
         compute similarity between data of A and B
         only_train removes the validation data from this comparison
         """
-        if not return_dataset:
-            # coerce data into single tensor (not subset)
-            # TODO issue-15 want to get data post-transform
-            train_data_A, val_data_A = self.get_A_data()
-            train_data_B, val_data_B = self.get_B_data()
-        else:
-            train_data_A, val_data_A = self.A.dataset_train, self.A.dataset_val
-            train_data_B, val_data_B = self.B.dataset_train, self.B.dataset_val
+        # coerce data into single tensor (not subset)
+        # TODO issue-15 want to get data post-transform
+        train_data_A, val_data_A = self.get_A_data()
+        train_data_B, val_data_B = self.get_B_data()
+
+        train_labels_A, val_labels_A = self.get_A_labels()
+        train_labels_B, val_labels_B = self.get_B_labels()
 
         if not only_train:
-            if return_dataset:
-                raise NotImplementedError(
-                    "Can't yet compute similarity when only_train = False and "
-                    "return_dataset = True"
-                )
-            else:
-                data_A = np.concatenate((train_data_A, val_data_A), axis=0)
-                data_B = np.concatenate((train_data_B, val_data_B), axis=0)
+            data_A = np.concatenate((train_data_A, val_data_A), axis=0)
+            data_B = np.concatenate((train_data_B, val_data_B), axis=0)
+
+            labels_A = np.concatenate((train_labels_A, val_labels_A), axis=0)
+            labels_B = np.concatenate((train_labels_B, val_labels_B), axis=0)
         else:
-            data_A = train_data_A
-            data_B = train_data_B
-            if return_dataset:
-                data_A.dataset.targets = torch.Tensor(data_A.dataset.targets).long()
-                data_B.dataset.targets = torch.Tensor(data_B.dataset.targets).long()
-                data_A.dataset.classes = torch.sort(
-                    torch.unique(data_A.dataset.targets)
-                ).values.long()
-                data_B.dataset.classes = torch.sort(
-                    torch.unique(data_B.dataset.targets)
-                ).values.long()
+            data_A = np.array(train_data_A)
+            data_B = np.array(train_data_B)
+
+            labels_A = train_labels_A
+            labels_B = train_labels_B
 
         # Loop over dict, compute metrics
         similarity_dict = {}
         for key, metric in self.metric_config.items():
-            similarity_dict[key] = METRIC_FN_DICT[metric[FUNCTION]](
-                data_A, data_B, **metric[ARGUMENTS]
+            obj_metric = METRIC_CLS_DICT[metric[CLASS]](metric_seed)
+            similarity_dict[key] = obj_metric.calculate_metric(
+                data_A, data_B, labels_A, labels_B, **metric[ARGUMENTS]
             )
 
         # Output

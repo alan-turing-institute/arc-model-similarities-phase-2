@@ -1,20 +1,48 @@
 mmd_rbf:
-  function: mmd
+  class: mmd
   arguments:
     embedding_name: matrix
     kernel_name: rbf
 mmd_laplace:
-  function: mmd
+  class: mmd
   arguments:
     embedding_name: matrix
     kernel_name: laplace
-otdd_vanilla:
-  function: ot
+otdd_exact:
+  class: otdd
   arguments:
-    implementation: otdd
-    inner_ot_method: exact
+    max_samples: 1000
+    device: cpu
+    coupling_method: geomloss
+    method: precomputed_labeldist
     debiased_loss: True
     p: 2
     entreg: 0.1
+    inner_ot_method: exact
+    inner_ot_debiased: True
+    inner_ot_p: 2
+    inner_ot_entreg: 0.1
+  expected_results:
+    same_result: 0.0
+    same_result_only_train: 0.0
+    diff_result: 98.62129211425781
+    diff_result_only_train: 98.76353454589844
+otdd_naive_upperbound:
+  class: otdd
+  arguments:
+    max_samples: 1000
     device: cpu
-    max_samples: 10000
+    coupling_method: geomloss
+    method: precomputed_labeldist
+    debiased_loss: True
+    p: 2
+    entreg: 0.1
+    inner_ot_method: naive_upperbound
+    inner_ot_debiased: True
+    inner_ot_p: 2
+    inner_ot_entreg: 0.1
+  expected_results:
+    same_result: 256.1785888671875
+    same_result_only_train: 256.23443603515625
+    diff_result: 306.54510498046875
+    diff_result_only_train: 306.96612548828125

@@ -1,8 +1,8 @@
-from modsim2.similarity import mmd, ot
+from modsim2.similarity import metrics
 
-FUNCTION = "function"
 ARGUMENTS = "arguments"
-METRIC_FN_DICT = {
-    "mmd": mmd.mmd,
-    "ot": ot.ot,
+CLASS = "class"
+METRIC_CLS_DICT = {
+    "mmd": metrics.MMD,
+    "otdd": metrics.OTDD,
 }

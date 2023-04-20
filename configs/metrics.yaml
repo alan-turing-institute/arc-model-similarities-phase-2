@@ -1,11 +1,11 @@
 # Store configs for each metric to be used
 mmd_rbf:
-  function: mmd
+  class: mmd
   arguments:
     embedding_name: matrix
     kernel_name: rbf
 mmd_laplace:
-  function: mmd
+  class: mmd
   arguments:
     embedding_name: matrix
     kernel_name: laplace
