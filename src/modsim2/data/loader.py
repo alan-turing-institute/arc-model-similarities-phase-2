@@ -394,7 +394,7 @@ class DMPair:
         for key, metric in self.metrics_config.items():
             MetricCls = METRIC_CLS_DICT[metric[CLASS_KEY]]
             metric_conf = MetricCls(seed=metric_seed)
-            similarity_dict[key] = metric_conf.calculate_metric(
+            similarity_dict[key] = metric_conf.calculate_distance(
                 data_A, data_B, labels_A, labels_B, **metric[ARGUMENTS]
             )
 
