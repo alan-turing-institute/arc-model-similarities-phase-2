@@ -9,12 +9,12 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir
 # Get metric config
 METRICS_CONFIG_PATH = os.path.join(PROJECT_ROOT, "tests", "testconfig", "metrics.yaml")
 CONFIGS = load_configs(METRICS_CONFIG_PATH)
-METRIC_CONFIG = CONFIGS["metric_config"]
-METRIC_CONFIG = {k: v for k, v in METRIC_CONFIG.items() if v["class"] == "mmd"}
+METRICS_CONFIG = CONFIGS["metrics_config"]
+METRICS_CONFIG = {k: v for k, v in METRICS_CONFIG.items() if v["class"] == "mmd"}
 
 
 def test_cifar_mmd_same():
-    dmpair = DMPair(metric_config=METRIC_CONFIG)
+    dmpair = DMPair(metrics_config=METRICS_CONFIG)
 
     similarity_dict = dmpair.compute_similarity()
     assert similarity_dict["mmd_rbf"] == 0
@@ -22,7 +22,7 @@ def test_cifar_mmd_same():
 
 
 def test_cifar_mmd_different():
-    dmpair = DMPair(metric_config=METRIC_CONFIG, drop_percent_A=0.2, seed=42)
+    dmpair = DMPair(metrics_config=METRICS_CONFIG, drop_percent_A=0.2, seed=42)
     similarity_dict = dmpair.compute_similarity()
     # known values for this seed - brittle test but useful for messing with code
     expected_mmd_rbf = 0.00012534993489587976
@@ -32,7 +32,7 @@ def test_cifar_mmd_different():
 
 
 def test_cifar_mmd_different_train_only():
-    dmpair = DMPair(metric_config=METRIC_CONFIG, drop_percent_A=0.2, seed=42)
+    dmpair = DMPair(metrics_config=METRICS_CONFIG, drop_percent_A=0.2, seed=42)
     similarity_dict = dmpair.compute_similarity(only_train=True)
     # known values for this seed - brittle test but useful for messing with code
     expected_mmd_rbf = 0.0001611794365776742

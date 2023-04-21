@@ -8,7 +8,7 @@ from pl_bolts.datamodules import CIFAR10DataModule
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, Subset
 
-from modsim2.similarity.constants import ARGUMENTS, CLASS, METRIC_CLS_DICT
+from modsim2.similarity.constants import ARGUMENTS, CLASS_KEY, METRIC_CLS_DICT
 
 # Set module logger
 logger = logging.getLogger(__name__)
@@ -240,7 +240,7 @@ def split_indices(
 class DMPair:
     def __init__(
         self,
-        metric_config: Dict = {},
+        metrics_config: Dict = {},
         drop_percent_A: Union[int, float] = 0,
         drop_percent_B: Union[int, float] = 0,
         transforms_A: Optional[Callable] = None,
@@ -264,7 +264,7 @@ class DMPair:
         Early loading of the train_dataset is performed
 
         Args:
-            metric_config: Dict of metric configs for similarity measures
+            metrics_config: Dict of metric configs for similarity measures
             drop_percent_A: % of training/val data to drop from A
             drop_percent_B: % of training/val data to drop from B
             transforms_A: transformations applied to A train and val
@@ -288,7 +288,7 @@ class DMPair:
         self.drop_percent_A = drop_percent_A
         self.drop_percent_B = drop_percent_B
         self.seed = seed
-        self.metric_config = metric_config
+        self.metrics_config = metrics_config
 
         # Load and setup CIFAR
         # note: will set transforms later, in CIFAR10DMSubset setup() for A,B
@@ -391,9 +391,10 @@ class DMPair:
 
         # Loop over dict, compute metrics
         similarity_dict = {}
-        for key, metric in self.metric_config.items():
-            obj_metric = METRIC_CLS_DICT[metric[CLASS]](metric_seed)
-            similarity_dict[key] = obj_metric.calculate_metric(
+        for key, metric in self.metrics_config.items():
+            MetricCls = METRIC_CLS_DICT[metric[CLASS_KEY]]
+            metric_conf = MetricCls(seed=metric_seed)
+            similarity_dict[key] = metric_conf.calculate_metric(
                 data_A, data_B, labels_A, labels_B, **metric[ARGUMENTS]
             )
 
