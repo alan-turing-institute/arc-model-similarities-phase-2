@@ -16,7 +16,7 @@ class DistanceMetric(ABC):
         torch.manual_seed(seed)
 
     @abstractmethod
-    def pre_process_data(self):
+    def _pre_process_data(self):
         pass
 
     @abstractmethod
@@ -38,7 +38,7 @@ class MMD(DistanceMetric):
             "laplace": metrics.pairwise.laplacian_kernel,
         }
 
-    def pre_process_data(
+    def _pre_process_data(
         self, data_A: np.ndarray, data_B: np.ndarray, embedding_name: str
     ):
         # Extract embedding callable
@@ -85,7 +85,7 @@ class MMD(DistanceMetric):
             float: The maximum mean discrepancy between A and B
         """
 
-        matrix_A, matrix_B, N_A, N_B = self.pre_process_data(
+        matrix_A, matrix_B, N_A, N_B = self._pre_process_data(
             data_A, data_B, embedding_name
         )
 
@@ -116,7 +116,7 @@ class OTDD(DistanceMetric):
     def __init__(self, seed: int = 42):
         super().__init__(seed)
 
-    def pre_process_data(
+    def _pre_process_data(
         self,
         data_A: np.ndarray,
         data_B: np.ndarray,
@@ -154,7 +154,9 @@ class OTDD(DistanceMetric):
         Returns:
             float: The otdd between A and B
         """
-        dataset_A, dataset_B = self.pre_process_data(data_A, data_B, labels_A, labels_B)
+        dataset_A, dataset_B = self._pre_process_data(
+            data_A, data_B, labels_A, labels_B
+        )
         # the next two lines are a placeholder to ensure that code will run on MacBook
         # with M1 processor - is likely to require changing when issue 45 is addressed
         if platform.processor() == "arm":
@@ -162,4 +164,4 @@ class OTDD(DistanceMetric):
         kwargs["device"] = device
         dist = DatasetDistance(dataset_A, dataset_B, **kwargs)
         d = dist.distance(maxsamples=max_samples)
-        return d
+        return float(d)

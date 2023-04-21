@@ -152,3 +152,5 @@ results/
 
 # Slurm outputs
 slurm_logs/
+
+.DS_Store

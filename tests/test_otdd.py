@@ -21,17 +21,13 @@ def test_cifar_otdd_same():
     dmpair = DMPair(metric_config=METRIC_CONFIG, seed=42)
     similarity_dict = dmpair.compute_similarity(only_train=False, metric_seed=42)
     for k in similarity_dict:
-        assert (
-            float(similarity_dict[k])
-            == METRIC_CONFIG[k]["expected_results"]["same_result"]
-        )
+        assert similarity_dict[k] == METRIC_CONFIG[k]["expected_results"]["same_result"]
     similarity_dict = dmpair.compute_similarity(only_train=True)
     for k in similarity_dict:
         assert (
-            float(similarity_dict[k])
+            similarity_dict[k]
             == METRIC_CONFIG[k]["expected_results"]["same_result_only_train"]
         )
-        print(float(similarity_dict[k]))
 
 
 # This test checks that the distance between a dataset and itself is the expect value
@@ -42,13 +38,10 @@ def test_cifar_otdd_different():
     dmpair = DMPair(metric_config=METRIC_CONFIG, drop_percent_A=0.2, seed=42)
     similarity_dict = dmpair.compute_similarity(only_train=False, metric_seed=42)
     for k in similarity_dict:
-        assert (
-            float(similarity_dict[k])
-            == METRIC_CONFIG[k]["expected_results"]["diff_result"]
-        )
+        assert similarity_dict[k] == METRIC_CONFIG[k]["expected_results"]["diff_result"]
     similarity_dict = dmpair.compute_similarity(only_train=True, metric_seed=42)
     for k in similarity_dict:
         assert (
-            float(similarity_dict[k])
+            similarity_dict[k]
             == METRIC_CONFIG[k]["expected_results"]["diff_result_only_train"]
         )
