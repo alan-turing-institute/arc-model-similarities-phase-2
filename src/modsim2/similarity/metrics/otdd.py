@@ -58,18 +58,18 @@ class OTDD(DistanceMetric):
         Returns:
             float: The otdd between A and B
         """
+        # the following exception is a placeholder to ensure that code will run on
+        # MacBook with M1 processor - is likely to require changing when issue 45 is
+        # addressed
+        if platform.processor() == "arm" and device == "cpu":
+            raise ValueError(
+                "The otdd calculation will not produce the correct output "
+                "when run on an Apple M1 processor"
+            )
 
         dataset_A, dataset_B = self._pre_process_data(
             data_A, data_B, labels_A, labels_B
         )
-
-        # the next two lines are a placeholder to ensure that code will run on MacBook
-        # with M1 processor - is likely to require changing when issue 45 is addressed
-        if platform.processor() == "arm":
-            raise ValueError(
-                "The otdd calculation will not produce the correct output "
-                "when run on an Apple M1 arm processor"
-            )
 
         dist = DatasetDistance(dataset_A, dataset_B, device=device, **kwargs)
 
