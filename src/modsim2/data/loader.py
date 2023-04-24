@@ -362,14 +362,15 @@ class DMPair:
         )
 
     def compute_similarity(
-        self, only_train: bool = False, metric_seed: int = 42
+        self, only_train: bool = False, metric_seed: int = None
     ) -> Dict:
         """
         compute similarity between data of A and B
         only_train removes the validation data from this comparison
         """
-        # coerce data into single tensor (not subset)
-        # TODO issue-15 want to get data post-transform
+        if metric_seed is None:
+            metric_seed = self.seed
+
         train_data_A, val_data_A = self.get_A_data()
         train_data_B, val_data_B = self.get_B_data()
 
@@ -383,8 +384,8 @@ class DMPair:
             labels_A = np.concatenate((train_labels_A, val_labels_A), axis=0)
             labels_B = np.concatenate((train_labels_B, val_labels_B), axis=0)
         else:
-            data_A = np.array(train_data_A)
-            data_B = np.array(train_data_B)
+            data_A = train_data_A
+            data_B = train_data_B
 
             labels_A = train_labels_A
             labels_B = train_labels_B
@@ -411,6 +412,7 @@ class DMPair:
         # just take image rather than label
         train = torch.stack([item[0] for item in subset_module.dataset_train])
         val = torch.stack([item[0] for item in subset_module.dataset_val])
+        train, val = np.array(train), np.array(val)
         return train, val
 
     def get_A_data(self) -> Tuple[torch.Tensor, torch.Tensor]:
