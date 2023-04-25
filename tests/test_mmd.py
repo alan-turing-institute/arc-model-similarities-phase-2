@@ -10,7 +10,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir
 METRICS_CONFIG_PATH = os.path.join(PROJECT_ROOT, "tests", "testconfig", "metrics.yaml")
 
 
-# Fixture that yields the metric config
+# Fixture that yields the metric config dictionary
 @pytest.fixture(scope="module")
 def metrics_config():
     mmd_config = load_configs(METRICS_CONFIG_PATH)["metrics_config"]
@@ -19,29 +19,31 @@ def metrics_config():
     yield mmd_config
 
 
+# This test checks that the distance between a dataset and itself is the expect value
+# For this metric the expected value is always zero
 def test_cifar_mmd_same(metrics_config):
     dmpair = DMPair(metrics_config=metrics_config)
 
     similarity_dict = dmpair.compute_similarity()
-    assert similarity_dict["mmd_rbf"] == 0
-    assert similarity_dict["mmd_laplace"] == 0
+    similarity_dict_only_train = dmpair.compute_similarity()
+    for k in metrics_config:
+        assert similarity_dict[k] == 0
+        assert similarity_dict_only_train[k] == 0
 
 
+# This test checks that the distance between two different datasets is the expected
+# value
+# The calculated distance is checked against the known value for the seed - brittle
+# test but useful for messing with code
 def test_cifar_mmd_different(metrics_config):
     dmpair = DMPair(metrics_config=metrics_config, drop_percent_A=0.2, seed=42)
     similarity_dict = dmpair.compute_similarity()
-    # known values for this seed - brittle test but useful for messing with code
-    expected_mmd_rbf = 0.00012534993489587976
-    expected_mmd_laplace = 0.0002326510493355638
-    assert similarity_dict["mmd_rbf"] == expected_mmd_rbf
-    assert similarity_dict["mmd_laplace"] == expected_mmd_laplace
-
-
-def test_cifar_mmd_different_train_only(metrics_config):
-    dmpair = DMPair(metrics_config=metrics_config, drop_percent_A=0.2, seed=42)
-    similarity_dict = dmpair.compute_similarity(only_train=True)
-    # known values for this seed - brittle test but useful for messing with code
-    expected_mmd_rbf = 0.0001611794365776742
-    expected_mmd_laplace = 0.00029474732083722976
-    assert similarity_dict["mmd_rbf"] == expected_mmd_rbf
-    assert similarity_dict["mmd_laplace"] == expected_mmd_laplace
+    similarity_dict_only_train = dmpair.compute_similarity(only_train=True)
+    for k in metrics_config:
+        assert (
+            similarity_dict[k] == metrics_config[k]["expected_results"]["diff_result"]
+        )
+        assert (
+            similarity_dict_only_train[k]
+            == metrics_config[k]["expected_results"]["diff_result_only_train"]
+        )

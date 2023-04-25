@@ -361,15 +361,11 @@ class DMPair:
             cifar=self.cifar,
         )
 
-    def compute_similarity(
-        self, only_train: bool = False, metric_seed: int = None
-    ) -> Dict:
+    def compute_similarity(self, only_train: bool = False) -> Dict:
         """
         compute similarity between data of A and B
         only_train removes the validation data from this comparison
         """
-        if metric_seed is None:
-            metric_seed = self.seed
 
         train_data_A, val_data_A = self.get_A_data()
         train_data_B, val_data_B = self.get_B_data()
@@ -394,7 +390,7 @@ class DMPair:
         similarity_dict = {}
         for key, metric in self.metrics_config.items():
             MetricCls = METRIC_CLS_DICT[metric[CLASS_KEY]]
-            metric_conf = MetricCls(seed=metric_seed)
+            metric_conf = MetricCls(seed=self.seed)
             similarity_dict[key] = metric_conf.calculate_distance(
                 data_A, data_B, labels_A, labels_B, **metric[ARGUMENTS]
             )

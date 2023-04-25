@@ -5,7 +5,7 @@ from pytorch_lightning.utilities.seed import seed_everything
 
 
 class DistanceMetric(ABC):
-    def __init__(self, metric_seed: int = 42):
+    def __init__(self, metric_seed: int):
         seed_everything(metric_seed)
 
     @abstractmethod

@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class OTDD(DistanceMetric):
-    def __init__(self, seed: int = 42):
+    def __init__(self, seed: int):
         super().__init__(seed)
 
     def _pre_process_data(
@@ -45,7 +45,7 @@ class OTDD(DistanceMetric):
         **kwargs,
     ) -> float:
         """
-        Calculates the optimal transport distance between datasets
+        Calculates the optimal transport dataset distance
 
         Args:
             array_A: The first image dataset
