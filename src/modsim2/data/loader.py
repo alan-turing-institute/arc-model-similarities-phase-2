@@ -403,7 +403,7 @@ class DMPair:
     @staticmethod
     def _get_subset_data(
         subset_module: CIFAR10DMSubset,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> Tuple[np.array, np.array]:
         # force __getitem__ in CIFAR10 class for train and val
         # just take image rather than label
         train = torch.stack([item[0] for item in subset_module.dataset_train])
