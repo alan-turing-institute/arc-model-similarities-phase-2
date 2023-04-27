@@ -1,5 +1,7 @@
 # Modified from mod sim phase 1 code
 
+import math
+
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
@@ -54,7 +56,7 @@ class ResnetModel(pl.LightningModule):
         self.lr = lr
         self.weight_decay = weight_decay
         self.momentum = momentum
-        self.steps_per_epoch = train_size // batch_size
+        self.steps_per_epoch = math.ceil(train_size / batch_size)
         self.optimizer = None
 
     def forward(self, x):
