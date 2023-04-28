@@ -18,7 +18,7 @@ otdd_exact:
   class: otdd
   arguments:
     max_samples: 1000
-    device: mps
+    device: cpu
     coupling_method: geomloss
     method: precomputed_labeldist
     debiased_loss: True
@@ -37,7 +37,7 @@ otdd_naive_upperbound:
   class: otdd
   arguments:
     max_samples: 1000
-    device: mps
+    device: cpu
     coupling_method: geomloss
     method: precomputed_labeldist
     debiased_loss: True

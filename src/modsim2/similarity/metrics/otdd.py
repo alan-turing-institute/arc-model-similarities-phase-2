@@ -58,10 +58,13 @@ class OTDD(DistanceMetric):
         Returns:
             float: The otdd between A and B
         """
-        # the following exception is a placeholder to ensure that code will run on
-        # MacBook with M1 processor - is likely to require changing when issue 45 is
+        # the following exception prevents the distance being calculated using a
+        # MacBook with M1 processor - is may require changing if issue 45 is
         # addressed
-        if platform.processor() == "arm" and device == "cpu":
+        # The M1 cpu does not return a distance of zero when the two datasets
+        # are the same, and the M1 gpu (mps / metal) returns different results
+        # on different machines.
+        if platform.processor() == "arm":
             raise ValueError(
                 "The otdd calculation will not produce the correct output "
                 "when run on an Apple M1 processor"

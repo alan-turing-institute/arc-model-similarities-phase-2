@@ -1,4 +1,5 @@
 import os
+import platform
 
 import pytest
 
@@ -16,6 +17,7 @@ def metrics_config() -> dict:
     otdd_config = load_configs(metrics_config_path)["metrics_config"]
     # filter down to only otdd configs
     otdd_config = {k: v for k, v in otdd_config.items() if v["class"] == "otdd"}
+
     return otdd_config
 
 
@@ -23,6 +25,10 @@ def metrics_config() -> dict:
 # When exact calculations are used then this will be zero
 # Approximate methods may be non-zero and these are checked against the known value
 # for the seed
+@pytest.mark.skipif(
+    platform.processor() == "arm",
+    reason="These tests should not be run on Apple M1 devices",
+)
 def test_cifar_otdd_same(metrics_config: dict):
     dmpair = DMPair(metrics_config=metrics_config, seed=42)
     similarity_dict = dmpair.compute_similarity(only_train=False)
@@ -41,6 +47,10 @@ def test_cifar_otdd_same(metrics_config: dict):
 # value
 # The calculated distance is checked against the known value for the seed - brittle
 # test but useful for messing with code
+@pytest.mark.skipif(
+    platform.processor() == "arm",
+    reason="These tests should not be run on Apple M1 devices",
+)
 def test_cifar_otdd_different(metrics_config: dict):
     dmpair = DMPair(metrics_config=metrics_config, drop_percent_A=0.2, seed=42)
     similarity_dict = dmpair.compute_similarity(only_train=False)
@@ -53,3 +63,14 @@ def test_cifar_otdd_different(metrics_config: dict):
             similarity_dict_only_train[k]
             == metrics_config[k]["expected_results"]["diff_result_only_train"]
         )
+
+
+# This test checks that a value error is raised wen
+@pytest.mark.skipif(
+    platform.processor() != "arm",
+    reason="This test is only applicable to Apple M1 devices",
+)
+def test_cifar_otdd_raise_error(metrics_config: dict):
+    dmpair = DMPair(metrics_config=metrics_config)
+    with pytest.raises(ValueError):
+        dmpair.compute_similarity(only_train=False)
