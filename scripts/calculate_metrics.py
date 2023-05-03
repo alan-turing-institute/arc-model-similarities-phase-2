@@ -65,7 +65,16 @@ def main(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Process some integers.")
+    parser = argparse.ArgumentParser(
+        description="""
+        This script takes some paths to dataset and metrics configs, along with
+        arguments to the dataset config as inputs. The arguments to the dataset
+        config specify which dataset pair to perform the experiment on.
+
+        It then calculates the dataset similarity metrics specifeid in the metrics
+        config, and logs the results to wandb. See README for more information.
+        """
+    )
     parser.add_argument(
         "--dataset_config", type=str, help="path to datasets config file", required=True
     )
