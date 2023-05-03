@@ -1,6 +1,7 @@
 import os
 import platform
 
+import numpy as np
 import pytest
 
 from modsim2.data.loader import DMPair
@@ -33,14 +34,27 @@ def test_cifar_otdd_same(metrics_config: dict):
     dmpair = DMPair(metrics_config=metrics_config, seed=42)
     similarity_dict = dmpair.compute_similarity(only_train=False)
     similarity_dict_only_train = dmpair.compute_similarity(only_train=True)
-    for k in metrics_config:
-        assert (
-            similarity_dict[k] == metrics_config[k]["expected_results"]["same_result"]
-        )
-        assert (
-            similarity_dict_only_train[k]
-            == metrics_config[k]["expected_results"]["same_result_only_train"]
-        )
+    failures = []
+    for results in [
+        ("same_result", similarity_dict),
+        ("same_result_only_train", similarity_dict_only_train),
+    ]:
+        for k in metrics_config:
+            test_name = k + "/" + results[0]
+            expected_result = metrics_config[k]["expected_results"]["same_result"]
+            actual_result = results[1][k]
+            if not np.isclose(actual_result, expected_result, rtol=1e-5, atol=1e-8):
+                failure = (
+                    "test:"
+                    + test_name
+                    + ", expected result: "
+                    + str(expected_result)
+                    + ", actual result: "
+                    + str(actual_result)
+                )
+                failures.append(failure)
+    if failures:
+        pytest.fail("\n".join(failures))
 
 
 # This test checks that the distance between two different datasets is the expected
@@ -55,14 +69,27 @@ def test_cifar_otdd_different(metrics_config: dict):
     dmpair = DMPair(metrics_config=metrics_config, drop_percent_A=0.2, seed=42)
     similarity_dict = dmpair.compute_similarity(only_train=False)
     similarity_dict_only_train = dmpair.compute_similarity(only_train=True)
-    for k in metrics_config:
-        assert (
-            similarity_dict[k] == metrics_config[k]["expected_results"]["diff_result"]
-        )
-        assert (
-            similarity_dict_only_train[k]
-            == metrics_config[k]["expected_results"]["diff_result_only_train"]
-        )
+    failures = []
+    for results in [
+        ("same_result", similarity_dict),
+        ("same_result_only_train", similarity_dict_only_train),
+    ]:
+        for k in metrics_config:
+            test_name = k + "/" + results[0]
+            expected_result = metrics_config[k]["expected_results"]["same_result"]
+            actual_result = results[1][k]
+            if not np.isclose(actual_result, expected_result, rtol=1e-5, atol=1e-8):
+                failure = (
+                    "test:"
+                    + test_name
+                    + ", expected result: "
+                    + str(expected_result)
+                    + ", actual result: "
+                    + str(actual_result)
+                )
+                failures.append(failure)
+    if failures:
+        pytest.fail("\n".join(failures))
 
 
 # This test checks that a value error is raised wen

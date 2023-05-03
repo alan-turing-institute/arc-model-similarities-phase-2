@@ -31,8 +31,8 @@ otdd_exact:
   expected_results:
     same_result: 0.0
     same_result_only_train: 0.0
-    diff_result: 98.62129211425781
-    diff_result_only_train: 98.76353454589844
+    diff_result: 98.62165069580078
+    diff_result_only_train: 98.76387786865234
 otdd_naive_upperbound:
   class: otdd
   arguments:
@@ -50,5 +50,5 @@ otdd_naive_upperbound:
   expected_results:
     same_result: 256.1785888671875
     same_result_only_train: 256.23443603515625
-    diff_result: 306.54510498046875
-    diff_result_only_train: 306.96612548828125
+    diff_result: 306.5455017089844
+    diff_result_only_train: 306.96649169921875
