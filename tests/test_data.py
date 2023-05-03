@@ -368,18 +368,18 @@ def test_get_AB_data():
 
     # a train
     _compare_dataloader_to_tensor(
-        dl=dmpair.A.train_dataloader(), data=torch.tensor(train_data_a)
+        dl=dmpair.A.train_dataloader(), data=torch.from_numpy(train_data_a)
     )
     # b train
     _compare_dataloader_to_tensor(
-        dl=dmpair.B.train_dataloader(), data=torch.tensor(train_data_b)
+        dl=dmpair.B.train_dataloader(), data=torch.from_numpy(train_data_b)
     )
 
     # a val
     _compare_dataloader_to_tensor(
-        dl=dmpair.A.val_dataloader(), data=torch.tensor(val_data_a)
+        dl=dmpair.A.val_dataloader(), data=torch.from_numpy(val_data_a)
     )
     # b val
     _compare_dataloader_to_tensor(
-        dl=dmpair.B.val_dataloader(), data=torch.tensor(val_data_b)
+        dl=dmpair.B.val_dataloader(), data=torch.from_numpy(val_data_b)
     )

@@ -22,10 +22,12 @@ def metrics_config() -> dict:
     return otdd_config
 
 
-# This test checks that the distance between a dataset and itself is the expect value
-# When exact calculations are used then this will be zero
-# Approximate methods may be non-zero and these are checked against the known value
-# for the seed
+# This test checks that the distance between a dataset and itself is close to the
+# expected value within a tolerance
+# A check for equality is not performed as different processors can return slightly
+# different values
+# Approximate methods may be non-zero when comparing a dataset to itself and these
+# are checked against the known value for the seed
 @pytest.mark.skipif(
     platform.processor() == "arm",
     reason="These tests should not be run on Apple M1 devices",
@@ -57,8 +59,10 @@ def test_cifar_otdd_same(metrics_config: dict):
         pytest.fail("\n".join(failures))
 
 
-# This test checks that the distance between two different datasets is the expected
-# value
+# This test checks that the distance between two different datasets is close to the
+# expected value within a tolerance
+# A check for equality is not performed as different processors can return slightly
+# different values
 # The calculated distance is checked against the known value for the seed - brittle
 # test but useful for messing with code
 @pytest.mark.skipif(

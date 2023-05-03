@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 class MMD(DistanceMetric):
     def __init__(self, seed: int):
+        super().__init__(seed)
         # Kernel dictionary
         self.__MMD_KERNEL_DICT = {
             "rbf": metrics.pairwise.rbf_kernel,
