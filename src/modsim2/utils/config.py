@@ -35,6 +35,42 @@ def load_configs(
     return config_dict
 
 
+def compose_transform(
+    t_conf: dict, scale_data: bool = True
+) -> torchvision.transforms.transforms.Compose:
+    """
+    A function that takes a transform config as input, and returns a composed
+    transform that turns the PIL image back into a tensor as outpt. Only allows
+    for one transform to be used. Allows None to be supplied in lieu of a config,
+    and returns None in this case.
+
+    Args:
+        t_conf: A dict specifying the transform, with "name" and "kwargs" keys.
+        scale_data: Whether ToTensor (which scales the tensors to [0,1]) or
+                    PILToTensor (which leaves the data unscaled) should be used.
+                    If True, uses ToTensor.
+
+    Returns:
+        torchvision.transforms.transforms.Compose: A composed transform
+    """
+    # If None is supplied, return None
+    if t_conf is None:
+        return t_conf
+
+    # Otherwise, load the transform
+    transform = _load_transform(t_conf)
+
+    # Transforms create PIL images. We need to return tensors though
+    if scale_data:
+        to_tensor = torchvision.transforms.ToTensor()
+    else:
+        to_tensor = torchvision.transforms.PILToTensor()
+
+    # Compose and return the transform
+    composed = torchvision.transforms.Compose([transform, to_tensor])
+    return composed
+
+
 def _load_transform(t_conf: dict) -> torch.nn.Module:
     clazz = getattr(torchvision.transforms, t_conf["name"])
     kwargs = t_conf.get("kwargs", {})  # default to empty
