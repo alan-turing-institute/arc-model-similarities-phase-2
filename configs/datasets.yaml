@@ -23,3 +23,194 @@ experiment_groups:
       B:
         drop: 0.75
         transforms: null
+  none-vs-transforms:
+    - A:
+        drop: 0
+        transforms: null
+      B:
+        drop: 0
+        transforms:
+          kwargs:
+            kernel_size: 3
+            sigma: 1
+          name: GaussianBlur
+    - A:
+        drop: 0
+        transforms: null
+      B:
+        drop: 0.5
+        transforms:
+          kwargs:
+            kernel_size: 3
+            sigma: 1
+          name: GaussianBlur
+    - A:
+        drop: 0.5
+        transforms: null
+      B:
+        drop: 0.5
+        transforms:
+          kwargs:
+            kernel_size: 3
+            sigma: 1
+          name: GaussianBlur
+    - A:
+        drop: 0.25
+        transforms: null
+      B:
+        drop: 0.75
+        transforms:
+          kwargs:
+            kernel_size: 3
+            sigma: 1
+          name: GaussianBlur
+    - A:
+        drop: 0.75
+        transforms: null
+      B:
+        drop: 0.25
+        transforms:
+          kwargs:
+            kernel_size: 3
+            sigma: 1
+          name: GaussianBlur
+    - A:
+        drop: 0
+        transforms: null
+      B:
+        drop: 0
+        transforms:
+          kwargs:
+            kernel_size: 3
+            sigma: 3
+          name: GaussianBlur
+    - A:
+        drop: 0
+        transforms: null
+      B:
+        drop: 0.5
+        transforms:
+          kwargs:
+            kernel_size: 3
+            sigma: 3
+          name: GaussianBlur
+    - A:
+        drop: 0.5
+        transforms: null
+      B:
+        drop: 0.5
+        transforms:
+          kwargs:
+            kernel_size: 3
+            sigma: 3
+          name: GaussianBlur
+    - A:
+        drop: 0.25
+        transforms: null
+      B:
+        drop: 0.75
+        transforms:
+          kwargs:
+            kernel_size: 3
+            sigma: 3
+          name: GaussianBlur
+    - A:
+        drop: 0.75
+        transforms: null
+      B:
+        drop: 0.25
+        transforms:
+          kwargs:
+            kernel_size: 3
+            sigma: 3
+          name: GaussianBlur
+    - A:
+        drop: 0
+        transforms: null
+      B:
+        drop: 0
+        transforms:
+          kwargs:
+            num_output_channels: 3
+          name: Grayscale
+    - A:
+        drop: 0
+        transforms: null
+      B:
+        drop: 0.5
+        transforms:
+          kwargs:
+            num_output_channels: 3
+          name: Grayscale
+    - A:
+        drop: 0.5
+        transforms: null
+      B:
+        drop: 0.5
+        transforms:
+          kwargs:
+            num_output_channels: 3
+          name: Grayscale
+    - A:
+        drop: 0.25
+        transforms: null
+      B:
+        drop: 0.75
+        transforms:
+          kwargs:
+            num_output_channels: 3
+          name: Grayscale
+    - A:
+        drop: 0.75
+        transforms: null
+      B:
+        drop: 0.25
+        transforms:
+          kwargs:
+            num_output_channels: 3
+          name: Grayscale
+    - A:
+        drop: 0
+        transforms: null
+      B:
+        drop: 0
+        transforms:
+          kwargs:
+            p: 1
+          name: RandomVerticalFlip
+    - A:
+        drop: 0
+        transforms: null
+      B:
+        drop: 0.5
+        transforms:
+          kwargs:
+            p: 1
+          name: RandomVerticalFlip
+    - A:
+        drop: 0.5
+        transforms: null
+      B:
+        drop: 0.5
+        transforms:
+          kwargs:
+            p: 1
+          name: RandomVerticalFlip
+    - A:
+        drop: 0.25
+        transforms: null
+      B:
+        drop: 0.75
+        transforms:
+          kwargs:
+            p: 1
+          name: RandomVerticalFlip
+    - A:
+        drop: 0.75
+        transforms: null
+      B:
+        drop: 0.25
+        transforms:
+          kwargs:
+            p: 1
+          name: RandomVerticalFlip
