@@ -37,7 +37,6 @@ def test_cifar_otdd_same(metrics_config: dict):
     dmpair = DMPair(metrics_config=metrics_config, seed=42)
     similarity_dict = dmpair.compute_similarity(only_train=False)
     similarity_dict_only_train = dmpair.compute_similarity(only_train=True)
-
     test_scenarios = {
         "same_result": similarity_dict,
         "same_result_only_train": similarity_dict_only_train,
@@ -68,7 +67,10 @@ def test_cifar_otdd_different(metrics_config: dict):
 
 # This function takes the computed distances (stored in test_scenarios) and
 # compares them to the expected distances (stored in metrics_config)
-def compare_results(test_scenarios, metrics_config: dict):
+# The values are compared for closeness rather than equality, this is
+# owing to inconsistencies in the results when the calculations are performed
+# on different processors
+def compare_results(test_scenarios: dict, metrics_config: dict):
     for scenario, results in test_scenarios.items():
         for k in metrics_config:
             expected_result = metrics_config[k]["expected_results"][scenario]

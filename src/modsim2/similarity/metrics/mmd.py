@@ -15,7 +15,7 @@ class MMD(DistanceMetric):
     def __init__(self, seed: int):
         super().__init__(seed)
         # Kernel dictionary
-        self.__MMD_KERNEL_DICT = {
+        self.__mmd_kernel_dict = {
             "rbf": metrics.pairwise.rbf_kernel,
             "laplace": metrics.pairwise.laplacian_kernel,
         }
@@ -37,7 +37,7 @@ class MMD(DistanceMetric):
         N_B = matrix_B.shape[0]
 
         # Extract kernel callable
-        kernel_fn = self.__MMD_KERNEL_DICT[kernel_name]
+        kernel_fn = self.__mmd_kernel_dict[kernel_name]
 
         # Compute MMD components
         logging.info(
