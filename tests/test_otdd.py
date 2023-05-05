@@ -36,15 +36,16 @@ def test_cifar_otdd_same(metrics_config: dict):
     dmpair = DMPair(metrics_config=metrics_config, seed=42)
     similarity_dict = dmpair.compute_similarity(only_train=False)
     similarity_dict_only_train = dmpair.compute_similarity(only_train=True)
+    test_scenarios = {
+        "same_result": similarity_dict,
+        "same_result_only_train": similarity_dict_only_train,
+    }
     failures = []
-    for results in [
-        ("same_result", similarity_dict),
-        ("same_result_only_train", similarity_dict_only_train),
-    ]:
+    for scenario, results in test_scenarios.items():
         for k in metrics_config:
-            test_name = k + "/" + results[0]
-            expected_result = metrics_config[k]["expected_results"]["same_result"]
-            actual_result = results[1][k]
+            test_name = k + "/" + scenario
+            expected_result = metrics_config[k]["expected_results"][scenario]
+            actual_result = results[k]
             if not np.isclose(actual_result, expected_result, rtol=1e-5, atol=1e-8):
                 failure = (
                     "test:"
@@ -73,15 +74,16 @@ def test_cifar_otdd_different(metrics_config: dict):
     dmpair = DMPair(metrics_config=metrics_config, drop_percent_A=0.2, seed=42)
     similarity_dict = dmpair.compute_similarity(only_train=False)
     similarity_dict_only_train = dmpair.compute_similarity(only_train=True)
+    test_scenarios = {
+        "diff_result": similarity_dict,
+        "diff_result_only_train": similarity_dict_only_train,
+    }
     failures = []
-    for results in [
-        ("same_result", similarity_dict),
-        ("same_result_only_train", similarity_dict_only_train),
-    ]:
+    for scenario, results in test_scenarios.items():
         for k in metrics_config:
-            test_name = k + "/" + results[0]
-            expected_result = metrics_config[k]["expected_results"]["same_result"]
-            actual_result = results[1][k]
+            test_name = k + "/" + scenario
+            expected_result = metrics_config[k]["expected_results"][scenario]
+            actual_result = results[k]
             if not np.isclose(actual_result, expected_result, rtol=1e-5, atol=1e-8):
                 failure = (
                     "test:"
