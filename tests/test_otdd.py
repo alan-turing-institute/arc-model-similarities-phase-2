@@ -3,6 +3,7 @@ import platform
 
 import numpy as np
 import pytest
+from pytest_check import check
 
 from modsim2.data.loader import DMPair
 from modsim2.utils.config import load_configs
@@ -36,28 +37,12 @@ def test_cifar_otdd_same(metrics_config: dict):
     dmpair = DMPair(metrics_config=metrics_config, seed=42)
     similarity_dict = dmpair.compute_similarity(only_train=False)
     similarity_dict_only_train = dmpair.compute_similarity(only_train=True)
+
     test_scenarios = {
         "same_result": similarity_dict,
         "same_result_only_train": similarity_dict_only_train,
     }
-    failures = []
-    for scenario, results in test_scenarios.items():
-        for k in metrics_config:
-            test_name = k + "/" + scenario
-            expected_result = metrics_config[k]["expected_results"][scenario]
-            actual_result = results[k]
-            if not np.isclose(actual_result, expected_result, rtol=1e-5, atol=1e-8):
-                failure = (
-                    "test:"
-                    + test_name
-                    + ", expected result: "
-                    + str(expected_result)
-                    + ", actual result: "
-                    + str(actual_result)
-                )
-                failures.append(failure)
-    if failures:
-        pytest.fail("\n".join(failures))
+    compare_results(test_scenarios, metrics_config)
 
 
 # This test checks that the distance between two different datasets is close to the
@@ -78,24 +63,29 @@ def test_cifar_otdd_different(metrics_config: dict):
         "diff_result": similarity_dict,
         "diff_result_only_train": similarity_dict_only_train,
     }
-    failures = []
+    compare_results(test_scenarios, metrics_config)
+
+
+# This function takes the computed distances (stored in test_scenarios) and
+# compares them to the expected distances (stored in metrics_config)
+def compare_results(test_scenarios, metrics_config: dict):
     for scenario, results in test_scenarios.items():
         for k in metrics_config:
-            test_name = k + "/" + scenario
             expected_result = metrics_config[k]["expected_results"][scenario]
             actual_result = results[k]
-            if not np.isclose(actual_result, expected_result, rtol=1e-5, atol=1e-8):
-                failure = (
+            with check:
+                assert np.isclose(
+                    actual_result, expected_result, rtol=1e-5, atol=1e-8
+                ), (
                     "test:"
-                    + test_name
+                    + k
+                    + "/"
+                    + scenario
                     + ", expected result: "
                     + str(expected_result)
                     + ", actual result: "
                     + str(actual_result)
                 )
-                failures.append(failure)
-    if failures:
-        pytest.fail("\n".join(failures))
 
 
 # This test checks that a value error is raised wen

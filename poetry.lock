@@ -1686,6 +1686,21 @@ tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "xmlschema"]
 
 [[package]]
+name = "pytest-check"
+version = "2.1.4"
+description = "A pytest plugin that allows multiple failures per test."
+category = "main"
+optional = false
+python-versions = ">3.7"
+files = [
+    {file = "pytest-check-2.1.4.tar.gz", hash = "sha256:01b37fd703da0fa667b7017af1f0460c744a85f1ee87675ee3e0f94acc3df172"},
+    {file = "pytest_check-2.1.4-py3-none-any.whl", hash = "sha256:0c15d8c01ce31a13b73eb875854d060aca6f6c529aa9dd9fa0bd690c744eb171"},
+]
+
+[package.dependencies]
+pytest = "*"
+
+[[package]]
 name = "python-dateutil"
 version = "2.8.2"
 description = "Extensions to the standard Python datetime module"
@@ -2516,4 +2531,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "8b9d84e0d74018a324d13d68856f92118e4167febca10c0a75ec9829a475b4c6"
+content-hash = "4afb6fee009c748d42b260c8ed3dca004ef37d36cdc5e655bd895f301dd5a10d"
