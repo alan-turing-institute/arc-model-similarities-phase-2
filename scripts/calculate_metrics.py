@@ -25,7 +25,9 @@ def main(
         seed=dataset_config["seeds"][seed_index],
     )
 
-    dmpair = DMPair(**dmpair_kwargs, metric_config=metrics_config)
+    dmpair = DMPair(**dmpair_kwargs, metrics_config=metrics_config)
+    dmpair.A.setup()
+    dmpair.B.setup()
     metrics = {
         "experiment_pair_name": experiment_pair_name,
         **dmpair.compute_similarity(),

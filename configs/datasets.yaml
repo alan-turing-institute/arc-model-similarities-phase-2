@@ -26,7 +26,7 @@ experiment_groups:
   none-vs-transforms:
     - A:
         drop: 0
-        transform: null
+        transforms: null
       B:
         drop: 0
         transforms:
@@ -36,7 +36,7 @@ experiment_groups:
           name: GaussianBlur
     - A:
         drop: 0
-        transform: null
+        transforms: null
       B:
         drop: 0.5
         transforms:
@@ -46,7 +46,7 @@ experiment_groups:
           name: GaussianBlur
     - A:
         drop: 0.5
-        transform: null
+        transforms: null
       B:
         drop: 0
         transforms:
@@ -56,7 +56,7 @@ experiment_groups:
           name: GaussianBlur
     - A:
         drop: 0.5
-        transform: null
+        transforms: null
       B:
         drop: 0.5
         transforms:
@@ -66,7 +66,7 @@ experiment_groups:
           name: GaussianBlur
     - A:
         drop: 0.25
-        transform: null
+        transforms: null
       B:
         drop: 0.75
         transforms:
@@ -76,7 +76,7 @@ experiment_groups:
           name: GaussianBlur
     - A:
         drop: 0.75
-        transform: null
+        transforms: null
       B:
         drop: 0.25
         transforms:
@@ -86,7 +86,7 @@ experiment_groups:
           name: GaussianBlur
     - A:
         drop: 0
-        transform: null
+        transforms: null
       B:
         drop: 0
         transforms:
@@ -96,7 +96,7 @@ experiment_groups:
           name: GaussianBlur
     - A:
         drop: 0
-        transform: null
+        transforms: null
       B:
         drop: 0.5
         transforms:
@@ -106,7 +106,7 @@ experiment_groups:
           name: GaussianBlur
     - A:
         drop: 0.5
-        transform: null
+        transforms: null
       B:
         drop: 0
         transforms:
@@ -116,7 +116,7 @@ experiment_groups:
           name: GaussianBlur
     - A:
         drop: 0.5
-        transform: null
+        transforms: null
       B:
         drop: 0.5
         transforms:
@@ -126,7 +126,7 @@ experiment_groups:
           name: GaussianBlur
     - A:
         drop: 0.25
-        transform: null
+        transforms: null
       B:
         drop: 0.75
         transforms:
@@ -136,7 +136,7 @@ experiment_groups:
           name: GaussianBlur
     - A:
         drop: 0.75
-        transform: null
+        transforms: null
       B:
         drop: 0.25
         transforms:
@@ -146,7 +146,7 @@ experiment_groups:
           name: GaussianBlur
     - A:
         drop: 0
-        transform: null
+        transforms: null
       B:
         drop: 0
         transforms:
@@ -155,7 +155,7 @@ experiment_groups:
           name: Grayscale
     - A:
         drop: 0
-        transform: null
+        transforms: null
       B:
         drop: 0.5
         transforms:
@@ -164,7 +164,7 @@ experiment_groups:
           name: Grayscale
     - A:
         drop: 0.5
-        transform: null
+        transforms: null
       B:
         drop: 0
         transforms:
@@ -173,7 +173,7 @@ experiment_groups:
           name: Grayscale
     - A:
         drop: 0.5
-        transform: null
+        transforms: null
       B:
         drop: 0.5
         transforms:
@@ -182,7 +182,7 @@ experiment_groups:
           name: Grayscale
     - A:
         drop: 0.25
-        transform: null
+        transforms: null
       B:
         drop: 0.75
         transforms:
@@ -191,7 +191,7 @@ experiment_groups:
           name: Grayscale
     - A:
         drop: 0.75
-        transform: null
+        transforms: null
       B:
         drop: 0.25
         transforms:
@@ -200,7 +200,7 @@ experiment_groups:
           name: Grayscale
     - A:
         drop: 0
-        transform: null
+        transforms: null
       B:
         drop: 0
         transforms:
@@ -209,7 +209,7 @@ experiment_groups:
           name: RandomVerticalFlip
     - A:
         drop: 0
-        transform: null
+        transforms: null
       B:
         drop: 0.5
         transforms:
@@ -218,7 +218,7 @@ experiment_groups:
           name: RandomVerticalFlip
     - A:
         drop: 0.5
-        transform: null
+        transforms: null
       B:
         drop: 0
         transforms:
@@ -227,7 +227,7 @@ experiment_groups:
           name: RandomVerticalFlip
     - A:
         drop: 0.5
-        transform: null
+        transforms: null
       B:
         drop: 0.5
         transforms:
@@ -236,7 +236,7 @@ experiment_groups:
           name: RandomVerticalFlip
     - A:
         drop: 0.25
-        transform: null
+        transforms: null
       B:
         drop: 0.75
         transforms:
@@ -245,7 +245,7 @@ experiment_groups:
           name: RandomVerticalFlip
     - A:
         drop: 0.75
-        transform: null
+        transforms: null
       B:
         drop: 0.25
         transforms:
