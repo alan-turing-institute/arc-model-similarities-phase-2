@@ -25,7 +25,7 @@ def load_configs(
 
     if metrics_config_path:
         with open(metrics_config_path, "r") as stream:
-            config_dict["metric_config"] = yaml.safe_load(stream)
+            config_dict["metrics_config"] = yaml.safe_load(stream)
 
     if transforms_config_path:
         with open(transforms_config_path, "r") as stream:

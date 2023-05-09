@@ -8,7 +8,7 @@ from pl_bolts.datamodules import CIFAR10DataModule
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, Subset
 
-from modsim2.similarity.constants import ARGUMENTS, FUNCTION, METRIC_FN_DICT
+from modsim2.similarity.constants import ARGUMENTS, CLASS_KEY, METRIC_CLS_DICT
 
 # Set module logger
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ class CIFAR10DMSubset(CIFAR10DataModule):
         Args:
             dataset_train: Dataset or Subset class object to replace
                            original dataset_train with
-            dataset_train: Dataset or Subset class object to replace
+            dataset_val: Dataset or Subset class object to replace
                            original dataset_val with
             data_dir: Where to save/load the data
             val_split: Percent (float) or number (int) of samples to use
@@ -184,7 +184,6 @@ def split_indices(
 
     # If needing to drop observations
     if sum_drop_percentage > 0:
-
         # Numbers to be used
         num_obs = len(indices)
         num_drop_A = round(num_obs * drop_percent_A)
@@ -194,7 +193,6 @@ def split_indices(
 
         # If there will be shared observations between A and B
         if sum_drop_percentage < 1:
-
             # Split (drop_A + drop_B)% of the training data
             shared_AB_indices, drop_indices = train_test_split(
                 shared_AB_indices,
@@ -214,7 +212,6 @@ def split_indices(
 
             # If dropping from both
             if (drop_percent_A > 0) and (drop_percent_B > 0):
-
                 # Split the unselected component into parts to keep/drop in A vs B
                 # since B is test, test amount is proportion of unselected that is B
                 indices_kept_A_dropped_B, indices_kept_B_dropped_A = train_test_split(
@@ -243,7 +240,7 @@ def split_indices(
 class DMPair:
     def __init__(
         self,
-        metric_config: Dict = {},
+        metrics_config: Dict = {},
         drop_percent_A: Union[int, float] = 0,
         drop_percent_B: Union[int, float] = 0,
         transforms_A: Optional[Callable] = None,
@@ -260,7 +257,6 @@ class DMPair:
         *args: Any,
         **kwargs: Any,
     ) -> None:
-
         """
         A class to generate and manage two paired datamodules, including
         specifying non-overlapping portions of the original dataset to be dropped.
@@ -268,7 +264,7 @@ class DMPair:
         Early loading of the train_dataset is performed
 
         Args:
-            metric_config: Dict of metric configs for similarity measures
+            metrics_config: Dict of metric configs for similarity measures
             drop_percent_A: % of training/val data to drop from A
             drop_percent_B: % of training/val data to drop from B
             transforms_A: transformations applied to A train and val
@@ -292,7 +288,7 @@ class DMPair:
         self.drop_percent_A = drop_percent_A
         self.drop_percent_B = drop_percent_B
         self.seed = seed
-        self.metric_config = metric_config
+        self.metrics_config = metrics_config
 
         # Load and setup CIFAR
         # note: will set transforms later, in CIFAR10DMSubset setup() for A,B
@@ -365,29 +361,38 @@ class DMPair:
             cifar=self.cifar,
         )
 
-    def compute_similarity(self, only_train: bool = False):
+    def compute_similarity(self, only_train: bool = False) -> Dict:
         """
         compute similarity between data of A and B
         only_train removes the validation data from this comparison
         """
 
-        # coerce data into single tensor (not subset)
-        # TODO issue-15 want to get data post-transform
         train_data_A, val_data_A = self.get_A_data()
         train_data_B, val_data_B = self.get_B_data()
+
+        train_labels_A, val_labels_A = self.get_A_labels()
+        train_labels_B, val_labels_B = self.get_B_labels()
 
         if not only_train:
             data_A = np.concatenate((train_data_A, val_data_A), axis=0)
             data_B = np.concatenate((train_data_B, val_data_B), axis=0)
+
+            labels_A = np.concatenate((train_labels_A, val_labels_A), axis=0)
+            labels_B = np.concatenate((train_labels_B, val_labels_B), axis=0)
         else:
             data_A = train_data_A
             data_B = train_data_B
 
+            labels_A = train_labels_A
+            labels_B = train_labels_B
+
         # Loop over dict, compute metrics
         similarity_dict = {}
-        for key, metric in self.metric_config.items():
-            similarity_dict[key] = METRIC_FN_DICT[metric[FUNCTION]](
-                data_A, data_B, **metric[ARGUMENTS]
+        for key, metric in self.metrics_config.items():
+            MetricCls = METRIC_CLS_DICT[metric[CLASS_KEY]]
+            metric_conf = MetricCls(seed=self.seed)
+            similarity_dict[key] = metric_conf.calculate_distance(
+                data_A, data_B, labels_A, labels_B, **metric[ARGUMENTS]
             )
 
         # Output
@@ -398,11 +403,11 @@ class DMPair:
     @staticmethod
     def _get_subset_data(
         subset_module: CIFAR10DMSubset,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> Tuple[np.array, np.array]:
         # force __getitem__ in CIFAR10 class for train and val
         # just take image rather than label
-        train = torch.stack([item[0] for item in subset_module.dataset_train])
-        val = torch.stack([item[0] for item in subset_module.dataset_val])
+        train = np.stack([item[0] for item in subset_module.dataset_train])
+        val = np.stack([item[0] for item in subset_module.dataset_val])
         return train, val
 
     def get_A_data(self) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -437,7 +442,6 @@ class DMPair:
     def _sample_from_test(
         dm: CIFAR10DMSubset, num_images: int = 16
     ) -> tuple[torch.tensor, torch.tensor]:
-
         # Check if dataset_test exists. If not, call .setup()
         if not hasattr(dm, "dataset_test"):
             logging.info("Loading test dataset")

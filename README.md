@@ -40,13 +40,19 @@ You can begin using the package code with an import command:
 
 ### Developer Setup
 
-1. Install dependencies with Poetry
+1. Install geomloss (required for otdd similarity metric)
+
+   ```bash
+   poetry run python -m pip install geomloss
+   ```
+
+2. Install dependencies with Poetry
 
    ```bash
    poetry install
    ```
 
-2. Install pre-commit hooks:
+3. Install pre-commit hooks:
 
    ```bash
    poetry run pre-commit install --install-hooks

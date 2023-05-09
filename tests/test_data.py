@@ -367,11 +367,19 @@ def test_get_AB_data():
     train_data_b, val_data_b = dmpair.get_B_data()
 
     # a train
-    _compare_dataloader_to_tensor(dl=dmpair.A.train_dataloader(), data=train_data_a)
+    _compare_dataloader_to_tensor(
+        dl=dmpair.A.train_dataloader(), data=torch.from_numpy(train_data_a)
+    )
     # b train
-    _compare_dataloader_to_tensor(dl=dmpair.B.train_dataloader(), data=train_data_b)
+    _compare_dataloader_to_tensor(
+        dl=dmpair.B.train_dataloader(), data=torch.from_numpy(train_data_b)
+    )
 
     # a val
-    _compare_dataloader_to_tensor(dl=dmpair.A.val_dataloader(), data=val_data_a)
+    _compare_dataloader_to_tensor(
+        dl=dmpair.A.val_dataloader(), data=torch.from_numpy(val_data_a)
+    )
     # b val
-    _compare_dataloader_to_tensor(dl=dmpair.B.val_dataloader(), data=val_data_b)
+    _compare_dataloader_to_tensor(
+        dl=dmpair.B.val_dataloader(), data=torch.from_numpy(val_data_b)
+    )
