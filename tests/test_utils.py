@@ -19,17 +19,17 @@ CONFIGS = load_configs(
 
 
 def test_configs_exist():
-    assert "metric_config" in CONFIGS
+    assert "metrics_config" in CONFIGS
     assert "transforms_config" in CONFIGS
 
 
 def test_metric_configs_structure_exists():
-    metric_config = CONFIGS["metric_config"]
-    assert "mmd_rbf" in metric_config
-    assert "function" in metric_config["mmd_rbf"]
-    assert "arguments" in metric_config["mmd_rbf"]
-    assert "embedding_name" in metric_config["mmd_rbf"]["arguments"]
-    assert "kernel_name" in metric_config["mmd_rbf"]["arguments"]
+    metrics_config = CONFIGS["metrics_config"]
+    assert "mmd_rbf" in metrics_config
+    assert "class" in metrics_config["mmd_rbf"]
+    assert "arguments" in metrics_config["mmd_rbf"]
+    assert "embedding_name" in metrics_config["mmd_rbf"]["arguments"]
+    assert "kernel_name" in metrics_config["mmd_rbf"]["arguments"]
 
 
 def test_load_transform():
