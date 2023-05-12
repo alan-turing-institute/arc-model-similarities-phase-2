@@ -1,10 +1,10 @@
 import os
 
 import pytest
+import yaml
 from pytest_check import check
 
 from modsim2.data.loader import DMPair
-from modsim2.utils.config import load_configs
 
 
 # Fixture that returns the metric config dictionary
@@ -14,7 +14,8 @@ def metrics_config() -> dict:
     metrics_config_path = os.path.join(
         project_root, "tests", "testconfig", "metrics.yaml"
     )
-    mmd_config = load_configs(metrics_config_path)["metrics_config"]
+    with open(metrics_config_path) as stream:
+        mmd_config = yaml.safe_load(stream)
     # filter down to only mmd configs
     mmd_config = {k: v for k, v in mmd_config.items() if v["class"] == "mmd"}
     return mmd_config
