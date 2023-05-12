@@ -7,25 +7,32 @@ from jinja2 import Environment, FileSystemLoader
 
 
 def main(
+    experiment_groups_path,
     experiment_group,
-    dataset_config_path,
+    dmpair_config_path,
     trainer_config_path,
     account_name,
     conda_env_path,
 ):
     # Dataset config
-    with open(dataset_config_path, "r") as stream:
-        dataset_config = yaml.safe_load(stream)
+    with open(
+        os.path.join(experiment_groups_path, experiment_group + ".yaml")
+    ) as stream:
+        experiment_group_config = yaml.safe_load(stream)
+
+    with open(dmpair_config_path, "r") as stream:
+        dmpair_config = yaml.safe_load(stream)
 
     # Prepare dataset list, seed list
-    NUM_SEEDS = len(dataset_config["seeds"])
-    NUM_PAIRS = len(dataset_config["experiment_groups"][experiment_group])
+    NUM_SEEDS = len(dmpair_config["seeds"])
+    NUM_PAIRS = len(experiment_group_config["dmpairs"])
 
     # Generate combinations of arguments to pass
     combinations = [
-        f"--dataset_config {dataset_config_path} "
-        + f"--trainer_config {trainer_config_path} "
+        f"--experiment_groups_path {experiment_groups_path} "
         + f"--experiment_group {experiment_group} "
+        + f"--dmpair_config {dmpair_config_path}"
+        + f"--trainer_config {trainer_config_path} "
         + f"--seed_index {seed_index} "
         + f"--dataset_index {dataset_index}"
         for seed_index in range(NUM_SEEDS)
@@ -77,16 +84,22 @@ if __name__ == "__main__":
         description="Process arguments for script generation."
     )
     parser.add_argument(
+        "--experiment_groups_path",
+        type=str,
+        help="path to experiment groups config folder",
+        default=constants.EXPERIMENT_GROUPS_PATH,
+    )
+    parser.add_argument(
         "--experiment_group",
         type=str,
         help="experiment group to use",
         required=True,
     )
     parser.add_argument(
-        "--dataset_config_path",
+        "--dmpair_config_path",
         type=str,
-        help="path to datasets config file",
-        default=constants.DATASET_CONFIG_PATH,
+        help="path to dmpair config file",
+        default=constants.DMPAIR_CONFIG_PATH,
     )
     parser.add_argument(
         "--trainer_config_path",
@@ -105,8 +118,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     main(
+        experiment_groups_path=args.experiment_groups_path,
         experiment_group=args.experiment_group,
-        dataset_config_path=args.dataset_config_path,
+        dmpair_config_path=args.dmpair_config_path,
         trainer_config_path=args.trainer_config_path,
         account_name=args.account_name,
         conda_env_path=args.conda_env_path,
