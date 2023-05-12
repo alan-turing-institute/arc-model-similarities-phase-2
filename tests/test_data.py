@@ -1,13 +1,17 @@
+import os
 from collections import Counter
 from math import ceil, isclose
 from unittest.mock import MagicMock
 
 import numpy as np
+import pytest
 import testing_constants
 import torch
 import torchvision.transforms
+import yaml
 
 from modsim2.data.loader import CIFAR10DMSubset, DMPair
+from modsim2.utils.config import create_transforms
 
 
 def _test_n_obs(
@@ -383,3 +387,37 @@ def test_get_AB_data():
     _compare_dataloader_to_tensor(
         dl=dmpair.B.val_dataloader(), data=torch.from_numpy(val_data_b)
     )
+
+
+def test_compute_similarity_error():
+    # Metrics and transform paths
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    metrics_config_path = os.path.join(
+        project_root, "tests", "testconfig", "metrics.yaml"
+    )
+    transforms_config_path = os.path.join(
+        project_root, "tests", "testconfig", "transforms.yaml"
+    )
+
+    # Read in the configs
+    with open(metrics_config_path, "r") as stream:
+        mmd_config = yaml.safe_load(stream)
+    with open(transforms_config_path, "r") as stream:
+        transforms_config = yaml.safe_load(stream)
+
+    # Two DMPairs
+    mmd_config = {k: v for k, v in mmd_config.items() if v["class"] == "mmd"}
+    transforms_A = create_transforms(transforms_config["dmpairs"][0]["A"]["transforms"])
+    transforms_B = create_transforms(transforms_config["dmpairs"][0]["B"]["transforms"])
+    dmpair_no_transforms = DMPair(metrics_config=mmd_config)
+    dmpair_with_transforms = DMPair(
+        transforms_A=transforms_A, transforms_B=transforms_B, metrics_config=mmd_config
+    )
+
+    # Should be no error in computing transforms without calling .setup() for first
+    # DMPair, as with 'None' chosen default transforms will have been applied already
+    assert len(dmpair_no_transforms.compute_similarity()) == 2
+
+    # Should be a ValueError for the second, as transforms would need to be applied:
+    with pytest.raises(ValueError):
+        dmpair_with_transforms.compute_similarity()
