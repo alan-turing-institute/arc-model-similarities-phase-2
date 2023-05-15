@@ -19,9 +19,6 @@ def create_transforms(
     Args:
         transforms_list: A list of dicts, each element of which specifies a single
                          transform with "name" and "kwargs" keys.
-        scale_data: Whether ToTensor (which scales the tensors to [0,1]) or
-                    PILToTensor (which leaves the data unscaled) should be used.
-                    If True, uses ToTensor.
 
     Returns:
         torchvision.transforms.transforms.Compose: A composed transform
