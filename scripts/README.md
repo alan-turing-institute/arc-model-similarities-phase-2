@@ -12,15 +12,15 @@ For each of these three tasks, a generation script exists which will generate ba
 
 ## Calculate Metrics
 
-The metrics calculation script `scripts/calculate_metrics.py` will take a dataset config and metrics configs as input along with additional parameters to determine which dataset pair to compute metrics for. For a single dataset pair in the dataset config, it will compute every metric in the metrics config. The results will then be stored in a JSON file.
+The metrics calculation script `scripts/calculate_metrics.py` will take an experiment group config containing dataset specifications, a dmpair key words argument config for additional arguments for the datasets shared across experiment groups, and a metrics configs as input along with additional parameters to determine which dataset pair to compute metrics for. For a single dataset pair in the experiment group config, it will compute every metric in the metrics config. The results will then be stored in a JSON file.
 
-You can generate bash scripts for every dataset pair in a given experiment group in the dataset config by calling
+You can generate bash scripts for every dataset pair in a given experiment group by calling
 
 ```bash
 python scripts/generate_metrics_scripts.py --experiment_group "drop-only"
 ```
 
-where `"drop-only"` is an example of an exerperiment group in our dataset config (see below for more information on configs). It will generate bash scripts in `ROOT/metrics_scripts/`. Note additional optional arguments that can be passed to the generation script include `--dataset_config_path` and `--metrics_config_path`.
+where `"drop-only"` is an example of an experiment group with a named config (see below for more information on configs). It will generate bash scripts in `ROOT/metrics_scripts/`. Note additional optional arguments that can be passed to the generation script include `--dataset_config_path` and `--metrics_config_path`.
 
 Once this is done, you can call each of the individual scripts individually, e.g.
 
@@ -32,15 +32,15 @@ to compute metrics for that particular DMPair, where `drop-only_0_0_metrics.sh` 
 
 ## Train Models
 
-The model training script `scripts/train_models.py` will take a dataset config and trainer configs as input along with additional parameters to determine which dataset pair to train models for. For a single dataset pair in the dataset config, it will train a model for each dataset in that pair and log the results to wandb.
+The model training script `scripts/train_models.py` will take an experiment group config containing dataset specifications, a dmpair key words argument config for additional arguments for the datasets shared across experiment groups, and trainer configs as input along with additional parameters to determine which dataset pair to train models for. For a single dataset pair in the experiment group config, it will train a model for each dataset in that pair and log the results to wandb.
 
-You can generate slurm scripts for every dataset pair in a given experiment group in the dataset config by calling
+You can generate slurm scripts for every dataset pair in a given experiment group by calling
 
 ```bash
 python scripts/generate_train_scripts.py --experiment_group "drop-only"
 ```
 
-where `"drop-only"` is an example of an exerperiment group in our dataset config (see below for more information on configs). It will generate bash scripts in `ROOT/train_scripts/`. Note additional optional arguments to the generation script include `--dataset_config_path`, `--metrics_config_path`, `--account_name`, and `--conda_env_path` (see below).
+where `"drop-only"` is an example of an experiment group with a named config (see below for more information on configs). It will generate bash scripts in `ROOT/train_scripts/`. Note additional optional arguments to the generation script include `--dataset_config_path`, `--metrics_config_path`, `--account_name`, and `--conda_env_path` (see below).
 
 Once this is done, you can run all of the generated scripts for a given experiment group by calling `scripts/train_all.sh` followed by the name of the experiment group, e.g.
 
@@ -48,7 +48,7 @@ Once this is done, you can run all of the generated scripts for a given experime
 scripts/train_all.sh drop-only
 ```
 
-where once again `drop-only` is an example of an exerperiment group in our dataset config.
+where once again `drop-only` is an example of an experiment group with a named config.
 
 Alternatively, you can call each of the scripts individually, e.g.
 
@@ -60,17 +60,17 @@ to train models for that particular dataset pair, where `drop-only_0_0_trainer` 
 
 ## Transfer Attacks
 
-The transfer attack script `scripts/attack.py` will take a dataset config, trainer config, and transfer attack config as input along with additional parameters to determine which dataset pair to perform transfer attacks for. For a single dataset pair, it will generate two sets of adversarial images for each model in corresponding to that pair. For each pair, it will generate one adversarial attack using that model's test dataset, and one adversarial attack using the other model's test dataset (so e.g. for model_A, it will produce adversial images for test_A and test_B).
+The transfer attack script `scripts/attack.py` will take an experiment group config containing dataset specifications, a dmpair key words argument config for additional arguments for the datasets shared across experiment groups, a trainer config, and a transfer attack config as input along with additional parameters to determine which dataset pair to perform transfer attacks for. For a single dataset pair, it will generate two sets of adversarial images for each model in corresponding to that pair. For each pair, it will generate one adversarial attack using that model's test dataset, and one adversarial attack using the other model's test dataset (so e.g. for model_A, it will produce adversarial images for test_A and test_B).
 
 It will do this for every attack specified in the attack config (note however we have only implemented two attack types from foolbox for the package code). It will also perform an attack for every value of epsilon supplied in the config, and perform best image selection by choosing the first successful image with the lowest value of epsilon. If no generated image is successful in the attack generation step, it will select the adversarial image generated by the highest value of epsilon.
 
-You can generate slurm scripts for every dataset pair in a given experiment group in the dataset config by calling
+You can generate slurm scripts for every dataset pair in a given experiment group with a named config by calling
 
 ```bash
 python scripts/generate_attack_scripts.py --experiment_group "drop-only"
 ```
 
-where `"drop-only"` is an example of an exerperiment group in our dataset config (see below for more information on configs). It will generate bash scripts in `ROOT/attack_scripts/`. Note additional optional arguments include `--dataset_config_path`, `--trainer_config_path`, and `--attack_config_path` (see below).
+where `"drop-only"` is an example of an experiment group with a named config (see below for more information on configs). It will generate bash scripts in `ROOT/attack_scripts/`. Note additional optional arguments include `--dataset_config_path`, `--trainer_config_path`, and `--attack_config_path` (see below).
 
 Once this is done, you can run all of the generated scripts for a given experiment group by calling `scripts/attack_all.sh` followed by the name of the experiment group, e.g.
 
@@ -78,7 +78,7 @@ Once this is done, you can run all of the generated scripts for a given experime
 scripts/attack_all.sh drop-only
 ```
 
-where once again `drop-only` is an example of an exerperiment group in our dataset config.
+where once again `drop-only` is an example of an experiment group with a named config.
 
 Alternatively, you can call each of the scripts individually, e.g.
 
@@ -116,15 +116,27 @@ Like those for the training scripts, the slurm scripts generated for model train
 
 Three config files need to be setup for the scripts to work. A dataset config file, a metrics config file, and a trainer config file.
 
-### Dataset Config File
+### Experiment Group Config File
 
-This should be YAML file containing the following elements:
+For ease of running the experiments, we have divided the dataset specifications into several experiment groups. One group for instance covers all experiments with only data dropping as a source of different, another compares datasets with no transforms against those with a grayscale transform.
+
+Each experiment group should have a YAML file containing the following elements:
+
+- dmpairs: all datasets are nested as a YAML array entry under this
+- each dataset has two entries, A and B
+- each entry has a drop percentage and a transforms entry
+- each transforms entry should contain an array, where each entry in the array is a single transform, with name and kwarg arguemnts
+
+All experiment groups are stored in a folder inside our configs folder. You can see an example in this folder as [little-blur.yaml](/configs/experiment_groups/little-blur.yaml).
+
+### DMPair Kwargs Config File
+
+This file contains additional arguments passed to the DMPairs, common to all experiment groups. This should be YAML file containing the following elements:
 
 - seeds: a list of seed numbers to use in generating datasets. For each seed, every DMPair combination will be generated
 - val_split: a single number, the size of the validation split for model training
-- experiment_group: groups of experiments to run separately. Within each group should be several dataset specifications, covering drop percentages and dataset transformations.
 
-You can see an example in the repository config folder as [datasets.yaml](/configs/datasets.yaml).
+You can see an example in the repository config folder as [dmpair_kwargs.yaml](/configs/dmpair_kwargs.yaml).
 
 ### Metrics Config File
 

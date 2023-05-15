@@ -3,10 +3,10 @@ import platform
 
 import numpy as np
 import pytest
+import yaml
 from pytest_check import check
 
 from modsim2.data.loader import DMPair
-from modsim2.utils.config import load_configs
 
 
 # Fixture that returns the metric config dictionary
@@ -16,7 +16,8 @@ def metrics_config() -> dict:
     metrics_config_path = os.path.join(
         project_root, "tests", "testconfig", "metrics.yaml"
     )
-    otdd_config = load_configs(metrics_config_path)["metrics_config"]
+    with open(metrics_config_path, "r") as stream:
+        otdd_config = yaml.safe_load(stream)
     # filter down to only otdd configs
     otdd_config = {k: v for k, v in otdd_config.items() if v["class"] == "otdd"}
 

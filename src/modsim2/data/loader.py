@@ -361,11 +361,40 @@ class DMPair:
             cifar=self.cifar,
         )
 
+    @staticmethod
+    def _check_transforms_applied(
+        subset_module: CIFAR10DMSubset,
+    ) -> bool:
+        if subset_module.train_transforms is None:
+            train_transforms_applied = True
+        else:
+            train_transforms_applied = (
+                subset_module.train_transforms
+                == subset_module.dataset_train.dataset.transform
+            )
+
+        if subset_module.val_transforms is None:
+            val_transforms_applied = True
+        else:
+            val_transforms_applied = (
+                subset_module.val_transforms
+                == subset_module.dataset_val.dataset.transform
+            )
+        return train_transforms_applied and val_transforms_applied
+
     def compute_similarity(self, only_train: bool = False) -> Dict:
         """
         compute similarity between data of A and B
         only_train removes the validation data from this comparison
         """
+
+        if (not self._check_transforms_applied(self.A)) or (
+            not self._check_transforms_applied(self.B)
+        ):
+            raise ValueError(
+                "Transforms have not been applied. Call DMPair.A.setup() and \
+                    DMPair.B.setup() before proceeding."
+            )
 
         train_data_A, val_data_A = self.get_A_data()
         train_data_B, val_data_B = self.get_B_data()

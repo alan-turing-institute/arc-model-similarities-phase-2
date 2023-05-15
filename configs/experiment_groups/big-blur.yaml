@@ -1,0 +1,51 @@
+define:
+  - &none null
+  - &big-blur
+    - name: GaussianBlur
+      kwargs:
+        kernel_size: 3
+        sigma: 3
+    - name: ToTensor
+
+dmpairs:
+- A:
+    drop: 0.0
+    transforms: *none
+  B:
+    drop: 0.0
+    transforms: *big-blur
+
+- A:
+    drop: 0.0
+    transforms: *none
+  B:
+    drop: 0.5
+    transforms: *big-blur
+
+- A:
+    drop: 0.5
+    transforms: *none
+  B:
+    drop: 0.0
+    transforms: *big-blur
+
+- A:
+    drop: 0.5
+    transforms: *none
+  B:
+    drop: 0.5
+    transforms: *big-blur
+
+- A:
+    drop: 0.75
+    transforms: *none
+  B:
+    drop: 0.25
+    transforms: *big-blur
+
+- A:
+    drop: 0.25
+    transforms: *none
+  B:
+    drop: 0.75
+    transforms: *big-blur
