@@ -31,7 +31,7 @@ def main(
     combinations = [
         f"--experiment_groups_path {experiment_groups_path} "
         + f"--experiment_group {experiment_group} "
-        + f"--dmpair_config {dmpair_config_path}"
+        + f"--dmpair_config {dmpair_config_path} "
         + f"--trainer_config {trainer_config_path} "
         + f"--seed_index {seed_index} "
         + f"--dataset_index {dataset_index}"
