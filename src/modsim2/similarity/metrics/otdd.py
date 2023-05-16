@@ -48,8 +48,8 @@ class OTDD(DistanceMetric):
         Calculates the optimal transport dataset distance
 
         Args:
-            array_A: The first image dataset
-            array_B: The second image dataset
+            data_A: The first image dataset
+            data_B: The second image dataset
             max_samples (int):  maximum number of samples used in outer-level
                         otdd problem.
             device (str): the device on which the calculation will run,

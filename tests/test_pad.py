@@ -74,7 +74,7 @@ def test_cifar_pad_distinct(metrics_config: dict):
 
 # This test checks that there are equal samples of A and B in the
 # combined test dataset
-def test_equal_samples(metrics_config: dict):
+def test_cifar_pad_equal_samples(metrics_config: dict):
     dmpair = DMPair(metrics_config=metrics_config)
     train_data_A, val_data_A = dmpair.get_A_data()
     train_data_B, val_data_B = dmpair.get_B_data()
@@ -98,7 +98,10 @@ def test_equal_samples(metrics_config: dict):
         sum_test_labels = np.sum(combined_test_labels)
         count_test_labels = combined_test_labels.shape[0]
 
-        assert 2 * sum_test_labels == count_test_labels
+        # The label values are either zero or one, so the
+        # sum of the labels should equal half the number
+        # of records
+        assert (2 * sum_test_labels) == count_test_labels
 
 
 # This function takes the computed distances (stored in test_scenarios) and

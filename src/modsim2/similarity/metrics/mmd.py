@@ -72,8 +72,8 @@ class MMD(DistanceMetric):
         the future.
 
         Args:
-            array_A: The first image dataset
-            array_B: The second image dataset
+            data_A: The first image dataset
+            data_B: The second image dataset
             embedding_name: What feature embeddings, if any, to use for the
                             input arrays
             kernel_name: An appropriate kernel embedding. See kernel_dict
