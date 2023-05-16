@@ -2,33 +2,13 @@
 
 This README describes which scripts to call to replicate the results of this project. There are separate scripts for computing dataset similarity metrics, model training, and attack transferring.
 
-Note that while measuring dataset similarity and model training can be performed in any order, performing transfer attacks must be done after training the models.
+Note that model training must be performed before either performing transfer attacks or measuring dataset similarity. This is to ensure that our wandb logging setup keeps all information on the same wandb runs.
 
 For each of these three tasks, a generation script exists which will generate bash/slurm scripts that can be called individually for a given dataset pair.
 
 **Requirements:** For broad requirements beyond installing the project source code, see [requirements](#requirements) below.
 
 **Important:** for model training and transfer attacks, we use wandb to store our results (see more in [requirements](#requirements) below). Our training script will produce an exception if the run name already exists on wandb, and the attack script will produce an exception if the run name is not unique on wandb. To perform the same run again, it will be necessary to either rename the old run, rename the new run, or delete the old run.
-
-## Calculate Metrics
-
-The metrics calculation script `scripts/calculate_metrics.py` will take an experiment group config containing dataset specifications, a dmpair key words argument config for additional arguments for the datasets shared across experiment groups, and a metrics configs as input along with additional parameters to determine which dataset pair to compute metrics for. For a single dataset pair in the experiment group config, it will compute every metric in the metrics config. The results will then be stored in a JSON file.
-
-You can generate bash scripts for every dataset pair in a given experiment group by calling
-
-```bash
-python scripts/generate_metrics_scripts.py --experiment_group "drop-only"
-```
-
-where `"drop-only"` is an example of an experiment group with a named config (see below for more information on configs). It will generate bash scripts in `ROOT/metrics_scripts/`. Note additional optional arguments that can be passed to the generation script include `--dataset_config_path` and `--metrics_config_path`.
-
-Once this is done, you can call each of the individual scripts individually, e.g.
-
-```bash
-metrics_scripts/drop-only_0_0_metrics.sh
-```
-
-to compute metrics for that particular DMPair, where `drop-only_0_0_metrics.sh` is one of the bash scripts generated for the `drop-only` experiment group, with dataset pair index `0` and seed index `0`. Note that the JSON results file from calling this will land in a `ROOT/results/` folder which will be created if it does not already exist.
 
 ## Train Models
 
@@ -45,7 +25,7 @@ where `"drop-only"` is an example of an experiment group with a named config (se
 Once this is done, you can run all of the generated scripts for a given experiment group by calling `scripts/train_all.sh` followed by the name of the experiment group, e.g.
 
 ```bash
-scripts/train_all.sh drop-only
+scripts/slurm)train_all.sh drop-only
 ```
 
 where once again `drop-only` is an example of an experiment group with a named config.
@@ -57,6 +37,46 @@ sbatch trainer_scripts/drop-only_0_0_trainer.sh
 ```
 
 to train models for that particular dataset pair, where `drop-only_0_0_trainer` is one of the bash scripts generated for the `drop-only` experiment group, with dataset pair index `0` and seed index `0`. Note that logging is performed with wandb and so you will need this set up on your machine in order to proceed. Note also that the output directory specified in the slurm template (see [requirements](#requirements) below.) must exist prior to running the scripts.
+
+## Calculate Metrics
+
+The metrics calculation script `scripts/calculate_metrics.py` will take an experiment group config containing dataset specifications, a dmpair key words argument config for additional arguments for the datasets shared across experiment groups, a trainer config containing arguments for logging to wandb, and a metrics configs as input along with additional parameters to determine which dataset pair to compute metrics for. For a single dataset pair in the experiment group config, it will compute every metric in the metrics config. The results will then be stored in a JSON file.
+
+You can generate bash scripts for every dataset pair in a given experiment group and metric config by calling
+
+```bash
+python scripts/generate_metrics_scripts.py --experiment_group "drop-only" --metrics_file "mmd"
+```
+
+where `"drop-only"` is an example of an experiment group with a named config and `"mmd"` is an example of a named metric config (see below for more information on configs). It will generate bash scripts in `ROOT/metrics_scripts/x`, where `x` is also the name of the metric config used. Depending on the `baskerville` entry in the metric config, this will generate either regular bash scripts or slurm scripts. Note additional optional arguments that can be passed to the generation script include `--dataset_config_path` and `--metrics_config_path`.
+
+Once this is done, you can run all of the generated scripts for a given experiment group and metric config by calling either `scripts/slurm_metric_all.sh` where slurm scripts have been generated or `scripts/shell_metric_all.sh` followed by the name of the metric config and the name of the experiment group, e.g.
+
+```bash
+scripts/slurm_metric_all.sh mmd drop-only
+```
+
+or
+
+```bash
+scripts/shell_metric_all.sh mmd drop-only
+```
+
+where once again `mmd` is an example of a named metric config `drop-only` is an example of an experiment group with a named config.
+
+Alternatively, you can call each of the scripts individually, using `sbatch` if the created script is a slurm script, e.g.
+
+```bash
+sbatch metrics_scripts/mmd/drop-only_0_0_metrics.sh
+```
+
+or
+
+```bash
+metrics_scripts/mmd/drop-only_0_0_metrics.sh
+```
+
+to compute metrics for that particular DMPair, where `metrics_scripts/mmd/drop-only_0_0_metrics.sh` is one of the bash scripts generated for the `mmd` metric config and the `drop-only` experiment group, with dataset pair index `0` and seed index `0`. Note also that if using slurm, the output directory specified in the slurm template (see [requirements](#requirements) below.) must exist prior to running the scripts.
 
 ## Transfer Attacks
 
@@ -75,7 +95,7 @@ where `"drop-only"` is an example of an experiment group with a named config (se
 Once this is done, you can run all of the generated scripts for a given experiment group by calling `scripts/attack_all.sh` followed by the name of the experiment group, e.g.
 
 ```bash
-scripts/attack_all.sh drop-only
+scripts/slurm_attack_all.sh drop-only
 ```
 
 where once again `drop-only` is an example of an experiment group with a named config.
@@ -140,13 +160,17 @@ You can see an example in the repository config folder as [dmpair_kwargs.yaml](/
 
 ### Metrics Config File
 
-This should be a YAML file containing the elements with the following structure
+To facilitate running different metrics in different locations and without needing to run all of them simultaneously, we have divided our metrics config into several configs. Multiple metrics can however be specified within the same config file.
 
+Each metric config should be a YAML file containing the elements with the following structure
+
+- a `baskerville` entry, denoting `True` or `False` for whether this metric should be computed on Baskerville (our HPC) and thus use slurm
+- all metrics under a `metric` entry
 - an initial key denoting the name you wish to assign to the metric
 - nested within this, a key:value pair giving a function name (see our function dictionary at [this location](/src/modsim2/similarity/constants.py))
 - if relevant, another key for arguments giving the key:value pairs of argument names and argument values to be passed to the metric call
 
-You can see an example in the repository config folder as [metrics.yaml](/configs/metrics.yaml).
+You can see an example in the repository config folder as [mmd.yaml](/configs/metrics/mmd.yaml).
 
 ### Trainer Config File
 
