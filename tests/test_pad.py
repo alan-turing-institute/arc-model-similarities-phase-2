@@ -52,24 +52,29 @@ def test_cifar_pad_different(metrics_config: dict):
     compare_results(test_scenarios, metrics_config)
 
 
-# This test checks that the distance between two datasets with distinct labels
-# has a greater pad than when the datasets are the same. This is a sanity check
-# to ensure that the classifier(s) used in the pad calculation better at
-# distinguishing between two datasets that have different labels compared
-# to when the two datasets have the same labels.
+# This test is a sanity check that ensures the PAD between two datasets
+# with distinct labels is greater than when the datasets labels contain
+# the same classes. In theory the classifiers should be more able to
+# distinguish between the two datasets if their classes are distinct.
 def test_cifar_pad_distinct(metrics_config: dict):
 
     dmpair = DMPair(metrics_config=metrics_config)
     similarity_dict = dmpair.compute_similarity()
 
+    dmpair = DMPair(
+        metrics_config=metrics_config, drop_percent_A=0.5, drop_percent_B=0.5, seed=42
+    )
+    similarity_dict_diff = dmpair.compute_similarity()
+
     metrics_config_copy = copy.deepcopy(metrics_config)
     for k in metrics_config_copy:
         metrics_config_copy[k]["arguments"]["distinct_classes"] = True
-    dmpair_distinct_classes = DMPair(metrics_config=metrics_config_copy)
-    similarity_dict_distinct_classes = dmpair_distinct_classes.compute_similarity()
+    dmpair = DMPair(metrics_config=metrics_config_copy)
+    similarity_dict_distinct_classes = dmpair.compute_similarity()
 
     for k in metrics_config:
         assert similarity_dict[k] < similarity_dict_distinct_classes[k]
+        assert similarity_dict_diff[k] < similarity_dict_distinct_classes[k]
 
 
 # This test checks that there are equal samples of A and B in the
