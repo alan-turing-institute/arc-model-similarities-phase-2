@@ -190,10 +190,16 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument(
-        "--trainer_config", type=str, help="path to trainer config file", required=True
+        "--trainer_config_path",
+        type=str,
+        help="path to trainer config file",
+        required=True,
     )
     parser.add_argument(
-        "--attack_config", type=str, help="path to attack config file", required=True
+        "--attack_config_path",
+        type=str,
+        help="path to attack config file",
+        required=True,
     )
     parser.add_argument(
         "--dataset_index",
