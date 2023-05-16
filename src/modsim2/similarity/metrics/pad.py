@@ -281,7 +281,7 @@ class PAD(DistanceMetric):
         self.__evaluate_models()
 
         # Compute the proxy a-distance
-        min_error = min(self.__evaluations)
+        min_error = min(self.__errors)
         pad = 2 * (1 - 2 * min_error)
 
         return pad

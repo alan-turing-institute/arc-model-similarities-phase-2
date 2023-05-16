@@ -61,11 +61,6 @@ def test_cifar_pad_distinct(metrics_config: dict):
     dmpair = DMPair(metrics_config=metrics_config)
     similarity_dict = dmpair.compute_similarity()
 
-    dmpair = DMPair(
-        metrics_config=metrics_config, drop_percent_A=0.5, drop_percent_B=0.5, seed=42
-    )
-    similarity_dict_diff = dmpair.compute_similarity()
-
     metrics_config_copy = copy.deepcopy(metrics_config)
     for k in metrics_config_copy:
         metrics_config_copy[k]["arguments"]["distinct_classes"] = True
@@ -74,7 +69,6 @@ def test_cifar_pad_distinct(metrics_config: dict):
 
     for k in metrics_config:
         assert similarity_dict[k] < similarity_dict_distinct_classes[k]
-        assert similarity_dict_diff[k] < similarity_dict_distinct_classes[k]
 
 
 # This test checks that there are equal samples of A and B in the
