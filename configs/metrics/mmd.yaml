@@ -1,0 +1,12 @@
+device: cpu
+metrics:
+  mmd_rbf:
+    class: mmd
+    arguments:
+      embedding_name: matrix
+      kernel_name: rbf
+  mmd_laplace:
+    class: mmd
+    arguments:
+      embedding_name: matrix
+      kernel_name: laplace

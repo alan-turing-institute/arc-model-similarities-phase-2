@@ -1,5 +1,4 @@
 import argparse
-import json
 import logging
 import os
 
@@ -7,6 +6,7 @@ import yaml
 from utils import opts2dmpairArgs
 
 from modsim2.data.loader import DMPair
+from modsim2.model.utils import get_wandb_run
 
 # Set logging level
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -17,9 +17,11 @@ def main(
     experiment_group: str,
     dmpair_config: str,
     metrics_config: dict,
+    trainer_config: dict,
     dataset_index: int,
     seed_index: int,
 ):
+    # Get experiment pair name and dmpair kwargs
     experiment_pair_name = f"{experiment_group}_{dataset_index}_{seed_index}"
     dmpair_kwargs = opts2dmpairArgs(
         opt=experiment_group_config["dmpairs"][dataset_index],
@@ -27,45 +29,23 @@ def main(
         val_split=dmpair_config["val_split"],
     )
 
+    # Instantsiate DMPair, apply transforms, compute metrics
     dmpair = DMPair(**dmpair_kwargs, metrics_config=metrics_config)
     dmpair.A.setup()
     dmpair.B.setup()
-    metrics = {
-        "experiment_pair_name": experiment_pair_name,
-        **dmpair.compute_similarity(),
+    similarity_metrics = {
+        **dmpair.compute_similarity(only_train=True),  # TODO: remove only_train
     }
 
-    # JSON file path
-    root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-    results_path = os.path.join(root_path, "results")
-    out_file_path = os.path.join(results_path, "metrics.json")
-
-    # Create results folder if it does not exist
-    if not os.path.isdir(results_path):
-        os.mkdir(results_path)
-
-    # If file does not exist, create it
-    file_exists = os.path.isfile(out_file_path)
-    if not file_exists:
-        with open(out_file_path, "w") as out_file:
-            json.dump([metrics], out_file, indent=4)
-
-    # If file exists, append to it
-    if file_exists:
-        # Read file contents
-        with open(out_file_path) as out_file:
-            out_file_contents = json.load(out_file)
-
-        # Append dict to list in file
-        out_file_contents.append(metrics)
-
-        # Write new list with new output to file
-        with open(out_file_path, "w") as out_file:
-            json.dump(out_file_contents, out_file, indent=4)
-
-    # Inform user output has been written
-    log_message = f"Output has been written to {out_file_path}"
-    logging.info(log_message)
+    # Log to wandb - puting all metrics in run A
+    run_A = get_wandb_run(
+        model_suffix="A",
+        experiment_pair_name=experiment_pair_name,
+        entity=trainer_config["wandb"]["entity"],
+        project_name=trainer_config["wandb"]["project"],
+    )
+    run_A.log(similarity_metrics, commit=True)
+    run_A.finish()
 
 
 if __name__ == "__main__":
@@ -98,7 +78,22 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument(
-        "--metrics_config", type=str, help="path to metrics config file", required=True
+        "--metrics_config_path",
+        type=str,
+        help="path to metrics config file",
+        required=True,
+    )
+    parser.add_argument(
+        "--metrics_file",
+        type=str,
+        help="metrics yaml file to use",
+        required=True,
+    )
+    parser.add_argument(
+        "--trainer_config_path",
+        type=str,
+        help="path to trainer config file",
+        required=True,
     )
     parser.add_argument(
         "--dataset_index",
@@ -120,14 +115,20 @@ if __name__ == "__main__":
     with open(args.dmpair_config_path, "r") as stream:
         dmpair_config = yaml.safe_load(stream)
 
-    with open(args.metrics_config, "r") as stream:
+    with open(
+        os.path.join(args.metrics_config_path, args.metrics_file + ".yaml"), "r"
+    ) as stream:
         metrics_config = yaml.safe_load(stream)
+
+    with open(args.trainer_config_path, "r") as stream:
+        trainer_config = yaml.safe_load(stream)
 
     main(
         experiment_group_config=experiment_group_config,
         experiment_group=args.experiment_group,
         dmpair_config=dmpair_config,
-        metrics_config=metrics_config,
+        metrics_config=metrics_config["metrics"],
+        trainer_config=trainer_config,
         dataset_index=args.dataset_index,
         seed_index=args.seed_index,
     )

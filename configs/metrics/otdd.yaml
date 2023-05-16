@@ -1,0 +1,16 @@
+device: cuda
+metrics:
+  otdd_exact:
+    class: otdd
+    arguments:
+      max_samples: 1000
+      device: cpu
+      coupling_method: geomloss
+      method: precomputed_labeldist
+      debiased_loss: True
+      p: 2
+      entreg: 0.1
+      inner_ot_method: exact
+      inner_ot_debiased: True
+      inner_ot_p: 2
+      inner_ot_entreg: 0.1
