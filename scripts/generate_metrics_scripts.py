@@ -66,11 +66,11 @@ def main(
         for experiment_name in experiment_names
     ]
 
-    # Are we using CPU?
-    use_cpu = metrics_config["device"] == "cpu"
+    # Are we using baskerville?
+    use_baskerville = metrics_config["baskerville"]
 
-    # If no, prepare jinja template
-    if not use_cpu:
+    # If yes, prepare jinja template
+    if use_baskerville:
         # Jinja env
         template_path = os.path.join(
             constants.PROJECT_ROOT,
@@ -82,12 +82,11 @@ def main(
 
     # For each combination, write bash script with params
     for index, combo in enumerate(combinations):
-        if use_cpu:
-            script = f"python scripts/calculate_metrics.py {combo}"
+        python_call = f"python scripts/calculate_metrics.py {combo}"
+        if not use_baskerville:
             with open(script_names[index], "w") as f:
-                f.write(script)
-        if not use_cpu:
-            python_call = f"python scripts/train_models.py {combo}"
+                f.write(python_call)
+        if use_baskerville:
             script_content = template.render(
                 account_name=account_name,
                 experiment_name=experiment_names[index],

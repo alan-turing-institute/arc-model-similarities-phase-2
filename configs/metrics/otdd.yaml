@@ -1,10 +1,10 @@
-device: cuda
+baskerville: True
 metrics:
   otdd_exact:
     class: otdd
     arguments:
       max_samples: 1000
-      device: cpu
+      device: cuda
       coupling_method: geomloss
       method: precomputed_labeldist
       debiased_loss: True

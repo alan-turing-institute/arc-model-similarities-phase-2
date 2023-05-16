@@ -1,4 +1,4 @@
-device: cpu
+baskerville: False
 metrics:
   mmd_rbf:
     class: mmd
