@@ -49,6 +49,7 @@ You can begin using the package code with an import command:
 2. Install dependencies with Poetry
 
    ```bash
+   poetry update
    poetry install
    ```
 
