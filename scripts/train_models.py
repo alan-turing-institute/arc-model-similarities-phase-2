@@ -1,7 +1,6 @@
 import argparse
 import os
 
-import wandb
 import yaml
 from pytorch_lightning import LightningDataModule, Trainer
 from pytorch_lightning.callbacks import LearningRateMonitor
@@ -9,6 +8,7 @@ from pytorch_lightning.callbacks.progress import TQDMProgressBar
 from pytorch_lightning.utilities.seed import seed_everything
 from utils import opts2dmpairArgs
 
+import wandb
 from modsim2.data.loader import DMPair
 from modsim2.model.resnet import ResnetModel
 from modsim2.model.utils import run_exists

@@ -66,11 +66,12 @@ pad_linear:
       - 10
     embedding_name: matrix
     test_proportion: 0.2
+    train_proportion_equal: True
   expected_results:
     same_result: -1.6333333333333333
     same_result_only_train: -1.75
     diff_result: -1.4166666666666665
-    diff_result_only_train: -1.3684210526315788
+    diff_result_only_train: -1.210526315789474
 pad_rbf:
   class: pad
   arguments:
@@ -84,11 +85,12 @@ pad_rbf:
       - 'auto'
     embedding_name: matrix
     test_proportion: 0.2
+    train_proportion_equal: True
   expected_results:
     same_result: -1.6333333333333333
     same_result_only_train: -1.75
-    diff_result: 0
-    diff_result_only_train: 0
+    diff_result: -1.375
+    diff_result_only_train: -1.210526315789474
 pad_poly:
   class: pad
   arguments:
@@ -102,8 +104,9 @@ pad_poly:
       - 5
     embedding_name: matrix
     test_proportion: 0.2
+    train_proportion_equal: True
   expected_results:
     same_result: -1.6333333333333333
     same_result_only_train: -1.75
-    diff_result: -1.375
-    diff_result_only_train: -1.3684210526315788
+    diff_result: -1.4166666666666665
+    diff_result_only_train: -1.210526315789474

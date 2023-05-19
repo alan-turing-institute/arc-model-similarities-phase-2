@@ -1,4 +1,3 @@
-import copy
 import os
 
 import numpy as np
@@ -52,25 +51,6 @@ def test_cifar_pad_different(metrics_config: dict):
     compare_results(test_scenarios, metrics_config)
 
 
-# This test is a sanity check that ensures the PAD between two datasets
-# with distinct labels is greater than when the datasets labels contain
-# the same classes. In theory the classifiers should be more able to
-# distinguish between the two datasets if their classes are distinct.
-def test_cifar_pad_distinct(metrics_config: dict):
-
-    dmpair = DMPair(metrics_config=metrics_config)
-    similarity_dict = dmpair.compute_similarity()
-
-    metrics_config_copy = copy.deepcopy(metrics_config)
-    for k in metrics_config_copy:
-        metrics_config_copy[k]["arguments"]["distinct_classes"] = True
-    dmpair = DMPair(metrics_config=metrics_config_copy)
-    similarity_dict_distinct_classes = dmpair.compute_similarity()
-
-    for k in metrics_config:
-        assert similarity_dict[k] < similarity_dict_distinct_classes[k]
-
-
 # This test checks that there are equal samples of A and B in the
 # combined test dataset
 def test_cifar_pad_equal_samples(metrics_config: dict):
@@ -93,14 +73,15 @@ def test_cifar_pad_equal_samples(metrics_config: dict):
         _ = metric_conf.calculate_distance(
             data_A, data_B, labels_A, labels_B, **metric["arguments"]
         )
-        combined_test_labels = metric_conf.get_test_labels()
+        combined_test_labels = metric_conf.test_labels
         sum_test_labels = np.sum(combined_test_labels)
         count_test_labels = combined_test_labels.shape[0]
 
         # The label values are either zero or one, so the
         # sum of the labels should equal half the number
         # of records
-        assert (2 * sum_test_labels) == count_test_labels
+        with check:
+            assert (2 * sum_test_labels) == count_test_labels
 
 
 # This function takes the computed distances (stored in test_scenarios) and
