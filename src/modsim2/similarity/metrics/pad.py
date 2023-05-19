@@ -35,8 +35,8 @@ class PAD(DistanceMetric):
         super().__init__(seed)
 
         self.test_proportion = 0.2  # The % of the dataset to be held out for testing
-        self.train_proportion_equal = (
-            False  # Boolean to determine if train datasets should be equal size
+        self.train_balance = (
+            "equal"  # Determines ratio of data from A & B in the training data
         )
         self.embedding_name = None  # Name of the embedding function
         self.train_data = None
@@ -70,22 +70,36 @@ class PAD(DistanceMetric):
             train_B: records in dataset B to be used for training
             test_B: records in dataset B to be used for testing (final evaluation)
         """
-        # Determine the number of samples of test data to be drawn from A&B
-        test_size_A = np.round(data_A.shape[0] * self.test_proportion)
-        test_size_B = np.round(data_B.shape[0] * self.test_proportion)
-        test_size = int(min(test_size_A, test_size_B))
-        # Split A&B into train and test
-        train_A, test_A = train_test_split(data_A, test_size=test_size, shuffle=True)
-        train_B, test_B = train_test_split(data_B, test_size=test_size, shuffle=True)
 
-        if self.train_proportion_equal:
-            # If the train_A and train_B have different numbers of records then drop
+        if self.train_balance == "equal":
+            # If the data_A and data_B have different numbers of records then drop
             # records from the larger of the two datasets so that A & B are of
             # equal size
-            if train_A.shape[0] > train_B.shape[0]:
-                train_A = self._reduce_size_array(train_A, train_B.shape[0])
-            elif train_B.shape[0] > train_A.shape[0]:
-                train_B = self._reduce_size_array(train_B, train_A.shape[0])
+            if data_A.shape[0] > data_B.shape[0]:
+                data_A = self._reduce_size_array(data_A, data_B.shape[0])
+            elif data_B.shape[0] > data_A.shape[0]:
+                data_B = self._reduce_size_array(data_B, data_A.shape[0])
+        elif self.train_balance != "ratio":
+            raise ValueError(
+                "An invalid train_balance value has been provided", self.train_balance
+            )
+
+        # Determine the number of samples of test data to be drawn from A&B
+        test_size_A = int(np.round(data_A.shape[0] * self.test_proportion))
+        test_size_B = int(np.round(data_B.shape[0] * self.test_proportion))
+
+        # Split A&B into train and test
+        train_A, test_A = train_test_split(data_A, test_size=test_size_A, shuffle=True)
+        train_B, test_B = train_test_split(data_B, test_size=test_size_B, shuffle=True)
+
+        # test_A and test_B must have the same number of records for this metric
+        # If one is greater than the other (which may occur when the ratio between A&B
+        # has been preserved in the training data) then the excess records will
+        # be dropped at random
+        if test_A.shape[0] > test_B.shape[0]:
+            test_A = self._reduce_size_array(test_A, test_B.shape[0])
+        elif test_B.shape[0] > test_A.shape[0]:
+            test_B = self._reduce_size_array(test_B, test_A.shape[0])
 
         return train_A, test_A, train_B, test_B
 
@@ -240,7 +254,7 @@ class PAD(DistanceMetric):
         kernel_name: str,
         embedding_name: str,
         test_proportion: float = 0.2,
-        train_proportion_equal=False,
+        train_balance="equal",
         gamma_values: list = ["scale"],
         degree_values: list = [3],
     ) -> float:
@@ -268,9 +282,12 @@ class PAD(DistanceMetric):
             embedding_name: What feature embeddings, if any, to use for the
                             input arrays
             test_proportion: the proportion of the dataset to hold out for testing
-            train_proportion_equal: boolean value to determine if the train dataset
-                                    needs to contain equal amounts of data from A&B
-            gamma_values: list of gamma values to be applied in SVCs
+            train_balance: determines whether the balance between the A&B data
+                            in the training data, valid options are 'equal' for
+                            a 50:50 split of A&B data, and 'ratio' if the ratio
+                            between the original A&B data is to be maintained
+            gamma_values: list of gamma values to be applied in SVCs, see sklearn
+                            documentation for list of possible values
             degree_values: list of degree values to be applied in polynomial SVCs
         """
 
@@ -285,10 +302,8 @@ class PAD(DistanceMetric):
         self.test_proportion = test_proportion
 
         # Set whether the proportion of training data from A & B should be equal
-        assert (
-            type(train_proportion_equal) is bool
-        ), "Error: the train_proportion_equal type must be boolean"
-        self.train_proportion_equal = train_proportion_equal
+        # or maintain the ratio of the the original datasets
+        self.train_balance = train_balance
 
         # Pre-process the data
         self.embed_train_data, self.embed_test_data = self._pre_process_data(
