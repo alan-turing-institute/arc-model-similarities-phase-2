@@ -401,7 +401,7 @@ def test_compute_similarity_error():
 
     # Read in the configs
     with open(metrics_config_path, "r") as stream:
-        mmd_config = yaml.safe_load(stream)
+        mmd_config = yaml.safe_load(stream)["metrics"]
     with open(transforms_config_path, "r") as stream:
         transforms_config = yaml.safe_load(stream)
 

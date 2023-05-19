@@ -1,58 +1,59 @@
-mmd_rbf:
-  class: mmd
-  arguments:
-    embedding_name: matrix
-    kernel_name: rbf
-  expected_results:
-    same_result: 0.0
-    same_result_only_train: 0.0
-    diff_result: 0.00012534993489587976
-    diff_result_only_train: 0.0001611794365776742
-mmd_laplace:
-  class: mmd
-  arguments:
-    embedding_name: matrix
-    kernel_name: laplace
-  expected_results:
-    same_result: 0.0
-    same_result_only_train: 0.0
-    diff_result: 0.0002326510493355638
-    diff_result_only_train: 0.00029474732083722976
-otdd_exact:
-  class: otdd
-  arguments:
-    max_samples: 1000
-    device: cpu
-    coupling_method: geomloss
-    method: precomputed_labeldist
-    debiased_loss: True
-    p: 2
-    entreg: 0.1
-    inner_ot_method: exact
-    inner_ot_debiased: True
-    inner_ot_p: 2
-    inner_ot_entreg: 0.1
-  expected_results:
-    same_result: 0.0
-    same_result_only_train: 0.0
-    diff_result: 98.62165069580078
-    diff_result_only_train: 98.76387786865234
-otdd_naive_upperbound:
-  class: otdd
-  arguments:
-    max_samples: 1000
-    device: cpu
-    coupling_method: geomloss
-    method: precomputed_labeldist
-    debiased_loss: True
-    p: 2
-    entreg: 0.1
-    inner_ot_method: naive_upperbound
-    inner_ot_debiased: True
-    inner_ot_p: 2
-    inner_ot_entreg: 0.1
-  expected_results:
-    same_result: 256.1785888671875
-    same_result_only_train: 256.23443603515625
-    diff_result: 306.5455017089844
-    diff_result_only_train: 306.96649169921875
+metrics:
+  mmd_rbf:
+    class: mmd
+    arguments:
+      embedding_name: matrix
+      kernel_name: rbf
+    expected_results:
+      same_result: 0.0
+      same_result_only_train: 0.0
+      diff_result: 0.00012534993489587976
+      diff_result_only_train: 0.0001611794365776742
+  mmd_laplace:
+    class: mmd
+    arguments:
+      embedding_name: matrix
+      kernel_name: laplace
+    expected_results:
+      same_result: 0.0
+      same_result_only_train: 0.0
+      diff_result: 0.0002326510493355638
+      diff_result_only_train: 0.00029474732083722976
+  otdd_exact:
+    class: otdd
+    arguments:
+      max_samples: 1000
+      device: cpu
+      coupling_method: geomloss
+      method: precomputed_labeldist
+      debiased_loss: True
+      p: 2
+      entreg: 0.1
+      inner_ot_method: exact
+      inner_ot_debiased: True
+      inner_ot_p: 2
+      inner_ot_entreg: 0.1
+    expected_results:
+      same_result: 0.0
+      same_result_only_train: 0.0
+      diff_result: 98.62165069580078
+      diff_result_only_train: 98.76387786865234
+  otdd_naive_upperbound:
+    class: otdd
+    arguments:
+      max_samples: 1000
+      device: cpu
+      coupling_method: geomloss
+      method: precomputed_labeldist
+      debiased_loss: True
+      p: 2
+      entreg: 0.1
+      inner_ot_method: naive_upperbound
+      inner_ot_debiased: True
+      inner_ot_p: 2
+      inner_ot_entreg: 0.1
+    expected_results:
+      same_result: 256.1785888671875
+      same_result_only_train: 256.23443603515625
+      diff_result: 306.5455017089844
+      diff_result_only_train: 306.96649169921875

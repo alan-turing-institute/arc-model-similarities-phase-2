@@ -17,7 +17,7 @@ def metrics_config() -> dict:
         project_root, "tests", "testconfig", "metrics.yaml"
     )
     with open(metrics_config_path, "r") as stream:
-        otdd_config = yaml.safe_load(stream)
+        otdd_config = yaml.safe_load(stream)["metrics"]
     # filter down to only otdd configs
     otdd_config = {k: v for k, v in otdd_config.items() if v["class"] == "otdd"}
 
