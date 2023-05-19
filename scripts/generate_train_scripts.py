@@ -31,8 +31,8 @@ def main(
     combinations = [
         f"--experiment_groups_path {experiment_groups_path} "
         + f"--experiment_group {experiment_group} "
-        + f"--dmpair_config {dmpair_config_path} "
-        + f"--trainer_config {trainer_config_path} "
+        + f"--dmpair_config_path {dmpair_config_path} "
+        + f"--trainer_config_path {trainer_config_path} "
         + f"--seed_index {seed_index} "
         + f"--dataset_index {dataset_index}"
         for seed_index in range(NUM_SEEDS)
