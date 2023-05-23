@@ -1,4 +1,5 @@
 import os
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -68,14 +69,34 @@ def test_cifar_pad_equal_samples(metrics_config: dict):
     labels_B = np.concatenate((train_labels_B, val_labels_B), axis=0)
     for _, metric in metrics_config.items():
 
-        metric_conf = pad.PAD(seed=42)
+        pad_metric = pad.PAD(seed=dmpair.seed)
+        with patch.object(
+            pad_metric, "_evaluate_models", wraps=pad_metric._evaluate_models
+        ) as wrapped_evaluate_models:
 
-        _ = metric_conf.calculate_distance(
-            data_A, data_B, labels_A, labels_B, **metric["arguments"]
-        )
-        combined_test_labels = metric_conf.test_labels
-        sum_test_labels = np.sum(combined_test_labels)
-        count_test_labels = combined_test_labels.shape[0]
+            _ = pad_metric.calculate_distance(
+                data_A=data_A,
+                data_B=data_B,
+                labels_A=labels_A,
+                labels_B=labels_B,
+                **metric["arguments"],
+            )
+            combined_test_labels = wrapped_evaluate_models.call_args.kwargs[
+                "test_labels"
+            ]
+            sum_test_labels = np.sum(combined_test_labels)
+            count_test_labels = combined_test_labels.shape[0]
+
+        # Old bits:
+
+        # metric_conf = pad.PAD(seed=42)
+
+        # _ = metric_conf.calculate_distance(
+        #     data_A, data_B, labels_A, labels_B, **metric["arguments"]
+        # )
+        # combined_test_labels = metric_conf.test_labels
+        # sum_test_labels = np.sum(combined_test_labels)
+        # count_test_labels = combined_test_labels.shape[0]
 
         # The label values are either zero or one, so the
         # sum of the labels should equal half the number
