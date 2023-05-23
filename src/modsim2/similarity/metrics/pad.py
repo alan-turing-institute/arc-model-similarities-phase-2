@@ -34,24 +34,13 @@ class PAD(DistanceMetric):
     def __init__(self, seed: int) -> None:
         super().__init__(seed)
 
-        self.test_proportion = 0.2  # The % of the dataset to be held out for testing
-        self.train_balance = (
-            "equal"  # Determines ratio of data from A & B in the training data
-        )
-        self.embedding_name = None  # Name of the embedding function
-        self.train_data = None
-        self.train_labels = None
-        self.test_data = None
-        self.test_labels = None
-        self.embed_train_data = None
-        self.embed_test_data = None
-        self.models = []  # List of trained classifiers
-        self.errors = []  # List of errors for classifiers on test data
-
-    def __train_test_split(
+    def _train_test_split(
         self,
         data_A: np.ndarray,
         data_B: np.ndarray,
+        test_proportion: float,
+        balance_train: bool,
+        balance_test: bool,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         This method splits the two datasets data_A and data_B into train and test
@@ -63,6 +52,14 @@ class PAD(DistanceMetric):
         Args:
             data_A: all records in dataset A (excludes target value)
             data_B: all records in dataset B (excludes target value)
+            test_proportion: The proportion of the dataset to hold out for testing.
+                             Note that if balance_test is true, the number of examples
+                             held from both A and B's test sets will be the same, and
+                             will correspond to the smallest dataset.
+            balance_train: Determines whether to balance the number of observations
+                           from A and B in the training dataset
+            balance_test: Determines whether to balance the number of observations
+                          from A and B in the test dataset
 
         Returns:
             train_A: records in dataset A to be used for training
@@ -72,19 +69,19 @@ class PAD(DistanceMetric):
         """
 
         # Determine the number of samples of test data to be drawn from A&B
-        test_size_A = int(np.round(data_A.shape[0] * self.test_proportion))
-        test_size_B = int(np.round(data_B.shape[0] * self.test_proportion))
+        test_size_A = int(np.round(data_A.shape[0] * test_proportion))
+        test_size_B = int(np.round(data_B.shape[0] * test_proportion))
 
         # Split A&B into train and test
         train_A, test_A = train_test_split(data_A, test_size=test_size_A, shuffle=True)
         train_B, test_B = train_test_split(data_B, test_size=test_size_B, shuffle=True)
 
-        if self.balance_train:
+        if balance_train:
             # User specified option to balance the training dataset. Prevents imbalance
             # in the training dataset from driving the behaviour of the classifier
             train_A, train_B = self._balance_datasets(train_A, train_B)
 
-        if self.balance_test:
+        if balance_test:
             # User-specifed option to balance test set, to prevent accurately predicting
             # the larger dataset from skewing the metric
             test_A, test_B = self._balance_datasets(test_A, test_B)
@@ -107,13 +104,13 @@ class PAD(DistanceMetric):
         Returns: Both datasets, one of which may have been resized
         """
         if data_A.shape[0] > data_B.shape[0]:
-            data_A = self._reduce_size_array(data_A, data_B.shape[0])
+            data_A = self._sample_from_array(data_A, data_B.shape[0])
         elif data_B.shape[0] > data_A.shape[0]:
-            data_B = self._reduce_size_array(data_B, data_A.shape[0])
+            data_B = self._sample_from_array(data_B, data_A.shape[0])
         return data_A, data_B
 
     @staticmethod
-    def _reduce_size_array(array_to_reduce: np.ndarray, new_size: int) -> np.ndarray:
+    def _sample_from_array(array_to_reduce: np.ndarray, new_size: int) -> np.ndarray:
         """
         Resizes a numpy array by dropping random rows of data based
         on the first dimension of the array
@@ -133,7 +130,7 @@ class PAD(DistanceMetric):
 
         return reduced_array
 
-    def __concat_data(
+    def _concat_data(
         self,
         train_A: np.ndarray,
         test_A: np.ndarray,
@@ -142,8 +139,7 @@ class PAD(DistanceMetric):
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         This method will label the A and B train and tests datasets,
-        then concatenate the train and test data. The train data are
-        then shuffled.
+        then concatenate the train and test data.
         The data from A will be labelled 1 and B will be labelled 0
         The train and test data and labels are assigned to class attributes
 
@@ -177,6 +173,10 @@ class PAD(DistanceMetric):
         self,
         data_A: np.ndarray,
         data_B: np.ndarray,
+        test_proportion: float,
+        balance_train: bool,
+        balance_test: bool,
+        embedding_name: str,
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Takes A & B datasets as arguments and calls the methods to process
@@ -187,6 +187,16 @@ class PAD(DistanceMetric):
         Args:
             data_A: the records in the A dataset (excludes target values)
             data_B: the records in the B dataset (excludes target values)
+            test_proportion: The proportion of the dataset to hold out for testing.
+                             Note that if balance_test is true, the number of examples
+                             held from both A and B's test sets will be the same, and
+                             will correspond to the smallest dataset.
+            balance_train: Determines whether to balance the number of observations
+                           from A and B in the training dataset
+            balance_test: Determines whether to balance the number of observations
+                          from A and B in the test dataset
+            embedding_name: What feature embeddings, if any, to use for the
+                            input arrays
 
         Returns:
             embed_train_data: the training data transformed using the embedding function
@@ -196,26 +206,35 @@ class PAD(DistanceMetric):
         # This is done before the data are concatenated in order
         # to ensure that the same proportion of A & B are
         # included in the test dataset
-        train_A, test_A, train_B, test_B = self.__train_test_split(data_A, data_B)
+        train_A, test_A, train_B, test_B = self._train_test_split(
+            data_A=data_A,
+            data_B=data_B,
+            test_proportion=test_proportion,
+            balance_train=balance_train,
+            balance_test=balance_test,
+        )
 
         # concatenate A&B datasets
-        (
-            self.train_data,
-            self.train_labels,
-            self.test_data,
-            self.test_labels,
-        ) = self.__concat_data(train_A, test_A, train_B, test_B)
+        train_data, train_labels, test_data, test_labels = self._concat_data(
+            train_A, test_A, train_B, test_B
+        )
 
         # Extract embedding callable
-        embedding_fn = EMBEDDING_FN_DICT[self.embedding_name]
+        embedding_fn = EMBEDDING_FN_DICT[embedding_name]
         # Transform the train and test data using the embedding function
-        embed_train_data = embedding_fn(self.train_data)
-        embed_test_data = embedding_fn(self.test_data)
+        embed_train_data = embedding_fn(train_data)
+        embed_test_data = embedding_fn(test_data)
 
-        return embed_train_data, embed_test_data
+        return embed_train_data, train_labels, embed_test_data, test_labels
 
-    def __build_models(
-        self, kernel_name: str, c_values: list, gamma_values: list, degree_values: list
+    def _build_models(
+        self,
+        train_data: np.ndarray,
+        train_labels: np.ndarray,
+        kernel_name: str,
+        c_values: list,
+        gamma_values: list,
+        degree_values: list,
     ) -> list[SVC]:
         """
         This method will build the classifiers, variation in some hyperparameters
@@ -224,10 +243,12 @@ class PAD(DistanceMetric):
         The trained model are appended to the object's list of models.
 
         Args:
-            kernel_name:
-            c_values: list of C values (regularisation param) to be applied
-            gamma_values: list of gamma values (kernel coefficient) to be applied
-            degree_values: list of degree values for the poly kernel to be applied
+            train_data: Dataset to use in training the classifiers
+            train_labels: Labels to use in training the classifiers
+            kernel_name: Kernel to use. Can be 'linear', 'poly', or 'rbf'
+            c_values: List of C values (regularisation param) to be applied
+            gamma_values: List of gamma values (kernel coefficient) to be applied
+            degree_values: List of degree values for the poly kernel to be applied
 
         Returns:
             models: list of the models that have been built
@@ -237,11 +258,16 @@ class PAD(DistanceMetric):
             for gamma in gamma_values:
                 for degree in degree_values:
                     svc = SVC(kernel=kernel_name, C=c, gamma=gamma, degree=degree)
-                    svc.fit(X=self.embed_train_data, y=self.train_labels)
+                    svc.fit(X=train_data, y=train_labels)
                     models.append(svc)
         return models
 
-    def __evaluate_models(self) -> list[float]:
+    def _evaluate_models(
+        self,
+        models: list[SVC],
+        test_data: np.ndarray,
+        test_labels: np.ndarray,
+    ) -> list[float]:
         """
         This method will evaluate the classifiers that have been built
         The evaluation metric is the mean absolute error.
@@ -250,9 +276,9 @@ class PAD(DistanceMetric):
             errors: list of errors
         """
         errors = []
-        for svc in self.models:
-            preds = svc.predict(self.embed_test_data)
-            abs_diff = np.abs(preds - self.test_labels)
+        for svc in models:
+            preds = svc.predict(test_data)
+            abs_diff = np.abs(preds - test_labels)
             error = np.sum(abs_diff) / len(preds)
             errors.append(error)
         return errors
@@ -292,49 +318,60 @@ class PAD(DistanceMetric):
             labels_B: The target values for the second dataset
             c_values: List of C values (regularisation param) to be applied
                       in the SVCs
-            kernel_name: The kernel to be applied in the SVCs
+            kernel_name: The kernel to be applied in the SVCs. Can be 'linear', 'poly',
+                         or 'rbf'
             embedding_name: What feature embeddings, if any, to use for the
                             input arrays
-            test_proportion: the proportion of the dataset to hold out for testing
-            balance_train: determines whether to balance the number of observations
+            test_proportion: The proportion of the dataset to hold out for testing.
+                             Note that if balance_test is true, the number of examples
+                             held from both A and B's test sets will be the same, and
+                             will correspond to the smallest dataset.
+            balance_train: Determines whether to balance the number of observations
                            from A and B in the training dataset
-            balance_test: determines whether to balance the number of observations
+            balance_test: Determines whether to balance the number of observations
                           from A and B in the test dataset
-            gamma_values: list of gamma values to be applied in SVCs, see sklearn
+            gamma_values: List of gamma values to be applied in SVCs, see sklearn
                             documentation for list of possible values
-            degree_values: list of degree values to be applied in polynomial SVCs
+            degree_values: List of degree values to be applied in polynomial SVCs
         """
 
-        # Set the variables required for the pre-processing
+        # Check for valid embedding choice
         assert embedding_name in EMBEDDING_FN_DICT, "Error: embedding does not exist"
-        self.embedding_name = embedding_name
 
-        # Set the proportion of data to be held out for testing
+        # Check for valid test proportion choice
         assert (
             test_proportion < 1 and test_proportion > 0
         ), "Error: the test_proportion value must be between zero and one"
-        self.test_proportion = test_proportion
-
-        # Set whether the proportion of training data from A & B should be equal
-        # or maintain the ratio of the the original datasets
-        self.balance_train = balance_train
-        self.balance_test = balance_test
 
         # Pre-process the data
-        self.embed_train_data, self.embed_test_data = self._pre_process_data(
-            data_A, data_B
+        train_data, train_labels, test_data, test_labels = self._pre_process_data(
+            data_A=data_A,
+            data_B=data_B,
+            test_proportion=test_proportion,
+            balance_train=balance_train,
+            balance_test=balance_test,
+            embedding_name=embedding_name,
         )
 
         # Build the classifiers
-        self.models = self.__build_models(
-            kernel_name, c_values, gamma_values, degree_values
+        models = self._build_models(
+            train_data=train_data,
+            train_labels=train_labels,
+            kernel_name=kernel_name,
+            c_values=c_values,
+            gamma_values=gamma_values,
+            degree_values=degree_values,
         )
 
         # Evaluate classifiers
-        self.errors = self.__evaluate_models()
+        errors = self._evaluate_models(
+            models=models,
+            test_data=test_data,
+            test_labels=test_labels,
+        )
 
         # Compute the proxy a-distance
-        min_error = min(self.errors)
+        min_error = min(errors)
         pad = 2 * (1 - 2 * min_error)
 
         return pad
