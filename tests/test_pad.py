@@ -55,7 +55,8 @@ def test_cifar_pad_different(metrics_config: dict):
 # This test checks that there are equal samples of A and B in the
 # combined test dataset
 def test_cifar_pad_equal_samples(metrics_config: dict):
-    dmpair = DMPair(metrics_config=metrics_config)
+    # Drop data from B to ensure initial sizes are not equal
+    dmpair = DMPair(drop_percent_B=0.5, metrics_config=metrics_config)
     train_data_A, val_data_A = dmpair.get_A_data()
     train_data_B, val_data_B = dmpair.get_B_data()
 
@@ -87,22 +88,15 @@ def test_cifar_pad_equal_samples(metrics_config: dict):
             sum_test_labels = np.sum(combined_test_labels)
             count_test_labels = combined_test_labels.shape[0]
 
-        # Old bits:
-
-        # metric_conf = pad.PAD(seed=42)
-
-        # _ = metric_conf.calculate_distance(
-        #     data_A, data_B, labels_A, labels_B, **metric["arguments"]
-        # )
-        # combined_test_labels = metric_conf.test_labels
-        # sum_test_labels = np.sum(combined_test_labels)
-        # count_test_labels = combined_test_labels.shape[0]
-
-        # The label values are either zero or one, so the
-        # sum of the labels should equal half the number
-        # of records
-        with check:
-            assert (2 * sum_test_labels) == count_test_labels
+        # The label values are either zero or one, so the sum of the labels should
+        # equal half the number of records if the dataset has been balanced, or
+        # 1.5 if not (due to dropping 50% of B)
+        if metric["arguments"]["balance_test"]:
+            with check:
+                assert (2 * sum_test_labels) == count_test_labels
+        if not metric["arguments"]["balance_test"]:
+            with check:
+                assert (1.5 * sum_test_labels) == count_test_labels
 
 
 # This function takes the computed distances (stored in test_scenarios) and
