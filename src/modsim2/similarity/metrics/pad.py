@@ -31,7 +31,7 @@ class PAD(DistanceMetric):
 
     """
 
-    def __init__(self, seed: int):
+    def __init__(self, seed: int) -> None:
         super().__init__(seed)
 
         self.test_proportion = 0.2  # The % of the dataset to be held out for testing
@@ -52,7 +52,7 @@ class PAD(DistanceMetric):
         self,
         data_A: np.ndarray,
         data_B: np.ndarray,
-    ):
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         This method splits the two datasets data_A and data_B into train and test
         samples. To calculate the PAD, there should be the same number of samples
@@ -71,19 +71,6 @@ class PAD(DistanceMetric):
             test_B: records in dataset B to be used for testing (final evaluation)
         """
 
-        if self.train_balance == "equal":
-            # If the data_A and data_B have different numbers of records then drop
-            # records from the larger of the two datasets so that A & B are of
-            # equal size
-            if data_A.shape[0] > data_B.shape[0]:
-                data_A = self._reduce_size_array(data_A, data_B.shape[0])
-            elif data_B.shape[0] > data_A.shape[0]:
-                data_B = self._reduce_size_array(data_B, data_A.shape[0])
-        elif self.train_balance != "ratio":
-            raise ValueError(
-                "An invalid train_balance value has been provided", self.train_balance
-            )
-
         # Determine the number of samples of test data to be drawn from A&B
         test_size_A = int(np.round(data_A.shape[0] * self.test_proportion))
         test_size_B = int(np.round(data_B.shape[0] * self.test_proportion))
@@ -92,19 +79,41 @@ class PAD(DistanceMetric):
         train_A, test_A = train_test_split(data_A, test_size=test_size_A, shuffle=True)
         train_B, test_B = train_test_split(data_B, test_size=test_size_B, shuffle=True)
 
-        # test_A and test_B must have the same number of records for this metric
-        # If one is greater than the other (which may occur when the ratio between A&B
-        # has been preserved in the training data) then the excess records will
-        # be dropped at random
-        if test_A.shape[0] > test_B.shape[0]:
-            test_A = self._reduce_size_array(test_A, test_B.shape[0])
-        elif test_B.shape[0] > test_A.shape[0]:
-            test_B = self._reduce_size_array(test_B, test_A.shape[0])
+        if self.balance_train:
+            # User specified option to balance the training dataset. Prevents imbalance
+            # in the training dataset from driving the behaviour of the classifier
+            train_A, train_B = self._balance_datasets(train_A, train_B)
+
+        if self.balance_test:
+            # User-specifed option to balance test set, to prevent accurately predicting
+            # the larger dataset from skewing the metric
+            test_A, test_B = self._balance_datasets(test_A, test_B)
 
         return train_A, test_A, train_B, test_B
 
+    def _balance_datasets(
+        self,
+        data_A: np.ndarray,
+        data_B: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """
+        A function that takes two datasets as input, filters the larger dataset
+        down to the size of the smaller dataset, and then returns them.
+
+        Args:
+            data_A: first dataset
+            data_B: second dataset
+
+        Returns: Both datasets, one of which may have been resized
+        """
+        if data_A.shape[0] > data_B.shape[0]:
+            data_A = self._reduce_size_array(data_A, data_B.shape[0])
+        elif data_B.shape[0] > data_A.shape[0]:
+            data_B = self._reduce_size_array(data_B, data_A.shape[0])
+        return data_A, data_B
+
     @staticmethod
-    def _reduce_size_array(array_to_reduce: np.ndarray, new_size: int):
+    def _reduce_size_array(array_to_reduce: np.ndarray, new_size: int) -> np.ndarray:
         """
         Resizes a numpy array by dropping random rows of data based
         on the first dimension of the array
@@ -130,7 +139,7 @@ class PAD(DistanceMetric):
         test_A: np.ndarray,
         train_B: np.ndarray,
         test_B: np.ndarray,
-    ):
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         This method will label the A and B train and tests datasets,
         then concatenate the train and test data. The train data are
@@ -164,7 +173,11 @@ class PAD(DistanceMetric):
 
         return train_data, train_labels, test_data, test_labels
 
-    def _pre_process_data(self, data_A: np.ndarray, data_B: np.ndarray):
+    def _pre_process_data(
+        self,
+        data_A: np.ndarray,
+        data_B: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         Takes A & B datasets as arguments and calls the methods to process
         the data ahead of building the classifiers. First the data are split
@@ -203,7 +216,7 @@ class PAD(DistanceMetric):
 
     def __build_models(
         self, kernel_name: str, c_values: list, gamma_values: list, degree_values: list
-    ):
+    ) -> list[SVC]:
         """
         This method will build the classifiers, variation in some hyperparameters
         is allowed as the optimal values are not necessarily known for the datasets.
@@ -228,7 +241,7 @@ class PAD(DistanceMetric):
                     models.append(svc)
         return models
 
-    def __evaluate_models(self):
+    def __evaluate_models(self) -> list[float]:
         """
         This method will evaluate the classifiers that have been built
         The evaluation metric is the mean absolute error.
@@ -254,7 +267,8 @@ class PAD(DistanceMetric):
         kernel_name: str,
         embedding_name: str,
         test_proportion: float = 0.2,
-        train_balance="equal",
+        balance_train: bool = True,
+        balance_test: bool = True,
         gamma_values: list = ["scale"],
         degree_values: list = [3],
     ) -> float:
@@ -282,10 +296,10 @@ class PAD(DistanceMetric):
             embedding_name: What feature embeddings, if any, to use for the
                             input arrays
             test_proportion: the proportion of the dataset to hold out for testing
-            train_balance: determines whether the balance between the A&B data
-                            in the training data, valid options are 'equal' for
-                            a 50:50 split of A&B data, and 'ratio' if the ratio
-                            between the original A&B data is to be maintained
+            balance_train: determines whether to balance the number of observations
+                           from A and B in the training dataset
+            balance_test: determines whether to balance the number of observations
+                          from A and B in the test dataset
             gamma_values: list of gamma values to be applied in SVCs, see sklearn
                             documentation for list of possible values
             degree_values: list of degree values to be applied in polynomial SVCs
@@ -303,7 +317,8 @@ class PAD(DistanceMetric):
 
         # Set whether the proportion of training data from A & B should be equal
         # or maintain the ratio of the the original datasets
-        self.train_balance = train_balance
+        self.balance_train = balance_train
+        self.balance_test = balance_test
 
         # Pre-process the data
         self.embed_train_data, self.embed_test_data = self._pre_process_data(

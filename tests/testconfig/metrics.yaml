@@ -66,7 +66,8 @@ pad_linear:
       - 10
     embedding_name: matrix
     test_proportion: 0.2
-    train_balance: 'ratio'
+    balance_train: False
+    balance_test: True
   expected_results:
     same_result: -1.6333333333333333
     same_result_only_train: -1.75
@@ -85,7 +86,8 @@ pad_rbf:
       - 'auto'
     embedding_name: matrix
     test_proportion: 0.2
-    train_balance: 'ratio'
+    balance_train: False
+    balance_test: True
   expected_results:
     same_result: -1.6333333333333333
     same_result_only_train: -1.75
@@ -104,7 +106,8 @@ pad_poly:
       - 5
     embedding_name: matrix
     test_proportion: 0.2
-    train_balance: 'ratio'
+    balance_train: False
+    balance_test: True
   expected_results:
     same_result: -1.6333333333333333
     same_result_only_train: -1.75
