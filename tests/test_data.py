@@ -402,11 +402,11 @@ def test_compute_similarity_error():
     # Read in the configs
     with open(metrics_config_path, "r") as stream:
         mmd_config = yaml.safe_load(stream)["metrics"]
+    mmd_config = {k: v for k, v in mmd_config.items() if v["class"] == "mmd"}
     with open(transforms_config_path, "r") as stream:
         transforms_config = yaml.safe_load(stream)
 
     # Two DMPairs
-    mmd_config = {k: v for k, v in mmd_config.items() if v["class"] == "mmd"}
     transforms_A = create_transforms(transforms_config["dmpairs"][0]["A"]["transforms"])
     transforms_B = create_transforms(transforms_config["dmpairs"][0]["B"]["transforms"])
     dmpair_no_transforms = DMPair(metrics_config=mmd_config)
