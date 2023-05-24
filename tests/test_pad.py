@@ -18,7 +18,7 @@ def metrics_config() -> dict:
         project_root, "tests", "testconfig", "metrics.yaml"
     )
     with open(metrics_config_path, "r") as stream:
-        pad_config = yaml.safe_load(stream)
+        pad_config = yaml.safe_load(stream)["metrics"]
     # filter down to only pad configs
     pad_config = {k: v for k, v in pad_config.items() if v["class"] == "pad"}
     return pad_config
