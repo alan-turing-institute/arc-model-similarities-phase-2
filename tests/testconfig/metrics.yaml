@@ -57,3 +57,80 @@ metrics:
       same_result_only_train: 256.23443603515625
       diff_result: 306.5455017089844
       diff_result_only_train: 306.96649169921875
+  pad_linear:
+    class: pad
+    arguments:
+      kernel_name: linear
+      c_values:
+        - 0.1
+        - 1
+        - 10
+      embedding_name: matrix
+      test_proportion: 0.2
+      balance_train: False
+      balance_test: False
+    expected_results:
+      same_result: -1.6333333333333333
+      same_result_only_train: -1.75
+      diff_result: -1.3333333333333335
+      diff_result_only_train: -1.302325581395349
+  pad_rbf:
+    class: pad
+    arguments:
+      kernel_name: rbf
+      c_values:
+        - 0.1
+        - 1
+        - 10
+      gamma_values:
+        - 'scale'
+        - 'auto'
+      embedding_name: matrix
+      test_proportion: 0.2
+      balance_train: False
+      balance_test: True
+    expected_results:
+      same_result: -1.6333333333333333
+      same_result_only_train: -1.75
+      diff_result: 0.0
+      diff_result_only_train: 0.0
+  pad_poly:
+    class: pad
+    arguments:
+      kernel_name: poly
+      c_values:
+        - 0.1
+        - 1
+        - 10
+      degree_values:
+        - 3
+        - 5
+      embedding_name: matrix
+      test_proportion: 0.2
+      balance_train: True
+      balance_test: False
+    expected_results:
+      same_result: -1.6333333333333333
+      same_result_only_train: -1.75
+      diff_result: -1.4074074074074074
+      diff_result_only_train: -1.3488372093023258
+  pad_full_balance:
+    class: pad
+    arguments:
+      kernel_name: poly
+      c_values:
+        - 0.1
+        - 1
+        - 10
+      degree_values:
+        - 3
+        - 5
+      embedding_name: matrix
+      test_proportion: 0.2
+      balance_train: True
+      balance_test: True
+    expected_results:
+      same_result: -1.6333333333333333
+      same_result_only_train: -1.75
+      diff_result: -1.5
+      diff_result_only_train: -1.3684210526315788
