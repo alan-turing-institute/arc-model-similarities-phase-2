@@ -2,8 +2,8 @@ import argparse
 import os
 
 import constants
+import utils
 import yaml
-from jinja2 import Environment, FileSystemLoader
 
 
 def main(
@@ -57,26 +57,15 @@ def main(
         for experiment_name in experiment_names
     ]
 
-    # Jinja env
-    template_path = os.path.join(
-        constants.PROJECT_ROOT,
-        "scripts",
-        "templates",
+    utils.write_slurm_script(
+        template_name="slurm-train-template.sh",
+        called_script_name="train_models",
+        combinations=combinations,
+        account_name=account_name,
+        experiment_names=experiment_names,
+        conda_env_path=conda_env_path,
+        generated_script_names=script_names,
     )
-    environment = Environment(loader=FileSystemLoader(template_path))
-    template = environment.get_template("slurm-train-template.sh")
-
-    # For each combination, write bash script with params
-    for index, combo in enumerate(combinations):
-        python_call = f"python scripts/train_models.py {combo}"
-        script_content = template.render(
-            account_name=account_name,
-            experiment_name=experiment_names[index],
-            conda_env_path=conda_env_path,
-            python_call=python_call,
-        )
-        with open(script_names[index], "w") as f:
-            f.write(script_content)
 
 
 if __name__ == "__main__":

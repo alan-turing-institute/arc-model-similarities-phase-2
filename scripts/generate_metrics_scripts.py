@@ -2,8 +2,8 @@ import argparse
 import os
 
 import constants
+import utils
 import yaml
-from jinja2 import Environment, FileSystemLoader
 
 
 def main(
@@ -27,7 +27,8 @@ def main(
         dmpair_config = yaml.safe_load(stream)
 
     # Metrics config
-    with open(os.path.join(metrics_config_path, metrics_file + ".yaml"), "r") as stream:
+    file_name = metrics_file + ".yaml"
+    with open(os.path.join(metrics_config_path, file_name), "r") as stream:
         metrics_config = yaml.safe_load(stream)
 
     # Prepare dataset list, seed list
@@ -49,9 +50,12 @@ def main(
     ]
 
     # Prepare path
-    scripts_path = os.path.join(constants.PROJECT_ROOT, "metrics_scripts", metrics_file)
+    scripts_folder = os.path.join(constants.PROJECT_ROOT, "metrics_scripts")
+    scripts_path = os.path.join(scripts_folder, metrics_file)
 
     # If bash scripts path does not exist, create it
+    if not os.path.isdir(scripts_folder):
+        os.mkdir(scripts_folder)
     if not os.path.isdir(scripts_path):
         os.mkdir(scripts_path)
 
@@ -69,32 +73,25 @@ def main(
     # Are we using baskerville?
     use_baskerville = metrics_config["baskerville"]
 
-    # If yes, prepare jinja template
+    # If yes, write slurm script
     if use_baskerville:
-        # Jinja env
-        template_path = os.path.join(
-            constants.PROJECT_ROOT,
-            "scripts",
-            "templates",
+        utils.write_slurm_script(
+            template_name="slurm-metrics-template.sh",
+            called_script_name="calculate_metrics",
+            combinations=combinations,
+            account_name=account_name,
+            experiment_names=experiment_names,
+            conda_env_path=conda_env_path,
+            generated_script_names=script_names,
         )
-        environment = Environment(loader=FileSystemLoader(template_path))
-        template = environment.get_template("slurm-metrics-template.sh")
 
-    # For each combination, write bash script with params
-    for index, combo in enumerate(combinations):
-        python_call = f"python scripts/calculate_metrics.py {combo}"
-        if not use_baskerville:
-            with open(script_names[index], "w") as f:
-                f.write(python_call)
-        if use_baskerville:
-            script_content = template.render(
-                account_name=account_name,
-                experiment_name=experiment_names[index],
-                conda_env_path=conda_env_path,
-                python_call=python_call,
-            )
-            with open(script_names[index], "w") as f:
-                f.write(script_content)
+    # If no, write bash script
+    if not use_baskerville:
+        utils.write_bash_script(
+            called_script_name="calculate_metrics",
+            combinations=combinations,
+            generated_script_names=script_names,
+        )
 
 
 if __name__ == "__main__":
