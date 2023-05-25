@@ -77,7 +77,7 @@ def main(
     if use_baskerville:
         utils.write_slurm_script(
             template_name="slurm-metrics-template.sh",
-            called_script_name="calculate_metrics",
+            called_script_name="calculate_metrics.py",
             combinations=combinations,
             account_name=account_name,
             experiment_names=experiment_names,

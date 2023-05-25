@@ -61,7 +61,7 @@ def main(
 
     utils.write_slurm_script(
         template_name="slurm-attack-template.sh",
-        called_script_name="attack",
+        called_script_name="attack.py",
         combinations=combinations,
         account_name=account_name,
         experiment_names=experiment_names,

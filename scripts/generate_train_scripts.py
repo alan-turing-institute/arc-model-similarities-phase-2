@@ -59,7 +59,7 @@ def main(
 
     utils.write_slurm_script(
         template_name="slurm-train-template.sh",
-        called_script_name="train_models",
+        called_script_name="train_models.py",
         combinations=combinations,
         account_name=account_name,
         experiment_names=experiment_names,
