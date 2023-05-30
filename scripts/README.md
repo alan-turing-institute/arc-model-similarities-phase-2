@@ -25,7 +25,7 @@ where `"drop-only"` is an example of an experiment group with a named config (se
 Once this is done, you can run all of the generated scripts for a given experiment group by calling `scripts/train_all.sh` followed by the name of the experiment group, e.g.
 
 ```bash
-scripts/slurm)train_all.sh drop-only
+scripts/slurm_train_all.sh drop-only
 ```
 
 where once again `drop-only` is an example of an experiment group with a named config.
@@ -53,13 +53,13 @@ where `"drop-only"` is an example of an experiment group with a named config and
 Once this is done, you can run all of the generated scripts for a given experiment group and metric config by calling either `scripts/slurm_metric_all.sh` where slurm scripts have been generated or `scripts/shell_metric_all.sh` followed by the name of the metric config and the name of the experiment group, e.g.
 
 ```bash
-scripts/slurm_metric_all.sh mmd drop-only
+scripts/slurm_metrics_all.sh mmd drop-only
 ```
 
 or
 
 ```bash
-scripts/shell_metric_all.sh mmd drop-only
+scripts/shell_metrics_all.sh mmd drop-only
 ```
 
 where once again `mmd` is an example of a named metric config `drop-only` is an example of an experiment group with a named config.
