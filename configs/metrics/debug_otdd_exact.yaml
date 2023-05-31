@@ -1,6 +1,6 @@
 baskerville: True
 metrics:
-  otdd_exact:
+  debug_otdd_exact:
     class: otdd
     arguments:
       max_samples: 1000
