@@ -200,7 +200,9 @@ class PAD(DistanceMetric):
 
         Returns:
             embed_train_data: the training data transformed using the embedding function
+            train_labels: the labels for the training data
             embed_test_data: the test data transformed using the embedding function
+            test_labels: the labels for the test data
         """
         # Split A and B into train and test datasets
         # This is done before the data are concatenated in order
