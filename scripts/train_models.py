@@ -119,7 +119,10 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument(
-        "--trainer_config", type=str, help="path to trainer config file", required=True
+        "--trainer_config_path",
+        type=str,
+        help="path to trainer config file",
+        required=True,
     )
     parser.add_argument(
         "--dataset_index",
@@ -128,7 +131,10 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument(
-        "--seed_index", type=int, help="index of seed within seeds", required=True
+        "--seed_index",
+        type=int,
+        help="index of seed within seeds",
+        required=True,
     )
 
     args = parser.parse_args()
@@ -141,7 +147,7 @@ if __name__ == "__main__":
     with open(args.dmpair_config_path, "r") as stream:
         dmpair_config = yaml.safe_load(stream)
 
-    with open(args.trainer_config, "r") as stream:
+    with open(args.trainer_config_path, "r") as stream:
         trainer_config = yaml.safe_load(stream)
 
     main(

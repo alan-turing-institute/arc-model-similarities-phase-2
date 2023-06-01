@@ -14,7 +14,7 @@ TRANSFORMS_CONFIG_PATH = os.path.join(
     PROJECT_ROOT, "tests", "testconfig", "transforms.yaml"
 )
 with open(METRICS_CONFIG_PATH, "r") as stream:
-    METRICS_CONFIG = yaml.safe_load(stream)
+    METRICS_CONFIG = yaml.safe_load(stream)["metrics"]
 with open(TRANSFORMS_CONFIG_PATH, "r") as stream:
     TRANSFORMS_CONFIG_PATH = yaml.safe_load(stream)
 

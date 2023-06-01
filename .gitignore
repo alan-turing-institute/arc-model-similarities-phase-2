@@ -151,8 +151,9 @@ attack_scripts/
 results/
 
 # Slurm outputs
-slurm_logs/
 slurm_train_logs/
 slurm_attack_logs/
+slurm_metrics_logs/
 
+# Misc
 .DS_Store
