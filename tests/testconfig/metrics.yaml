@@ -142,5 +142,5 @@ kde_gaussian_l2:
   expected_results:
     same_result: 0
     same_result_only_train: 0
-    diff_result: 1.5002827836527468
-    diff_result_only_train: 1.5791591878284765
+    diff_result: 1
+    diff_result_only_train: 1

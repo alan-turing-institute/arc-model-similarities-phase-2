@@ -40,9 +40,8 @@ def test_cifar_kde_same(metrics_config: dict):
 # test but useful for messing with code
 def test_cifar_kde_different(metrics_config: dict):
     dmpair = DMPair(metrics_config=metrics_config, drop_percent_A=0.2, seed=42)
-
-    similarity_dict_only_train = dmpair.compute_similarity(only_train=True)
     similarity_dict = dmpair.compute_similarity()
+    similarity_dict_only_train = dmpair.compute_similarity(only_train=True)
     test_scenarios = {
         "diff_result": similarity_dict,
         "diff_result_only_train": similarity_dict_only_train,
