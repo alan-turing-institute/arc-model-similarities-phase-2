@@ -21,11 +21,10 @@ def metrics_config() -> dict:
     return kde_config
 
 
-# This test checks that the distance between a dataset and itself is the expect value
-# For this metric the expected value is always zero
+# This test checks that the distance between a dataset and itself returns zero
 def test_cifar_kde_same(metrics_config: dict):
-    dmpair = DMPair(metrics_config=metrics_config)
-    similarity_dict = dmpair.compute_similarity()
+    dmpair = DMPair(metrics_config=metrics_config, seed=42)
+    similarity_dict = dmpair.compute_similarity(only_train=False)
     similarity_dict_only_train = dmpair.compute_similarity(only_train=True)
     test_scenarios = {
         "same_result": similarity_dict,

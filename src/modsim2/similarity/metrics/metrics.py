@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 import numpy as np
 from pytorch_lightning.utilities.seed import seed_everything
 
+from modsim2.similarity.embeddings import EMBEDDING_FN_DICT
+
 
 class DistanceMetric(ABC):
     def __init__(self, metric_seed: int):
@@ -20,6 +22,39 @@ class DistanceMetric(ABC):
         as will the format in which the data are returned.
         """
         pass
+
+    def _embed_data(
+        self,
+        data_A: np.ndarray,
+        data_B: np.ndarray,
+        embedding_name: str,
+        embedding_kwargs: dict,
+    ):
+        """
+        This method will embed the source and target data using a function.
+        For all embeddings, the data are returned as 2-dimensional matrices
+        with shape (num_records, num_features)
+
+        Args:
+            data_A: numpy array of data
+            data_B: numpy array of data
+            embedding_name: the name of the embedding function
+            embedding_args: a dictionary of arguments to pass to the embedding function
+                            (may be empty)
+
+        Returns:
+            embed_A: the embedded representation of data_A
+            embed_B: the embedded representation of data_B
+        """
+
+        # Extract embedding callable
+        embedding_fn = EMBEDDING_FN_DICT[embedding_name]
+
+        # In the future, consider optionally using feature embeddings here
+        embed_A = embedding_fn(data_A, **embedding_kwargs)
+        embed_B = embedding_fn(data_B, **embedding_kwargs)
+
+        return embed_A, embed_B
 
     @abstractmethod
     def calculate_distance(

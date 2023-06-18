@@ -177,6 +177,7 @@ class PAD(DistanceMetric):
         balance_train: bool,
         balance_test: bool,
         embedding_name: str,
+        embedding_args: dict,
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Takes A & B datasets as arguments and calls the methods to process
@@ -221,11 +222,9 @@ class PAD(DistanceMetric):
             train_A, test_A, train_B, test_B
         )
 
-        # Extract embedding callable
-        embedding_fn = EMBEDDING_FN_DICT[embedding_name]
-        # Transform the train and test data using the embedding function
-        embed_train_data = embedding_fn(train_data)
-        embed_test_data = embedding_fn(test_data)
+        embed_train_data, embed_test_data = self._embed_data(
+            train_data, test_data, embedding_name, embedding_args
+        )
 
         return embed_train_data, train_labels, embed_test_data, test_labels
 
@@ -299,6 +298,7 @@ class PAD(DistanceMetric):
         balance_test: bool = True,
         gamma_values: list = ["scale"],
         degree_values: list = [3],
+        embedding_args: dict = {},
     ) -> float:
 
         """
@@ -353,6 +353,7 @@ class PAD(DistanceMetric):
             balance_train=balance_train,
             balance_test=balance_test,
             embedding_name=embedding_name,
+            embedding_args=embedding_args,
         )
 
         # Build the classifiers

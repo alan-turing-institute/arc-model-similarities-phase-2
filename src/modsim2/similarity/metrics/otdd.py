@@ -22,7 +22,14 @@ class OTDD(DistanceMetric):
         data_B: np.ndarray,
         labels_A: np.ndarray,
         labels_B: np.ndarray,
+        embedding_name: str,
+        embedding_args: dict,
     ):
+        if embedding_name is not None:
+            data_A, data_B = self._embed_data(
+                data_A, data_B, embedding_name, embedding_args
+            )
+
         # Create a TensorDataset object for A and B consisting of the data and
         # labels
         dataset_A = TensorDataset(torch.tensor(data_A), torch.tensor(labels_A))
@@ -42,6 +49,8 @@ class OTDD(DistanceMetric):
         labels_B: np.ndarray,
         max_samples: int,
         device: str,
+        embedding_name: str = None,
+        embedding_args: dict = {},
         **kwargs,
     ) -> float:
         """
@@ -71,7 +80,12 @@ class OTDD(DistanceMetric):
             )
 
         dataset_A, dataset_B = self._pre_process_data(
-            data_A, data_B, labels_A, labels_B
+            data_A,
+            data_B,
+            labels_A,
+            labels_B,
+            embedding_name,
+            embedding_args,
         )
 
         dist = DatasetDistance(dataset_A, dataset_B, device=device, **kwargs)
