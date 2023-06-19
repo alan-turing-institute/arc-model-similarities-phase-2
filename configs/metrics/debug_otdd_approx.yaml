@@ -21,7 +21,7 @@ metrics:
       λ_y: 1.0
 
       ## Inner OT (label to label) problem arguments
-      inner_ot_method: gaussian_approx,
+      inner_ot_method: gaussian_approx
       inner_ot_loss: sinkhorn
       inner_ot_debiased: False #changed from False
       inner_ot_p: 2
