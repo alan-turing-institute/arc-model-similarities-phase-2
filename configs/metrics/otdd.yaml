@@ -7,8 +7,8 @@ metrics:
       method: precomputed_labeldist
       symmetric_tasks: False
       feature_cost: euclidean
-      src_embedding: None
-      tgt_embedding: None
+      src_embedding: null
+      tgt_embedding: null
       ignore_source_labels: False
       ignore_target_labels: False
 
@@ -21,7 +21,7 @@ metrics:
       λ_y: 1.0
 
       ## Inner OT (label to label) problem arguments
-      inner_ot_method: exact, #changed from gaussian_approx
+      inner_ot_method: exact #changed from gaussian_approx
       inner_ot_loss: sinkhorn
       inner_ot_debiased: True #changed from False
       inner_ot_p: 2
