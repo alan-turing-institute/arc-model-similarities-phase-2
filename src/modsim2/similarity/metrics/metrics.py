@@ -29,7 +29,7 @@ class DistanceMetric(ABC):
         data_B: np.ndarray,
         embedding_name: str,
         embedding_kwargs: dict,
-    ):
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         This method will embed the source and target data using a function.
         For all embeddings, the data are returned as 2-dimensional matrices
@@ -50,7 +50,7 @@ class DistanceMetric(ABC):
         # Extract embedding callable
         embedding_fn = EMBEDDING_FN_DICT[embedding_name]
 
-        # In the future, consider optionally using feature embeddings here
+        # Apply embeddigns
         embed_A = embedding_fn(data_A, **embedding_kwargs)
         embed_B = embedding_fn(data_B, **embedding_kwargs)
 

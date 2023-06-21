@@ -29,8 +29,47 @@ class KDE(DistanceMetric):
     def __init__(self, seed: int) -> None:
         super().__init__(seed)
 
-    def _pre_process_data(self, data_A: np.ndarray, data_B: np.ndarray):
-        pass
+    def _pre_process_data(
+        self,
+        data_A: np.ndarray,
+        data_B: np.ndarray,
+        embedding_name: str,
+        embedding_kwargs: dict,
+    ) -> tuple[np.ndarray, np.ndarray]:
+
+        # Check for valid embedding choice
+        assert embedding_name in EMBEDDING_FN_DICT, "Error: embedding does not exist"
+
+        if embedding_name in ["inception_umap"]:
+            # as UMAP is stochastic, a random seed is required
+            # for reproducability
+            embed_random_seed = randint(low=0, high=100, size=(1,))[0]
+            embedding_kwargs["random_seed"] = int(embed_random_seed)
+
+        # Embed the data
+        embed_A, embed_B = self._embed_data(
+            data_A=data_A,
+            data_B=data_B,
+            embedding_name=embedding_name,
+            embedding_kwargs=embedding_kwargs,
+        )
+
+        return embed_A, embed_B
+
+    @staticmethod
+    def _kde_distance(
+        num_dimensions: int,
+        func: callable,
+        integration_kwargs: dict,
+    ) -> float:
+
+        # the bounds over which the integration will be performed
+        bounds = [[0, 1] for _ in range(num_dimensions)]
+
+        # perform integration
+        distance = integrate.nquad(func, bounds, **integration_kwargs)[0]
+
+        return distance
 
     @staticmethod
     def l2(
@@ -38,7 +77,7 @@ class KDE(DistanceMetric):
         estimator_A: KernelDensity,
         estimator_B: KernelDensity,
         integration_kwargs: dict,
-    ) -> float:
+    ) -> tuple[float, float]:
         """
         Calculates the L2 Norm between two probability density estimatiors for a given
         number of dimensions using integration
@@ -59,14 +98,15 @@ class KDE(DistanceMetric):
                 2,
             )
 
-        # the bounds over which the integration will be performed
-        bounds = [[0, 1] for _ in range(num_dimensions)]
-
-        # perform integration
-        distance = integrate.nquad(func, bounds, **integration_kwargs)[0]
+        # Perform integration
+        distance = KDE._kde_distance(
+            num_dimensions=num_dimensions,
+            func=func,
+            integration_kwargs=integration_kwargs,
+        )
         distance = np.sqrt(distance)
 
-        return distance
+        return distance, distance
 
     @staticmethod
     def kl(
@@ -74,7 +114,7 @@ class KDE(DistanceMetric):
         estimator_A: KernelDensity,
         estimator_B: KernelDensity,
         integration_kwargs: dict,
-    ):
+    ) -> tuple[float, float]:
         """
         Calculates the KL divergence between two probability density estimatiors for a
         given number of dimensions using integration
@@ -88,29 +128,41 @@ class KDE(DistanceMetric):
             divergence: the KL divergence
         """
         # the function to be integrated
-        def func(*args):
-            return np.exp(estimator_A.score(np.array([[*args]]))) * (
+        def func(A, B, *args):
+            return np.exp(A.score(np.array([[*args]]))) * (
                 np.log(
-                    (np.exp(estimator_A.score([[*args]])))
-                    / (np.exp(estimator_B.score(np.array([[*args]]))))
+                    (np.exp(A.score([[*args]])))
+                    / (np.exp(B.score(np.array([[*args]]))))
                 )
             )
 
-        # the bounds over which the integration will be performed
-        bounds = [[0, 1] for _ in range(num_dimensions)]
+        def funcAB(*args):
+            return func(estimator_A, estimator_B, *args)
+
+        def funcBA(*args):
+            return func(estimator_B, estimator_A, *args)
 
         # perform integration
-        divergence = integrate.nquad(func, bounds, **integration_kwargs)[0]
+        divergenceAB = KDE._kde_distance(
+            num_dimensions=num_dimensions,
+            func=funcAB,
+            integration_kwargs=integration_kwargs,
+        )
+        divergenceBA = KDE._kde_distance(
+            num_dimensions=num_dimensions,
+            func=funcBA,
+            integration_kwargs=integration_kwargs,
+        )
 
-        return divergence
+        return divergenceAB, divergenceBA
 
     @staticmethod
-    def tv(
-        num_features: int,
+    def total_variation(
+        num_dimensions: int,
         estimator_A: KernelDensity,
         estimator_B: KernelDensity,
         integration_kwargs: dict,
-    ):
+    ) -> tuple[float, float]:
         """
         Calculates the total variation between two probability density estimatiors for
         a given number of dimensions using integration
@@ -127,12 +179,20 @@ class KDE(DistanceMetric):
         def func(*args):
             return np.abs(estimator_A.score([[*args]] - estimator_B.score([[*args]])))
 
-        # the bounds over which the integration will be performed
-        bounds = [[0, 1] for _ in range(num_features)]
         # perform integration
-        distance = integrate.nquad(func, bounds, **integration_kwargs)[0]
+        distance = KDE._kde_distance(
+            num_dimensions=num_dimensions,
+            func=func,
+            integration_kwargs=integration_kwargs,
+        )
 
-        return distance
+        return distance, distance
+
+    _kde_metric_dict = {
+        "l2": l2,
+        "kl": kl,
+        "total_variation": total_variation,
+    }
 
     @staticmethod
     def kl_tree(A: np.ndarray, B: np.ndarray):
@@ -198,7 +258,7 @@ class KDE(DistanceMetric):
         metric_name: str,
         embedding_kwargs: dict = {},
         integration_kwargs: dict = {},
-    ) -> float:
+    ) -> tuple[float, float]:
         """
         Calculates the distance between datasets A and B using kernel
         density estimation to represent the probability density function
@@ -232,19 +292,10 @@ class KDE(DistanceMetric):
         # methods cannot be used if the datasets are the same, and the approximate
         # kl method will calculate as -inf)
         if np.array_equal(data_A, data_B):
-            return 0
-
-        # Check for valid embedding choice
-        assert embedding_name in EMBEDDING_FN_DICT, "Error: embedding does not exist"
-
-        if embedding_name in ["inception_umap"]:
-            # as UMAP is stochastic, a random seed is required
-            # for reproducability
-            embed_random_seed = randint(low=0, high=100, size=(1,))[0]
-            embedding_kwargs["random_seed"] = int(embed_random_seed)
+            return (0, 0)
 
         # Embed the data
-        embed_A, embed_B = self._embed_data(
+        embed_A, embed_B = self._pre_process_data(
             data_A=data_A,
             data_B=data_B,
             embedding_name=embedding_name,
@@ -268,28 +319,31 @@ class KDE(DistanceMetric):
 
             # Confirm the two embedded datasets have the same number of features
             # before setting the number of features
-            assert (
-                embed_A.shape[1] == embed_B.shape[1]
-            ), "Error: datasets A & B do not have the same number of features"
+            if embed_A.shape[1] != embed_B.shape[1]:
+                raise ValueError(
+                    "Datasets A & B do not have the same number of features"
+                )
             num_features = embed_A.shape[1]
 
-            if metric_name == "l2":
-                distance = self.l2(
-                    num_features, estimator_A, estimator_B, integration_kwargs
-                )
-                return distance
-            elif metric_name == "kl":
-                distance_AB = self.kl(
-                    num_features, estimator_A, estimator_B, integration_kwargs
-                )
-                distance_BA = self.kl(
-                    num_features, estimator_B, estimator_A, integration_kwargs
-                )
-                return [distance_AB, distance_BA]
-            elif metric_name == "tv":
-                distance = self.tv(
-                    num_features, estimator_A, estimator_B, integration_kwargs
-                )
-                return distance
-            else:
-                raise ValueError("Metric name is not valid:" + metric_name)
+            # Compute and return distance
+            return self._kde_metric_dict[metric_name](
+                num_features, estimator_A, estimator_B, integration_kwargs
+            )
+
+            # if metric_name == "l2":
+            #     distance = self.l2(
+            #         num_features, estimator_A, estimator_B, integration_kwargs
+            #     )
+            #     return distance
+            # elif metric_name == "kl":
+            #     distance = self.kl(
+            #         num_features, estimator_A, estimator_B, integration_kwargs
+            #     )
+            #     return distance
+            # elif metric_name == "total_variation":
+            #     distance = self.total_variation(
+            #         num_features, estimator_A, estimator_B, integration_kwargs
+            #     )
+            #     return distance
+            # else:
+            #     raise ValueError("Metric name is not valid:" + metric_name)
