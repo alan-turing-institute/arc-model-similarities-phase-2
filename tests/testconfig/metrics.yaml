@@ -142,8 +142,12 @@ kde_umap_kl_approx:
     kernel_name: gaussian
     metric_name: kl_approx
   expected_results:
-    same_result: 0
-    same_result_only_train: 0
+    same_result:
+      - 0
+      - 0
+    same_result_only_train:
+      - 0
+      - 0
     diff_result:
       - 6.588985009978275
       - 6.0100476965497895
@@ -159,8 +163,12 @@ kde_pca_kl_approx:
     kernel_name: gaussian
     metric_name: kl_approx
   expected_results:
-    same_result: 0
-    same_result_only_train: 0
+    same_result:
+      - 0
+      - 0
+    same_result_only_train:
+      - 0
+      - 0
     diff_result:
       - -2.0252660891909997
       - -0.9687229971477284
@@ -179,10 +187,18 @@ kde_gaussian_umap_l2:
       opts:
         limit: 50
   expected_results:
-    same_result: 0
-    same_result_only_train: 0
-    diff_result: 2.2351771504742194e-20
-    diff_result_only_train: 1.9749985576171868e-104
+    same_result:
+      - 0
+      - 0
+    same_result_only_train:
+      - 0
+      - 0
+    diff_result:
+      - 2.2351771504742194e-20
+      - 2.2351771504742194e-20
+    diff_result_only_train:
+      - 1.9749985576171868e-104
+      - 1.9749985576171868e-104
 kde_gaussian_pca_l2:
   class: kde
   arguments:
@@ -195,10 +211,18 @@ kde_gaussian_pca_l2:
       opts:
         limit: 50
   expected_results:
-    same_result: 0
-    same_result_only_train: 0
-    diff_result: 0.0011471513557574147
-    diff_result_only_train: 0.0031641776701419656
+    same_result:
+      - 0
+      - 0
+    same_result_only_train:
+      - 0
+      - 0
+    diff_result:
+      - 0.0011471513557574147
+      - 0.0011471513557574147
+    diff_result_only_train:
+      - 0.0031641776701419656
+      - 0.0031641776701419656
 kde_gaussian_umap_kl:
   class: kde
   arguments:
@@ -211,8 +235,12 @@ kde_gaussian_umap_kl:
       opts:
         limit: 50
   expected_results:
-    same_result: 0
-    same_result_only_train: 0
+    same_result:
+      - 0
+      - 0
+    same_result_only_train:
+      - 0
+      - 0
     diff_result:
       - -4.0326070522642503e-28
       - 1.1176669287856217e-19
@@ -231,8 +259,12 @@ kde_gaussian_pca_kl:
       opts:
         limit: 50
   expected_results:
-    same_result: 0
-    same_result_only_train: 0
+    same_result:
+      - 0
+      - 0
+    same_result_only_train:
+      - 0
+      - 0
     diff_result:
       - 0.0003814982008864859
       - -0.00026740845498307125
@@ -246,15 +278,23 @@ kde_gaussian_umap_tv:
     embedding_kwargs:
       n_components: 2
     kernel_name: gaussian
-    metric_name: tv
+    metric_name: total_variation
     integration_kwargs:
       opts:
         limit: 50
   expected_results:
-    same_result: 0
-    same_result_only_train: 0
-    diff_result: 15995.013880034749
-    diff_result_only_train: 410297.79927974695
+    same_result:
+      - 0
+      - 0
+    same_result_only_train:
+      - 0
+      - 0
+    diff_result:
+      - 15995.013880034749
+      - 15995.013880034749
+    diff_result_only_train:
+      - 410297.79927974695
+      - 410297.79927974695
 kde_gaussian_pca_tv:
   class: kde
   arguments:
@@ -262,12 +302,20 @@ kde_gaussian_pca_tv:
     embedding_kwargs:
       n_components: 3
     kernel_name: gaussian
-    metric_name: tv
+    metric_name: total_variation
     integration_kwargs:
       opts:
         limit: 50
   expected_results:
-    same_result: 0
-    same_result_only_train: 0
-    diff_result: 58.11189651622458
-    diff_result_only_train: 56.99577549529939
+    same_result:
+      - 0
+      - 0
+    same_result_only_train:
+      - 0
+      - 0
+    diff_result:
+      - 58.11189651622458
+      - 58.11189651622458
+    diff_result_only_train:
+      - 56.99577549529939
+      - 56.99577549529939
