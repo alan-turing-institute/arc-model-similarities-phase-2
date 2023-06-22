@@ -138,6 +138,8 @@ kde_umap_kl_approx:
   arguments:
     embedding_name: inception_umap
     embedding_kwargs:
+      batch_size: 5
+      device: cpu
       n_components: 2
     kernel_name: gaussian
     metric_name: kl_approx
@@ -159,6 +161,8 @@ kde_pca_kl_approx:
   arguments:
     embedding_name: inception_pca
     embedding_kwargs:
+      batch_size: 5
+      device: cpu
       n_components: 50
     kernel_name: gaussian
     metric_name: kl_approx
@@ -180,6 +184,8 @@ kde_gaussian_umap_l2:
   arguments:
     embedding_name: inception_umap
     embedding_kwargs:
+      batch_size: 5
+      device: cpu
       n_components: 2
     kernel_name: gaussian
     metric_name: l2
@@ -204,6 +210,8 @@ kde_gaussian_pca_l2:
   arguments:
     embedding_name: inception_pca
     embedding_kwargs:
+      batch_size: 5
+      device: cpu
       n_components: 3
     kernel_name: gaussian
     metric_name: l2
@@ -228,6 +236,8 @@ kde_gaussian_umap_kl:
   arguments:
     embedding_name: inception_umap
     embedding_kwargs:
+      batch_size: 5
+      device: cpu
       n_components: 2
     kernel_name: gaussian
     metric_name: kl
@@ -252,6 +262,8 @@ kde_gaussian_pca_kl:
   arguments:
     embedding_name: inception_pca
     embedding_kwargs:
+      batch_size: 5
+      device: cpu
       n_components: 3
     kernel_name: gaussian
     metric_name: kl
@@ -276,6 +288,8 @@ kde_gaussian_umap_tv:
   arguments:
     embedding_name: inception_umap
     embedding_kwargs:
+      batch_size: 5
+      device: cpu
       n_components: 2
     kernel_name: gaussian
     metric_name: total_variation
@@ -300,6 +314,8 @@ kde_gaussian_pca_tv:
   arguments:
     embedding_name: inception_pca
     embedding_kwargs:
+      batch_size: 5
+      device: cpu
       n_components: 3
     kernel_name: gaussian
     metric_name: total_variation

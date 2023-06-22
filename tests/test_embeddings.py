@@ -30,7 +30,7 @@ def test_pca():
 def test_inception():
     dim = (10, 3, 10, 10)
     arr = np.random.rand(*dim)
-    embed = embeddings.inception(arr)
+    embed = embeddings.inception(arr, batch_size=5, device="cpu")
     assert embed.shape == (arr.shape[0], 2048)  # tests correct dims
 
 
@@ -38,7 +38,9 @@ def test_inception_pca():
     dim = (10, 3, 10, 10)
     arr = np.random.rand(*dim)
     num_components = 2
-    embed = embeddings.inception_pca(arr, 2)
+    embed = embeddings.inception_pca(
+        arr, batch_size=5, device="cpu", n_components=num_components
+    )
     assert embed.shape == (arr.shape[0], num_components)  # tests correct dims
 
 
@@ -46,5 +48,7 @@ def test_inception_umap():
     dim = (10, 3, 10, 10)
     arr = np.random.rand(*dim)
     num_components = 2
-    embed = embeddings.inception_umap(arr, 42, num_components)
+    embed = embeddings.inception_umap(
+        arr, batch_size=5, device="cpu", random_seed=42, n_components=num_components
+    )
     assert embed.shape == (arr.shape[0], num_components)  # tests correct dims
