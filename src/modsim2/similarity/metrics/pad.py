@@ -299,7 +299,7 @@ class PAD(DistanceMetric):
         gamma_values: list = ["scale"],
         degree_values: list = [3],
         embedding_args: dict = {},
-    ) -> float:
+    ) -> tuple[float, float]:
 
         """
         Calculates the proxy a-distance for datasets A and B.
@@ -377,4 +377,4 @@ class PAD(DistanceMetric):
         min_error = min(errors)
         pad = 2 * (1 - 2 * min_error)
 
-        return pad
+        return pad, pad

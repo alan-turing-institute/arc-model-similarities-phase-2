@@ -56,7 +56,7 @@ class MMD(DistanceMetric):
         embedding_name: str,
         kernel_name: str,
         embedding_args: dict = {},
-    ) -> float:
+    ) -> tuple[float, float]:
         """
         Computes maximum mean discrepancy (MMD) for A and B. Given a kernel
         embedding k(X,X'), computes
@@ -97,4 +97,4 @@ class MMD(DistanceMetric):
         )
 
         # Return
-        return mmd
+        return mmd, mmd

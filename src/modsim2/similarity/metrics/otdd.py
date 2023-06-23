@@ -52,7 +52,7 @@ class OTDD(DistanceMetric):
         embedding_name: str = None,
         embedding_args: dict = {},
         **kwargs,
-    ) -> float:
+    ) -> tuple[float, float]:
         """
         Calculates the optimal transport dataset distance
 
@@ -92,5 +92,5 @@ class OTDD(DistanceMetric):
 
         # Compute otdd
         logging.info("Computing OTDD. This may take some time!")
-        d = dist.distance(maxsamples=max_samples)
-        return float(d)
+        d = float(dist.distance(maxsamples=max_samples))
+        return d, d

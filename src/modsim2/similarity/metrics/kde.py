@@ -3,7 +3,6 @@ import logging
 import numpy as np
 from scipy import integrate
 from sklearn.neighbors import KernelDensity, NearestNeighbors
-from torch import randint
 
 from modsim2.similarity.embeddings import EMBEDDING_FN_DICT
 
@@ -39,12 +38,6 @@ class KDE(DistanceMetric):
 
         # Check for valid embedding choice
         assert embedding_name in EMBEDDING_FN_DICT, "Error: embedding does not exist"
-
-        if embedding_name in ["inception_umap"]:
-            # as UMAP is stochastic, a random seed is required
-            # for reproducability
-            embed_random_seed = randint(low=0, high=100, size=(1,))[0]
-            embedding_kwargs["random_seed"] = int(embed_random_seed)
 
         # Embed the data
         embed_A, embed_B = self._embed_data(
@@ -292,7 +285,7 @@ class KDE(DistanceMetric):
         # methods cannot be used if the datasets are the same, and the approximate
         # kl method will calculate as -inf)
         if np.array_equal(data_A, data_B):
-            return (0, 0)
+            return 0, 0
 
         # Embed the data
         embed_A, embed_B = self._pre_process_data(

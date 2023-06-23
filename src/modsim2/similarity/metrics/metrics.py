@@ -63,7 +63,7 @@ class DistanceMetric(ABC):
         data_B: np.ndarray,
         labels_A: np.ndarray,
         labels_B: np.ndarray,
-    ) -> float:
+    ) -> tuple[float, float]:
         """
         This method takes the source and target data and labels
         as numpy arrays and returns the distance metric.
