@@ -1,0 +1,44 @@
+baskerville: False
+metrics:
+  pad_linear:
+    class: pad
+    arguments:
+      kernel_name: linear
+      c_values:
+        - 0.1
+        - 1
+        - 10
+      embedding_name: matrix
+      test_proportion: 0.2
+      balance_train: False
+      balance_test: False
+  pad_rbf:
+    class: pad
+    arguments:
+      kernel_name: rbf
+      c_values:
+        - 0.1
+        - 1
+        - 10
+      gamma_values:
+        - 'scale'
+        - 'auto'
+      embedding_name: matrix
+      test_proportion: 0.2
+      balance_train: False
+      balance_test: True
+  pad_poly:
+    class: pad
+    arguments:
+      kernel_name: poly
+      c_values:
+        - 0.1
+        - 1
+        - 10
+      degree_values:
+        - 3
+        - 5
+      embedding_name: matrix
+      test_proportion: 0.2
+      balance_train: True
+      balance_test: False

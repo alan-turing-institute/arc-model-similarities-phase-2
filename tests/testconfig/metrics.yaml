@@ -1,341 +1,342 @@
-mmd_rbf:
-  class: mmd
-  arguments:
-    embedding_name: matrix
-    kernel_name: rbf
-  expected_results:
-    same_result: 0.0
-    same_result_only_train: 0.0
-    diff_result: 0.00012534993489587976
-    diff_result_only_train: 0.0001611794365776742
-mmd_laplace:
-  class: mmd
-  arguments:
-    embedding_name: matrix
-    kernel_name: laplace
-  expected_results:
-    same_result: 0.0
-    same_result_only_train: 0.0
-    diff_result: 0.0002326510493355638
-    diff_result_only_train: 0.00029474732083722976
-otdd_exact:
-  class: otdd
-  arguments:
-    max_samples: 1000
-    device: cpu
-    coupling_method: geomloss
-    method: precomputed_labeldist
-    debiased_loss: True
-    p: 2
-    entreg: 0.1
-    inner_ot_method: exact
-    inner_ot_debiased: True
-    inner_ot_p: 2
-    inner_ot_entreg: 0.1
-  expected_results:
-    same_result: 0.0
-    same_result_only_train: 0.0
-    diff_result: 98.62165069580078
-    diff_result_only_train: 98.76387786865234
-otdd_naive_upperbound:
-  class: otdd
-  arguments:
-    max_samples: 1000
-    device: cpu
-    coupling_method: geomloss
-    method: precomputed_labeldist
-    debiased_loss: True
-    p: 2
-    entreg: 0.1
-    inner_ot_method: naive_upperbound
-    inner_ot_debiased: True
-    inner_ot_p: 2
-    inner_ot_entreg: 0.1
-  expected_results:
-    same_result: 256.1785888671875
-    same_result_only_train: 256.23443603515625
-    diff_result: 306.5455017089844
-    diff_result_only_train: 306.96649169921875
-pad_linear:
-  class: pad
-  arguments:
-    kernel_name: linear
-    c_values:
-      - 0.1
-      - 1
-      - 10
-    embedding_name: matrix
-    test_proportion: 0.2
-    balance_train: False
-    balance_test: False
-  expected_results:
-    same_result: -1.6333333333333333
-    same_result_only_train: -1.75
-    diff_result: -1.3333333333333335
-    diff_result_only_train: -1.302325581395349
-pad_rbf:
-  class: pad
-  arguments:
-    kernel_name: rbf
-    c_values:
-      - 0.1
-      - 1
-      - 10
-    gamma_values:
-      - 'scale'
-      - 'auto'
-    embedding_name: matrix
-    test_proportion: 0.2
-    balance_train: False
-    balance_test: True
-  expected_results:
-    same_result: -1.6333333333333333
-    same_result_only_train: -1.75
-    diff_result: 0.0
-    diff_result_only_train: 0.0
-pad_poly:
-  class: pad
-  arguments:
-    kernel_name: poly
-    c_values:
-      - 0.1
-      - 1
-      - 10
-    degree_values:
-      - 3
-      - 5
-    embedding_name: matrix
-    test_proportion: 0.2
-    balance_train: True
-    balance_test: False
-  expected_results:
-    same_result: -1.6333333333333333
-    same_result_only_train: -1.75
-    diff_result: -1.4074074074074074
-    diff_result_only_train: -1.3488372093023258
-pad_full_balance:
-  class: pad
-  arguments:
-    kernel_name: poly
-    c_values:
-      - 0.1
-      - 1
-      - 10
-    degree_values:
-      - 3
-      - 5
-    embedding_name: matrix
-    test_proportion: 0.2
-    balance_train: True
-    balance_test: True
-  expected_results:
-    same_result: -1.6333333333333333
-    same_result_only_train: -1.75
-    diff_result: -1.5
-    diff_result_only_train: -1.3684210526315788
-kde_umap_kl_approx:
-  class: kde
-  arguments:
-    embedding_name: inception_umap
-    embedding_kwargs:
-      batch_size: 16
+metrics:
+  mmd_rbf:
+    class: mmd
+    arguments:
+      embedding_name: matrix
+      kernel_name: rbf
+    expected_results:
+      same_result: 0.0
+      same_result_only_train: 0.0
+      diff_result: 0.00012534993489587976
+      diff_result_only_train: 0.0001611794365776742
+  mmd_laplace:
+    class: mmd
+    arguments:
+      embedding_name: matrix
+      kernel_name: laplace
+    expected_results:
+      same_result: 0.0
+      same_result_only_train: 0.0
+      diff_result: 0.0002326510493355638
+      diff_result_only_train: 0.00029474732083722976
+  otdd_exact:
+    class: otdd
+    arguments:
+      max_samples: 1000
       device: cpu
-      n_components: 2
-      random_seed: 42
-    kernel_name: gaussian
-    metric_name: kl_approx
-  expected_results:
-    same_result:
-      - 0
-      - 0
-    same_result_only_train:
-      - 0
-      - 0
-    diff_result:
-      - 6.588985009978275
-      - 6.0100476965497895
-    diff_result_only_train:
-      - 0.9850394338116751
-      - 0.8501157586359216
-kde_pca_kl_approx:
-  class: kde
-  arguments:
-    embedding_name: inception_pca
-    embedding_kwargs:
-      batch_size: 16
+      coupling_method: geomloss
+      method: precomputed_labeldist
+      debiased_loss: True
+      p: 2
+      entreg: 0.1
+      inner_ot_method: exact
+      inner_ot_debiased: True
+      inner_ot_p: 2
+      inner_ot_entreg: 0.1
+    expected_results:
+      same_result: 0.0
+      same_result_only_train: 0.0
+      diff_result: 98.62165069580078
+      diff_result_only_train: 98.76387786865234
+  otdd_naive_upperbound:
+    class: otdd
+    arguments:
+      max_samples: 1000
       device: cpu
-      n_components: 50
-    kernel_name: gaussian
-    metric_name: kl_approx
-  expected_results:
-    same_result:
-      - 0
-      - 0
-    same_result_only_train:
-      - 0
-      - 0
-    diff_result:
-      - -2.0252660891909997
-      - -0.9687229971477284
-    diff_result_only_train:
-      - -1.025100578869223
-      - 0.11155721087821097
-kde_gaussian_umap_l2:
-  class: kde
-  arguments:
-    embedding_name: inception_umap
-    embedding_kwargs:
-      batch_size: 16
-      device: cpu
-      random_seed: 42
-      n_components: 2
-    kernel_name: gaussian
-    metric_name: l2
-    integration_kwargs:
-      opts:
-        limit: 50
-  expected_results:
-    same_result:
-      - 0
-      - 0
-    same_result_only_train:
-      - 0
-      - 0
-    diff_result:
-      - 2.2351771504742194e-20
-      - 2.2351771504742194e-20
-    diff_result_only_train:
-      - 1.9749985576171868e-104
-      - 1.9749985576171868e-104
-kde_gaussian_pca_l2:
-  class: kde
-  arguments:
-    embedding_name: inception_pca
-    embedding_kwargs:
-      batch_size: 16
-      device: cpu
-      n_components: 3
-    kernel_name: gaussian
-    metric_name: l2
-    integration_kwargs:
-      opts:
-        limit: 50
-  expected_results:
-    same_result:
-      - 0
-      - 0
-    same_result_only_train:
-      - 0
-      - 0
-    diff_result:
-      - 0.0011471513557574147
-      - 0.0011471513557574147
-    diff_result_only_train:
-      - 0.0031641776701419656
-      - 0.0031641776701419656
-kde_gaussian_umap_kl:
-  class: kde
-  arguments:
-    embedding_name: inception_umap
-    embedding_kwargs:
-      batch_size: 16
-      device: cpu
-      random_seed: 42
-      n_components: 2
-    kernel_name: gaussian
-    metric_name: kl
-    integration_kwargs:
-      opts:
-        limit: 50
-  expected_results:
-    same_result:
-      - 0
-      - 0
-    same_result_only_train:
-      - 0
-      - 0
-    diff_result:
-      - -4.0326070522642503e-28
-      - 1.1176669287856217e-19
-    diff_result_only_train:
-      - 3.0547176218130342e-105
-      - -2.386946785525942e-106
-kde_gaussian_pca_kl:
-  class: kde
-  arguments:
-    embedding_name: inception_pca
-    embedding_kwargs:
-      batch_size: 16
-      device: cpu
-      n_components: 3
-    kernel_name: gaussian
-    metric_name: kl
-    integration_kwargs:
-      opts:
-        limit: 50
-  expected_results:
-    same_result:
-      - 0
-      - 0
-    same_result_only_train:
-      - 0
-      - 0
-    diff_result:
-      - 0.0003814982008864859
-      - -0.00026740845498307125
-    diff_result_only_train:
-      - -0.0023603643747218536
-      - 0.0032210946941657434
-kde_gaussian_umap_tv:
-  class: kde
-  arguments:
-    embedding_name: inception_umap
-    embedding_kwargs:
-      batch_size: 16
-      device: cpu
-      random_seed: 42
-      n_components: 2
-    kernel_name: gaussian
-    metric_name: total_variation
-    integration_kwargs:
-      opts:
-        limit: 50
-  expected_results:
-    same_result:
-      - 0
-      - 0
-    same_result_only_train:
-      - 0
-      - 0
-    diff_result:
-      - 15995.013880034749
-      - 15995.013880034749
-    diff_result_only_train:
-      - 410297.79927974695
-      - 410297.79927974695
-kde_gaussian_pca_tv:
-  class: kde
-  arguments:
-    embedding_name: inception_pca
-    embedding_kwargs:
-      batch_size: 16
-      device: cpu
-      n_components: 3
-    kernel_name: gaussian
-    metric_name: total_variation
-    integration_kwargs:
-      opts:
-        limit: 50
-  expected_results:
-    same_result:
-      - 0
-      - 0
-    same_result_only_train:
-      - 0
-      - 0
-    diff_result:
-      - 58.11189651622458
-      - 58.11189651622458
-    diff_result_only_train:
-      - 56.99577549529939
-      - 56.99577549529939
+      coupling_method: geomloss
+      method: precomputed_labeldist
+      debiased_loss: True
+      p: 2
+      entreg: 0.1
+      inner_ot_method: naive_upperbound
+      inner_ot_debiased: True
+      inner_ot_p: 2
+      inner_ot_entreg: 0.1
+    expected_results:
+      same_result: 256.1785888671875
+      same_result_only_train: 256.23443603515625
+      diff_result: 306.5455017089844
+      diff_result_only_train: 306.96649169921875
+  pad_linear:
+    class: pad
+    arguments:
+      kernel_name: linear
+      c_values:
+        - 0.1
+        - 1
+        - 10
+      embedding_name: matrix
+      test_proportion: 0.2
+      balance_train: False
+      balance_test: False
+    expected_results:
+      same_result: -1.6333333333333333
+      same_result_only_train: -1.75
+      diff_result: -1.3333333333333335
+      diff_result_only_train: -1.302325581395349
+  pad_rbf:
+    class: pad
+    arguments:
+      kernel_name: rbf
+      c_values:
+        - 0.1
+        - 1
+        - 10
+      gamma_values:
+        - 'scale'
+        - 'auto'
+      embedding_name: matrix
+      test_proportion: 0.2
+      balance_train: False
+      balance_test: True
+    expected_results:
+      same_result: -1.6333333333333333
+      same_result_only_train: -1.75
+      diff_result: 0.0
+      diff_result_only_train: 0.0
+  pad_poly:
+    class: pad
+    arguments:
+      kernel_name: poly
+      c_values:
+        - 0.1
+        - 1
+        - 10
+      degree_values:
+        - 3
+        - 5
+      embedding_name: matrix
+      test_proportion: 0.2
+      balance_train: True
+      balance_test: False
+    expected_results:
+      same_result: -1.6333333333333333
+      same_result_only_train: -1.75
+      diff_result: -1.4074074074074074
+      diff_result_only_train: -1.3488372093023258
+  pad_full_balance:
+    class: pad
+    arguments:
+      kernel_name: poly
+      c_values:
+        - 0.1
+        - 1
+        - 10
+      degree_values:
+        - 3
+        - 5
+      embedding_name: matrix
+      test_proportion: 0.2
+      balance_train: True
+      balance_test: True
+    expected_results:
+      same_result: -1.6333333333333333
+      same_result_only_train: -1.75
+      diff_result: -1.5
+      diff_result_only_train: -1.3684210526315788
+  kde_umap_kl_approx:
+    class: kde
+    arguments:
+      embedding_name: inception_umap
+      embedding_kwargs:
+        batch_size: 16
+        device: cpu
+        n_components: 2
+        random_seed: 42
+      kernel_name: gaussian
+      metric_name: kl_approx
+    expected_results:
+      same_result:
+        - 0
+        - 0
+      same_result_only_train:
+        - 0
+        - 0
+      diff_result:
+        - 6.588985009978275
+        - 6.0100476965497895
+      diff_result_only_train:
+        - 0.9850394338116751
+        - 0.8501157586359216
+  kde_pca_kl_approx:
+    class: kde
+    arguments:
+      embedding_name: inception_pca
+      embedding_kwargs:
+        batch_size: 16
+        device: cpu
+        n_components: 50
+      kernel_name: gaussian
+      metric_name: kl_approx
+    expected_results:
+      same_result:
+        - 0
+        - 0
+      same_result_only_train:
+        - 0
+        - 0
+      diff_result:
+        - -2.0252660891909997
+        - -0.9687229971477284
+      diff_result_only_train:
+        - -1.025100578869223
+        - 0.11155721087821097
+  kde_gaussian_umap_l2:
+    class: kde
+    arguments:
+      embedding_name: inception_umap
+      embedding_kwargs:
+        batch_size: 16
+        device: cpu
+        random_seed: 42
+        n_components: 2
+      kernel_name: gaussian
+      metric_name: l2
+      integration_kwargs:
+        opts:
+          limit: 50
+    expected_results:
+      same_result:
+        - 0
+        - 0
+      same_result_only_train:
+        - 0
+        - 0
+      diff_result:
+        - 2.2351771504742194e-20
+        - 2.2351771504742194e-20
+      diff_result_only_train:
+        - 1.9749985576171868e-104
+        - 1.9749985576171868e-104
+  kde_gaussian_pca_l2:
+    class: kde
+    arguments:
+      embedding_name: inception_pca
+      embedding_kwargs:
+        batch_size: 16
+        device: cpu
+        n_components: 3
+      kernel_name: gaussian
+      metric_name: l2
+      integration_kwargs:
+        opts:
+          limit: 50
+    expected_results:
+      same_result:
+        - 0
+        - 0
+      same_result_only_train:
+        - 0
+        - 0
+      diff_result:
+        - 0.0011471513557574147
+        - 0.0011471513557574147
+      diff_result_only_train:
+        - 0.0031641776701419656
+        - 0.0031641776701419656
+  kde_gaussian_umap_kl:
+    class: kde
+    arguments:
+      embedding_name: inception_umap
+      embedding_kwargs:
+        batch_size: 16
+        device: cpu
+        random_seed: 42
+        n_components: 2
+      kernel_name: gaussian
+      metric_name: kl
+      integration_kwargs:
+        opts:
+          limit: 50
+    expected_results:
+      same_result:
+        - 0
+        - 0
+      same_result_only_train:
+        - 0
+        - 0
+      diff_result:
+        - -4.0326070522642503e-28
+        - 1.1176669287856217e-19
+      diff_result_only_train:
+        - 3.0547176218130342e-105
+        - -2.386946785525942e-106
+  kde_gaussian_pca_kl:
+    class: kde
+    arguments:
+      embedding_name: inception_pca
+      embedding_kwargs:
+        batch_size: 16
+        device: cpu
+        n_components: 3
+      kernel_name: gaussian
+      metric_name: kl
+      integration_kwargs:
+        opts:
+          limit: 50
+    expected_results:
+      same_result:
+        - 0
+        - 0
+      same_result_only_train:
+        - 0
+        - 0
+      diff_result:
+        - 0.0003814982008864859
+        - -0.00026740845498307125
+      diff_result_only_train:
+        - -0.0023603643747218536
+        - 0.0032210946941657434
+  kde_gaussian_umap_tv:
+    class: kde
+    arguments:
+      embedding_name: inception_umap
+      embedding_kwargs:
+        batch_size: 16
+        device: cpu
+        random_seed: 42
+        n_components: 2
+      kernel_name: gaussian
+      metric_name: total_variation
+      integration_kwargs:
+        opts:
+          limit: 50
+    expected_results:
+      same_result:
+        - 0
+        - 0
+      same_result_only_train:
+        - 0
+        - 0
+      diff_result:
+        - 15995.013880034749
+        - 15995.013880034749
+      diff_result_only_train:
+        - 410297.79927974695
+        - 410297.79927974695
+  kde_gaussian_pca_tv:
+    class: kde
+    arguments:
+      embedding_name: inception_pca
+      embedding_kwargs:
+        batch_size: 16
+        device: cpu
+        n_components: 3
+      kernel_name: gaussian
+      metric_name: total_variation
+      integration_kwargs:
+        opts:
+          limit: 50
+    expected_results:
+      same_result:
+        - 0
+        - 0
+      same_result_only_train:
+        - 0
+        - 0
+      diff_result:
+        - 58.11189651622458
+        - 58.11189651622458
+      diff_result_only_train:
+        - 56.99577549529939
+        - 56.99577549529939

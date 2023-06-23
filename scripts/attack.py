@@ -190,10 +190,16 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument(
-        "--trainer_config", type=str, help="path to trainer config file", required=True
+        "--trainer_config_path",
+        type=str,
+        help="path to trainer config file",
+        required=True,
     )
     parser.add_argument(
-        "--attack_config", type=str, help="path to attack config file", required=True
+        "--attack_config_path",
+        type=str,
+        help="path to attack config file",
+        required=True,
     )
     parser.add_argument(
         "--dataset_index",
@@ -215,10 +221,10 @@ if __name__ == "__main__":
     with open(args.dmpair_config_path, "r") as stream:
         dmpair_config = yaml.safe_load(stream)
 
-    with open(args.trainer_config, "r") as stream:
+    with open(args.trainer_config_path, "r") as stream:
         trainer_config = yaml.safe_load(stream)
 
-    with open(args.attack_config, "r") as stream:
+    with open(args.attack_config_path, "r") as stream:
         attack_config = yaml.safe_load(stream)
 
     main(

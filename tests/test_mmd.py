@@ -15,7 +15,7 @@ def metrics_config() -> dict:
         project_root, "tests", "testconfig", "metrics.yaml"
     )
     with open(metrics_config_path, "r") as stream:
-        mmd_config = yaml.safe_load(stream)
+        mmd_config = yaml.safe_load(stream)["metrics"]
     # filter down to only mmd configs
     mmd_config = {k: v for k, v in mmd_config.items() if v["class"] == "mmd"}
     return mmd_config
