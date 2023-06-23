@@ -72,10 +72,13 @@ class MMD(DistanceMetric):
         Args:
             data_A: The first image dataset
             data_B: The second image dataset
+            labels_A: Labels for the first dataset. Unused
+            labels_B: Labels for the second dataset. Unused
             embedding_name: What feature embeddings, if any, to use for the
                             input arrays
             kernel_name: An appropriate kernel embedding. See kernel_dict
                         for choices
+            embedding_args: Dict of arguments to pass to the embedding function
 
         Returns:
             float: The maximum mean discrepancy between A and B

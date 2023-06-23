@@ -33,7 +33,7 @@ class KDE(DistanceMetric):
         data_A: np.ndarray,
         data_B: np.ndarray,
         embedding_name: str,
-        embedding_kwargs: dict,
+        embedding_args: dict,
     ) -> tuple[np.ndarray, np.ndarray]:
 
         # Check for valid embedding choice
@@ -44,7 +44,7 @@ class KDE(DistanceMetric):
             data_A=data_A,
             data_B=data_B,
             embedding_name=embedding_name,
-            embedding_kwargs=embedding_kwargs,
+            embedding_kwargs=embedding_args,
         )
 
         return embed_A, embed_B
@@ -249,7 +249,7 @@ class KDE(DistanceMetric):
         embedding_name: str,
         kernel_name: str,
         metric_name: str,
-        embedding_kwargs: dict = {},
+        embedding_args: dict = {},
         integration_kwargs: dict = {},
     ) -> tuple[float, float]:
         """
@@ -276,7 +276,7 @@ class KDE(DistanceMetric):
                     'exponential', 'linear', 'cosine'
             metric_name: The metric to be used to calculate the distance between
                     the density functions, currently only 'l2' is valid
-            embedding_kwargs: A dictionary of key word arguments to be passed
+            embedding_args: A dictionary of key word arguments to be passed
                     to the embedding function
             integration_kwargs: A dictionary of key word arguments to be passed
                     to the integration function
@@ -292,7 +292,7 @@ class KDE(DistanceMetric):
             data_A=data_A,
             data_B=data_B,
             embedding_name=embedding_name,
-            embedding_kwargs=embedding_kwargs,
+            embedding_args=embedding_args,
         )
 
         if metric_name == "kl_approx":
@@ -322,21 +322,3 @@ class KDE(DistanceMetric):
             return self._kde_metric_dict[metric_name](
                 num_features, estimator_A, estimator_B, integration_kwargs
             )
-
-            # if metric_name == "l2":
-            #     distance = self.l2(
-            #         num_features, estimator_A, estimator_B, integration_kwargs
-            #     )
-            #     return distance
-            # elif metric_name == "kl":
-            #     distance = self.kl(
-            #         num_features, estimator_A, estimator_B, integration_kwargs
-            #     )
-            #     return distance
-            # elif metric_name == "total_variation":
-            #     distance = self.total_variation(
-            #         num_features, estimator_A, estimator_B, integration_kwargs
-            #     )
-            #     return distance
-            # else:
-            #     raise ValueError("Metric name is not valid:" + metric_name)

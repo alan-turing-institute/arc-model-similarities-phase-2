@@ -335,6 +335,7 @@ class PAD(DistanceMetric):
             gamma_values: List of gamma values to be applied in SVCs, see sklearn
                             documentation for list of possible values
             degree_values: List of degree values to be applied in polynomial SVCs
+            embedding_args: Dict of arguments to pass to the embedding function
         """
 
         # Check for valid embedding choice

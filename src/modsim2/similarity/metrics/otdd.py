@@ -59,10 +59,16 @@ class OTDD(DistanceMetric):
         Args:
             data_A: The first image dataset
             data_B: The second image dataset
+            labels_A: Labels for the first dataset
+            labels_B: Labels for the second dataset
             max_samples (int):  maximum number of samples used in outer-level
                         otdd problem.
             device (str): the device on which the calculation will run,
                         e.g. 'cpu', 'mps'
+            embedding_name: What feature embeddings, if any, to use for the
+                            input arrays
+            embedding_args: Dict of arguments to pass to the embedding function
+            **kwargs: Arguments passed to DatasetDistance. See otdd docs for more info
 
         Returns:
             float: The otdd between A and B
