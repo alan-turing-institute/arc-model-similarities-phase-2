@@ -15,7 +15,7 @@ def metrics_config() -> dict:
         project_root, "tests", "testconfig", "metrics.yaml"
     )
     with open(metrics_config_path, "r") as stream:
-        kde_config = yaml.safe_load(stream)
+        kde_config = yaml.safe_load(stream)["metrics"]
     # filter down to only pad configs
     kde_config = {k: v for k, v in kde_config.items() if v["class"] == "kde"}
     return kde_config
