@@ -98,22 +98,24 @@ def inception(
     n_samples = input_data.shape[0]
 
     # create output
-    output_data = np.zeros((n_samples, INCEPTION_NFEATS))
+    output_data = torch.zeros((n_samples, INCEPTION_NFEATS))
 
     # run the data input data through the model in batches
     data_loader = DataLoader(
         input_data,
         batch_size=batch_size,
+        shuffle=False,
     )
-    for i, batch in enumerate(data_loader):
-        output_batch = model(batch)
-        slice = i * batch_size
-        output_data[slice : (slice + output_batch.shape[0])] = (
-            output_batch.cpu().detach().numpy()
-        )
+    with torch.inference_mode():
+        for i, batch in enumerate(data_loader):
+            output_batch = model(batch)
+            slice = i * batch_size
+            output_data[
+                slice : (slice + output_batch.shape[0])
+            ] = output_batch.cpu().detach()
 
     # Return
-    return output_data
+    return output_data.numpy()
 
 
 def pca(array: np.ndarray, n_components: int) -> np.ndarray:
