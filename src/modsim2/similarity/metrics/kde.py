@@ -33,7 +33,7 @@ class KDE(DistanceMetric):
         data_A: np.ndarray,
         data_B: np.ndarray,
         embedding_name: str,
-        embedding_args: dict,
+        embedding_kwargs: dict,
     ) -> tuple[np.ndarray, np.ndarray]:
 
         # Check for valid embedding choice
@@ -44,7 +44,7 @@ class KDE(DistanceMetric):
             data_A=data_A,
             data_B=data_B,
             embedding_name=embedding_name,
-            embedding_kwargs=embedding_args,
+            embedding_kwargs=embedding_kwargs,
         )
 
         return embed_A, embed_B
@@ -249,7 +249,7 @@ class KDE(DistanceMetric):
         embedding_name: str,
         kernel_name: str,
         metric_name: str,
-        embedding_args: dict = {},
+        embedding_kwargs: dict = {},
         integration_kwargs: dict = {},
     ) -> tuple[float, float]:
         """
@@ -292,7 +292,7 @@ class KDE(DistanceMetric):
             data_A=data_A,
             data_B=data_B,
             embedding_name=embedding_name,
-            embedding_args=embedding_args,
+            embedding_kwargs=embedding_kwargs,
         )
 
         if metric_name == "kl_approx":

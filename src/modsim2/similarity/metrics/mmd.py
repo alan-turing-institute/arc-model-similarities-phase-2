@@ -24,10 +24,10 @@ class MMD(DistanceMetric):
         data_B: np.ndarray,
         embedding_name: str,
         kernel_name: str,
-        embedding_args: dict,
+        embedding_kwargs: dict,
     ):
         matrix_A, matrix_B = self._embed_data(
-            data_A, data_B, embedding_name, embedding_args
+            data_A, data_B, embedding_name, embedding_kwargs
         )
 
         N_A = matrix_A.shape[0]
@@ -55,7 +55,7 @@ class MMD(DistanceMetric):
         labels_B: np.ndarray,
         embedding_name: str,
         kernel_name: str,
-        embedding_args: dict = {},
+        embedding_kwargs: dict = {},
     ) -> tuple[float, float]:
         """
         Computes maximum mean discrepancy (MMD) for A and B. Given a kernel
@@ -85,11 +85,11 @@ class MMD(DistanceMetric):
         """
 
         kernel_AA, kernel_BB, kernel_AB, N_A, N_B = self._pre_process_data(
-            data_A,
-            data_B,
-            embedding_name,
-            kernel_name,
-            embedding_args,
+            data_A=data_A,
+            data_B=data_B,
+            embedding_name=embedding_name,
+            kernel_name=kernel_name,
+            embedding_kwargs=embedding_kwargs,
         )
 
         # Compute MMD

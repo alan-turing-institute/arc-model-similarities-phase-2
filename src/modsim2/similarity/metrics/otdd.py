@@ -50,7 +50,7 @@ class OTDD(DistanceMetric):
         max_samples: int,
         device: str,
         embedding_name: str = None,
-        embedding_args: dict = {},
+        embedding_kwargs: dict = None,
         **kwargs,
     ) -> tuple[float, float]:
         """
@@ -85,13 +85,16 @@ class OTDD(DistanceMetric):
                 "when run on an Apple M1 processor"
             )
 
+        if embedding_kwargs is None:
+            embedding_kwargs = {}
+
         dataset_A, dataset_B = self._pre_process_data(
-            data_A,
-            data_B,
-            labels_A,
-            labels_B,
-            embedding_name,
-            embedding_args,
+            data_A=data_A,
+            data_B=data_B,
+            labels_A=labels_A,
+            labels_B=labels_B,
+            embedding_name=embedding_name,
+            embedding_kwargs=embedding_kwargs,
         )
 
         dist = DatasetDistance(dataset_A, dataset_B, device=device, **kwargs)

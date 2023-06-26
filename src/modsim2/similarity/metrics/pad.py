@@ -177,7 +177,7 @@ class PAD(DistanceMetric):
         balance_train: bool,
         balance_test: bool,
         embedding_name: str,
-        embedding_args: dict,
+        embedding_kwargs: dict,
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Takes A & B datasets as arguments and calls the methods to process
@@ -219,11 +219,14 @@ class PAD(DistanceMetric):
 
         # concatenate A&B datasets
         train_data, train_labels, test_data, test_labels = self._concat_data(
-            train_A, test_A, train_B, test_B
+            train_A=train_A, test_A=test_A, train_B=train_B, test_B=test_B
         )
 
         embed_train_data, embed_test_data = self._embed_data(
-            train_data, test_data, embedding_name, embedding_args
+            data_A=train_data,
+            data_B=test_data,
+            embedding_name=embedding_name,
+            embedding_kwargs=embedding_kwargs,
         )
 
         return embed_train_data, train_labels, embed_test_data, test_labels
