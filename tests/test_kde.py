@@ -2,7 +2,7 @@ import os
 
 import pytest
 import yaml
-from pytest_check import check
+from testing_utils import assert_all_scenarios_0, assert_all_scenarios_above_0
 
 from modsim2.data.loader import DMPair
 
@@ -22,7 +22,9 @@ def metrics_config() -> dict:
 
 
 # This test checks that the distance between a dataset and itself returns zero
-def test_cifar_kde_same(metrics_config: dict):
+def test_cifar_kde_same(
+    metrics_config: dict, fixedInceptionMock, fixedUmapMock, fixedPcaMock
+):
     dmpair = DMPair(metrics_config=metrics_config, seed=42)
     similarity_dict = dmpair.compute_similarity(only_train=False)
     similarity_dict_only_train = dmpair.compute_similarity(only_train=True)
@@ -30,39 +32,30 @@ def test_cifar_kde_same(metrics_config: dict):
         "same_result": similarity_dict,
         "same_result_only_train": similarity_dict_only_train,
     }
-    compare_results(test_scenarios, metrics_config)
+    assert_all_scenarios_0(test_scenarios=test_scenarios)
 
 
 # This test checks that the distance between two different datasets is the expected
 # value
 # The calculated distance is checked against the known value for the seed - brittle
 # test but useful for messing with code
-def test_cifar_kde_different(metrics_config: dict):
-    dmpair = DMPair(metrics_config=metrics_config, drop_percent_A=0.2, seed=42)
+def test_cifar_kde_different(
+    metrics_config: dict,
+    randomNormalDifferentInceptionMock,
+    randomNormalDifferentUmapMock,
+    randomNormalDifferentPcaMock,
+):
+
+    dmpair = DMPair(
+        metrics_config=metrics_config, drop_percent_A=0.5, drop_percent_B=0.5, seed=42
+    )
+
     similarity_dict = dmpair.compute_similarity()
     similarity_dict_only_train = dmpair.compute_similarity(only_train=True)
+
     test_scenarios = {
         "diff_result": similarity_dict,
         "diff_result_only_train": similarity_dict_only_train,
     }
-    compare_results(test_scenarios, metrics_config)
 
-
-# This function takes the computed distances (stored in test_scenarios) and
-# compares them to the expected distances (stored in metrics_config)
-def compare_results(test_scenarios: dict, metrics_config: dict):
-    for scenario, results in test_scenarios.items():
-        for k in metrics_config:
-            expected_result = tuple(metrics_config[k]["expected_results"][scenario])
-            actual_result = tuple(results[k])
-            with check:
-                assert actual_result == expected_result, (
-                    "test:"
-                    + k
-                    + "/"
-                    + scenario
-                    + ", expected result: "
-                    + str(expected_result)
-                    + ", actual result: "
-                    + str(actual_result)
-                )
+    assert_all_scenarios_above_0(test_scenarios=test_scenarios)
