@@ -2,7 +2,7 @@ import os
 
 import pytest
 import yaml
-from testing_utils import assert_all_scenarios_0, assert_all_scenarios_above_0
+from pytest_check import check
 
 from modsim2.data.loader import DMPair
 
@@ -22,9 +22,8 @@ def metrics_config() -> dict:
 
 
 # This test checks that the distance between a dataset and itself returns zero
-def test_cifar_kde_same(
-    metrics_config: dict, fixedInceptionMock, fixedUmapMock, fixedPcaMock
-):
+# don't need to mock embeddings because not used
+def test_cifar_kde_same(metrics_config: dict):
     dmpair = DMPair(metrics_config=metrics_config, seed=42)
     similarity_dict = dmpair.compute_similarity(only_train=False)
     similarity_dict_only_train = dmpair.compute_similarity(only_train=True)
@@ -32,7 +31,7 @@ def test_cifar_kde_same(
         "same_result": similarity_dict,
         "same_result_only_train": similarity_dict_only_train,
     }
-    assert_all_scenarios_0(test_scenarios=test_scenarios)
+    compare_results(test_scenarios=test_scenarios, metrics_config=metrics_config)
 
 
 # This test checks that the distance between two different datasets is the expected
@@ -41,9 +40,9 @@ def test_cifar_kde_same(
 # test but useful for messing with code
 def test_cifar_kde_different(
     metrics_config: dict,
-    randomNormalDifferentInceptionMock,
-    randomNormalDifferentUmapMock,
-    randomNormalDifferentPcaMock,
+    inceptionMock,
+    umapMock,
+    pcaMock,
 ):
 
     dmpair = DMPair(
@@ -58,4 +57,24 @@ def test_cifar_kde_different(
         "diff_result_only_train": similarity_dict_only_train,
     }
 
-    assert_all_scenarios_above_0(test_scenarios=test_scenarios)
+    compare_results(test_scenarios=test_scenarios, metrics_config=metrics_config)
+
+
+# This function takes the computed distances (stored in test_scenarios) and
+# compares them to the expected distances (stored in metrics_config)
+def compare_results(test_scenarios: dict, metrics_config: dict):
+    for scenario, results in test_scenarios.items():
+        for k in metrics_config:
+            expected_result = tuple(metrics_config[k]["expected_results"][scenario])
+            actual_result = tuple(results[k])
+            with check:
+                assert actual_result == expected_result, (
+                    "test:"
+                    + k
+                    + "/"
+                    + scenario
+                    + ", expected result: "
+                    + str(expected_result)
+                    + ", actual result: "
+                    + str(actual_result)
+                )

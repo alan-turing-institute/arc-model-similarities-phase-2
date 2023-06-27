@@ -67,120 +67,50 @@ SCALE = 0.1
 
 
 @pytest.fixture(scope="module", autouse=False)
-def randomNormalDifferentInceptionMock():
+def inceptionMock():
     """
     produce random samples from normal distr
     ensures each subsequent call has a different mean
     """
-    # note, will have a limit on times it can be called (size of range)
-    mean_iter = range(MEAN_LOW, MEAN_HIGH).__iter__()
 
-    def random_inception_embeds(
+    def inception_embeds(
         array: np.ndarray,
         batch_size: int,
         device: str,
     ) -> np.ndarray:
-        try:
-            loc = mean_iter.__next__()
-        except StopIteration:
-            raise Exception(
-                "too many calls to this mock, only 200 iterations supported"
-            )
-        return np.random.default_rng().normal(
-            loc=loc, scale=SCALE, size=(array.shape[0], 2048)
-        )
+        # assume feature unrolled is larger than 2048
+        assert np.prod(array.shape[1:]) > 2048
+        # just return data itsself (also in range 0,1)
+        return array.reshape(array.shape[0], -1)[:, :2048]
 
-    mock = Mock(side_effect=random_inception_embeds)
+    mock = Mock(side_effect=inception_embeds)
     with patch("modsim2.similarity.embeddings.inception", new=mock):
         yield None
 
 
 @pytest.fixture(scope="module", autouse=False)
-def randomNormalDifferentUmapMock():
-    """
-    produce random samples from normal distr
-    ensures each subsequent call has a different mean
-    """
-    # note, will have a limit on times it can be called (size of range)
-    mean_iter = range(MEAN_LOW, MEAN_HIGH).__iter__()
-
-    def random_umap_embeds(
+def umapMock():
+    def umap_embeds(
         array: np.ndarray, random_seed: int, n_components: int
     ) -> np.ndarray:
-        try:
-            loc = mean_iter.__next__()
-        except StopIteration:
-            raise Exception(
-                "too many calls to this mock, only 200 iterations supported"
-            )
-        return np.random.default_rng().normal(
-            loc=loc, scale=SCALE, size=(array.shape[0], n_components)
-        )
+        # assume feature unrolled is larger than n_components
+        assert np.prod(array.shape[1:]) > n_components
+        # just return data itsself (also in range 0,1)
+        return array.reshape(array.shape[0], -1)[:, :n_components]
 
-    mock = Mock(side_effect=random_umap_embeds)
+    mock = Mock(side_effect=umap_embeds)
     with patch("modsim2.similarity.embeddings.umap", new=mock):
         yield None
 
 
 @pytest.fixture(scope="module", autouse=False)
-def randomNormalDifferentPcaMock():
-    """
-    produce random samples from normal distr
-    ensures each subsequent call has a different mean
-    """
-    # note, will have a limit on times it can be called (size of range)
-    mean_iter = range(MEAN_LOW, MEAN_HIGH).__iter__()
+def pcaMock():
+    def pca_embeds(array: np.ndarray, n_components: int) -> np.ndarray:
+        # assume feature unrolled is larger than n_components
+        assert np.prod(array.shape[1:]) > n_components
+        # just return data itsself (also in range 0,1)
+        return array.reshape(array.shape[0], -1)[:, :n_components]
 
-    def random_pca_embeds(array: np.ndarray, n_components: int) -> np.ndarray:
-        try:
-            loc = mean_iter.__next__()
-        except StopIteration:
-            raise Exception(
-                "too many calls to this mock, only 200 iterations supported"
-            )
-        return np.random.default_rng().normal(
-            loc=loc, scale=SCALE, size=(array.shape[0], n_components)
-        )
-
-    mock = Mock(side_effect=random_pca_embeds)
-    with patch("modsim2.similarity.embeddings.pca", new=mock):
-        yield None
-
-
-# fixed values - e.g. when we want repeated calls to generate same thing
-
-
-@pytest.fixture(scope="module", autouse=False)
-def fixedInceptionMock():
-    def fixed_inception_embeds(
-        array: np.ndarray,
-        batch_size: int,
-        device: str,
-    ) -> np.ndarray:
-        return np.ones(array.shape[0], 2048)
-
-    mock = Mock(side_effect=fixed_inception_embeds)
-    with patch("modsim2.similarity.embeddings.inception", new=mock):
-        yield None
-
-
-@pytest.fixture(scope="module", autouse=False)
-def fixedUmapMock():
-    def fixed_umap_embeds(
-        array: np.ndarray, random_seed: int, n_components: int
-    ) -> np.ndarray:
-        return np.ones(array.shape[0], n_components)
-
-    mock = Mock(side_effect=fixed_umap_embeds)
-    with patch("modsim2.similarity.embeddings.umap", new=mock):
-        yield None
-
-
-@pytest.fixture(scope="module", autouse=False)
-def fixedPcaMock():
-    def fixed_pca_embeds(array: np.ndarray, n_components: int) -> np.ndarray:
-        return np.ones(array.shape[0], n_components)
-
-    mock = Mock(side_effect=fixed_pca_embeds)
+    mock = Mock(side_effect=pca_embeds)
     with patch("modsim2.similarity.embeddings.pca", new=mock):
         yield None
