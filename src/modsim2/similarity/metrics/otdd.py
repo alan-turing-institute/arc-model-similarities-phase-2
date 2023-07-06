@@ -23,11 +23,11 @@ class OTDD(DistanceMetric):
         labels_A: np.ndarray,
         labels_B: np.ndarray,
         embedding_name: str,
-        embedding_args: dict,
+        embedding_kwargs: dict,
     ):
         if embedding_name is not None:
             data_A, data_B = self._embed_data(
-                data_A, data_B, embedding_name, embedding_args
+                data_A, data_B, embedding_name, embedding_kwargs
             )
 
         # Create a TensorDataset object for A and B consisting of the data and
@@ -67,7 +67,7 @@ class OTDD(DistanceMetric):
                         e.g. 'cpu', 'mps'
             embedding_name: What feature embeddings, if any, to use for the
                             input arrays
-            embedding_args: Dict of arguments to pass to the embedding function
+            embedding_kwargs: Dict of arguments to pass to the embedding function
             **kwargs: Arguments passed to DatasetDistance. See otdd docs for more info
 
         Returns:

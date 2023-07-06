@@ -39,8 +39,8 @@ class DistanceMetric(ABC):
             data_A: numpy array of data
             data_B: numpy array of data
             embedding_name: the name of the embedding function
-            embedding_args: a dictionary of arguments to pass to the embedding function
-                            (may be empty)
+            embedding_kwargs: a dictionary of arguments to pass to the embedding
+                            function (may be empty)
 
         Returns:
             embed_A: the embedded representation of data_A

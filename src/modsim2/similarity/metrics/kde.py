@@ -280,7 +280,7 @@ class KDE(DistanceMetric):
                     'exponential', 'linear', 'cosine'
             metric_name: The metric to be used to calculate the distance between
                     the density functions, currently only 'l2' is valid
-            embedding_args: A dictionary of key word arguments to be passed
+            embedding_kwargs: A dictionary of key word arguments to be passed
                     to the embedding function
             integration_kwargs: A dictionary of key word arguments to be passed
                     to the integration function
