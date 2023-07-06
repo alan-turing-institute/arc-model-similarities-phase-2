@@ -4,8 +4,6 @@ import numpy as np
 from scipy import integrate
 from sklearn.neighbors import KernelDensity, NearestNeighbors
 
-from modsim2.similarity.embeddings import EMBEDDING_FN_DICT
-
 from .metrics import DistanceMetric
 
 # Set module logger
@@ -35,9 +33,6 @@ class KDE(DistanceMetric):
         embedding_name: str,
         embedding_kwargs: dict,
     ) -> tuple[np.ndarray, np.ndarray]:
-
-        # Check for valid embedding choice
-        assert embedding_name in EMBEDDING_FN_DICT, "Error: embedding does not exist"
 
         # Embed the data
         embed_A, embed_B = self._embed_data(

@@ -25,6 +25,9 @@ class OTDD(DistanceMetric):
         embedding_name: str,
         embedding_kwargs: dict,
     ):
+        # unlike other metrics, otdd does not require an embedding as it can
+        # be applied to image data with rgb channels, so first check that an
+        # embedding name has been passed in the arguments
         if embedding_name is not None:
             data_A, data_B = self._embed_data(
                 data_A, data_B, embedding_name, embedding_kwargs

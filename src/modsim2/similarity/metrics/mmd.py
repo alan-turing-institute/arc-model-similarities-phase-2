@@ -78,7 +78,7 @@ class MMD(DistanceMetric):
                             input arrays
             kernel_name: An appropriate kernel embedding. See kernel_dict
                         for choices
-            embedding_args: Dict of arguments to pass to the embedding function
+            embedding_kwargs: Dict of arguments to pass to the embedding function
 
         Returns:
             float: The maximum mean discrepancy between A and B
