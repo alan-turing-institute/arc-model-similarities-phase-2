@@ -55,9 +55,22 @@ class KDE(DistanceMetric):
         func: callable,
         integration_kwargs: dict,
     ) -> float:
+        """
+        Integrates a given function over a number of dimensions. Returns the result
+        of the integration
+
+        Args:
+            num_dimensions : the number of dimensions that are to be integrated over
+            func: the function to be integrated
+            integration_kwargs: A dictionary of key word arguments to be passed to the
+                            integration function
+
+        Returns:
+            distance: the result of the integration
+        """
 
         # the bounds over which the integration will be performed
-        bounds = [[0, 1] for _ in range(num_dimensions)]
+        bounds = [[-np.inf, np.inf] for _ in range(num_dimensions)]
 
         # perform integration
         distance = integrate.nquad(func, bounds, **integration_kwargs)[0]
@@ -79,6 +92,8 @@ class KDE(DistanceMetric):
             num_dimensions : the number of dimensions that are to be integrated over
             estimator_A: the density estimator that has been generated for a dataset A
             estimator_B: the density estimator that has been generated for a dataset B
+            integration_kwargs: A dictionary of key word arguments to be passed to the
+                            integration function
 
         Returns:
             distance: the L2 distance
@@ -116,6 +131,8 @@ class KDE(DistanceMetric):
             num_dimensions : the number of dimensions that are to be integrated over
             estimator_A: the density estimator that has been generated for a dataset A
             estimator_B: the density estimator that has been generated for a dataset B
+            integration_kwargs: A dictionary of key word arguments to be passed to the
+                            integration function
 
         Returns:
             divergence: the KL divergence
@@ -164,6 +181,8 @@ class KDE(DistanceMetric):
             num_dimensions : the number of dimensions that are to be integrated over
             estimator_A: the density estimator that has been generated for a dataset A
             estimator_B: the density estimator that has been generated for a dataset B
+            integration_kwargs: A dictionary of key word arguments to be passed to the
+                            integration function
 
         Returns:
             distance: the total variation distance
