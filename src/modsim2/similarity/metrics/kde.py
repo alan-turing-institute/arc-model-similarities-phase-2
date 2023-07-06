@@ -170,7 +170,11 @@ class KDE(DistanceMetric):
         """
         # the function to be integrated
         def func(*args):
-            return np.abs(estimator_A.score([[*args]] - estimator_B.score([[*args]])))
+            return 0.5 * np.abs(
+                np.exp(
+                    estimator_A.score([[*args]]) - np.exp(estimator_B.score([[*args]]))
+                )
+            )
 
         # perform integration
         distance = KDE._kde_distance(
