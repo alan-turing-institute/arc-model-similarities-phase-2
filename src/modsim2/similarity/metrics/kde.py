@@ -116,56 +116,6 @@ class KDE(DistanceMetric):
         return distance, distance
 
     @staticmethod
-    def kl(
-        num_dimensions: int,
-        estimator_A: KernelDensity,
-        estimator_B: KernelDensity,
-        integration_kwargs: dict,
-    ) -> tuple[float, float]:
-        """
-        Calculates the KL divergence between two probability density estimatiors for a
-        given number of dimensions using integration
-
-        Args:
-            num_dimensions : the number of dimensions that are to be integrated over
-            estimator_A: the density estimator that has been generated for a dataset A
-            estimator_B: the density estimator that has been generated for a dataset B
-            integration_kwargs: A dictionary of key word arguments to be passed to the
-                            integration function
-
-        Returns:
-            divergence: the KL divergence
-        """
-        # the function to be integrated
-        def func(A, B, *args):
-            return np.exp(A.score(np.array([[*args]]))) * (
-                np.log(
-                    (np.exp(A.score([[*args]])))
-                    / (np.exp(B.score(np.array([[*args]]))))
-                )
-            )
-
-        def funcAB(*args):
-            return func(estimator_A, estimator_B, *args)
-
-        def funcBA(*args):
-            return func(estimator_B, estimator_A, *args)
-
-        # perform integration
-        divergenceAB = KDE._kde_distance(
-            num_dimensions=num_dimensions,
-            func=funcAB,
-            integration_kwargs=integration_kwargs,
-        )
-        divergenceBA = KDE._kde_distance(
-            num_dimensions=num_dimensions,
-            func=funcBA,
-            integration_kwargs=integration_kwargs,
-        )
-
-        return divergenceAB, divergenceBA
-
-    @staticmethod
     def total_variation(
         num_dimensions: int,
         estimator_A: KernelDensity,
@@ -204,13 +154,11 @@ class KDE(DistanceMetric):
             func=func,
             integration_kwargs=integration_kwargs,
         )
-        distance = 0.5 * distance
 
         return distance, distance
 
     _kde_metric_dict = {
         "l2": l2,
-        "kl": kl,
         "total_variation": total_variation,
     }
 
