@@ -95,11 +95,15 @@ class KDE(DistanceMetric):
         """
         # the function to be integrated
         def func(*args):
-            return np.power(
-                np.exp(estimator_A.score([[*args]]))
-                - np.exp(estimator_B.score([[*args]])),
-                2,
-            )
+            # log-likelihood of estimators A & B
+            score_A = estimator_A.score([[*args]])
+            score_B = estimator_B.score([[*args]])
+            # apply the exp function to return the pdf
+            pdf_A = np.exp(score_A)
+            pdf_B = np.exp(score_B)
+            # l2 norm between the two pdfs - difference raised to power of 2
+            l2_func = np.power(pdf_A - pdf_B, 2)
+            return l2_func
 
         # Perform integration
         distance = KDE._kde_distance(
@@ -184,11 +188,15 @@ class KDE(DistanceMetric):
         """
         # the function to be integrated
         def func(*args):
-            return 0.5 * np.abs(
-                np.exp(
-                    estimator_A.score([[*args]]) - np.exp(estimator_B.score([[*args]]))
-                )
-            )
+            # log-likelihood of estimators A & B
+            score_A = estimator_A.score([[*args]])
+            score_B = estimator_B.score([[*args]])
+            # apply the exp function to return the pdf
+            pdf_A = np.exp(score_A)
+            pdf_B = np.exp(score_B)
+            # total variation between the two pdfs - half the absolute difference
+            tv_func = 0.5 * np.abs(pdf_A - pdf_B)
+            return tv_func
 
         # perform integration
         distance = KDE._kde_distance(
@@ -196,6 +204,7 @@ class KDE(DistanceMetric):
             func=func,
             integration_kwargs=integration_kwargs,
         )
+        distance = 0.5 * distance
 
         return distance, distance
 

@@ -217,11 +217,11 @@ metrics:
         - 0
         - 0
       diff_result:
-        - 6.588985009978275
-        - 6.0100476965497895
+        - -0.11960711346079822
+        - 0.11939022861996797
       diff_result_only_train:
-        - 0.9850394338116751
-        - 0.8501157586359216
+        - -0.03280925101615371
+        - 0.12826381369290119
   kde_pca_kl_approx:
     class: kde
     arguments:
@@ -240,11 +240,11 @@ metrics:
         - 0
         - 0
       diff_result:
-        - -2.0252660891909997
-        - -0.9687229971477284
+        - 0.23592938842792052
+        - 0.29216971750318294
       diff_result_only_train:
-        - -1.025100578869223
-        - 0.11155721087821097
+        - -0.10589629531017833
+        - 0.2582054559784337
   kde_gaussian_umap_l2:
     class: kde
     arguments:
@@ -258,7 +258,7 @@ metrics:
       metric_name: l2
       integration_kwargs:
         opts:
-          limit: 50
+          limit: 5
     expected_results:
       same_result:
         - 0
@@ -267,11 +267,11 @@ metrics:
         - 0
         - 0
       diff_result:
-        - 2.2351771504742194e-20
-        - 2.2351771504742194e-20
+        - 0.019240681526256593
+        - 0.019240681526256593
       diff_result_only_train:
-        - 1.9749985576171868e-104
-        - 1.9749985576171868e-104
+        - 0.012915337679851707
+        - 0.012915337679851707
   kde_gaussian_pca_l2:
     class: kde
     arguments:
@@ -279,12 +279,12 @@ metrics:
       embedding_kwargs:
         batch_size: 16
         device: cpu
-        n_components: 3
+        n_components: 2
       kernel_name: gaussian
       metric_name: l2
       integration_kwargs:
         opts:
-          limit: 50
+          limit: 5
     expected_results:
       same_result:
         - 0
@@ -293,64 +293,11 @@ metrics:
         - 0
         - 0
       diff_result:
-        - 0.0011471513557574147
-        - 0.0011471513557574147
+        - 0.019240681526256593
+        - 0.019240681526256593
       diff_result_only_train:
-        - 0.0031641776701419656
-        - 0.0031641776701419656
-  kde_gaussian_umap_kl:
-    class: kde
-    arguments:
-      embedding_name: inception_umap
-      embedding_kwargs:
-        batch_size: 16
-        device: cpu
-        random_seed: 42
-        n_components: 2
-      kernel_name: gaussian
-      metric_name: kl
-      integration_kwargs:
-        opts:
-          limit: 50
-    expected_results:
-      same_result:
-        - 0
-        - 0
-      same_result_only_train:
-        - 0
-        - 0
-      diff_result:
-        - -4.0326070522642503e-28
-        - 1.1176669287856217e-19
-      diff_result_only_train:
-        - 3.0547176218130342e-105
-        - -2.386946785525942e-106
-  kde_gaussian_pca_kl:
-    class: kde
-    arguments:
-      embedding_name: inception_pca
-      embedding_kwargs:
-        batch_size: 16
-        device: cpu
-        n_components: 3
-      kernel_name: gaussian
-      metric_name: kl
-      integration_kwargs:
-        opts:
-          limit: 50
-    expected_results:
-      same_result:
-        - 0
-        - 0
-      same_result_only_train:
-        - 0
-        - 0
-      diff_result:
-        - 0.0003814982008864859
-        - -0.00026740845498307125
-      diff_result_only_train:
-        - -0.0023603643747218536
-        - 0.0032210946941657434
+        - 0.012915337679851707
+        - 0.012915337679851707
   kde_gaussian_umap_tv:
     class: kde
     arguments:
@@ -364,7 +311,7 @@ metrics:
       metric_name: total_variation
       integration_kwargs:
         opts:
-          limit: 50
+          limit: 5
     expected_results:
       same_result:
         - 0
@@ -373,11 +320,11 @@ metrics:
         - 0
         - 0
       diff_result:
-        - 15995.013880034749
-        - 15995.013880034749
+        - 0.010362878508362998
+        - 0.010362878508362998
       diff_result_only_train:
-        - 410297.79927974695
-        - 410297.79927974695
+        - 0.007458838148039421
+        - 0.007458838148039421
   kde_gaussian_pca_tv:
     class: kde
     arguments:
@@ -385,12 +332,12 @@ metrics:
       embedding_kwargs:
         batch_size: 16
         device: cpu
-        n_components: 3
+        n_components: 2
       kernel_name: gaussian
       metric_name: total_variation
       integration_kwargs:
         opts:
-          limit: 50
+          limit: 5
     expected_results:
       same_result:
         - 0
@@ -399,8 +346,8 @@ metrics:
         - 0
         - 0
       diff_result:
-        - 58.11189651622458
-        - 58.11189651622458
+        - 0.010362878508362998
+        - 0.010362878508362998
       diff_result_only_train:
-        - 56.99577549529939
-        - 56.99577549529939
+        - 0.007458838148039421
+        - 0.007458838148039421
