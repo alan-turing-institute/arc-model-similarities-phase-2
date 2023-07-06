@@ -78,6 +78,12 @@ def inception(
     # Set model to evaluation mode
     model.eval()
 
+    # Move model to device - data moved to device in batches later
+    model.to(device)
+
+    # Get the dimensions
+    n_samples = array.shape[0]
+
     # Create process to transform data to form required by inception v3
     preprocess = transforms.Compose(
         [
@@ -87,27 +93,20 @@ def inception(
         ]
     )
 
-    # Process the data to create valid input data for the model
-    input_data = preprocess(torch.Tensor(array))
-
-    # Move data and model to device
-    input_data = input_data.to(device)
-    model.to(device)
-
-    # Get the dimensions
-    n_samples = input_data.shape[0]
-
     # create output
     output_data = torch.zeros((n_samples, INCEPTION_NFEATS))
 
     # run the data input data through the model in batches
     data_loader = DataLoader(
-        input_data,
+        array,
         batch_size=batch_size,
         shuffle=False,
     )
     with torch.inference_mode():
         for i, batch in enumerate(data_loader):
+            batch = preprocess(batch)
+            # Move data and model to device
+            batch = batch.to(device)
             output_batch = model(batch)
             slice = i * batch_size
             output_data[

@@ -177,7 +177,7 @@ class PAD(DistanceMetric):
         balance_train: bool,
         balance_test: bool,
         embedding_name: str,
-        embedding_args: dict,
+        embedding_kwargs: dict,
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Takes A & B datasets as arguments and calls the methods to process
@@ -199,7 +199,7 @@ class PAD(DistanceMetric):
             embedding_name: What feature embeddings, if any, to use for the
                             input arrays
 
-            embedding_args: Dict of arguments to pass to the embedding function
+            embedding_kwargs: Dict of arguments to pass to the embedding function
 
         Returns:
             embed_train_data: the training data transformed using the embedding function
@@ -228,7 +228,7 @@ class PAD(DistanceMetric):
             data_A=train_data,
             data_B=test_data,
             embedding_name=embedding_name,
-            embedding_kwargs=embedding_args,
+            embedding_kwargs=embedding_kwargs,
         )
 
         return embed_train_data, train_labels, embed_test_data, test_labels
@@ -303,7 +303,7 @@ class PAD(DistanceMetric):
         balance_test: bool = True,
         gamma_values: list = ["scale"],
         degree_values: list = [3],
-        embedding_args: dict = {},
+        embedding_kwargs: dict = {},
     ) -> tuple[float, float]:
 
         """
@@ -340,7 +340,7 @@ class PAD(DistanceMetric):
             gamma_values: List of gamma values to be applied in SVCs, see sklearn
                             documentation for list of possible values
             degree_values: List of degree values to be applied in polynomial SVCs
-            embedding_args: Dict of arguments to pass to the embedding function
+            embedding_kwargs: Dict of arguments to pass to the embedding function
         """
 
         # Check for valid embedding choice
@@ -359,7 +359,7 @@ class PAD(DistanceMetric):
             balance_train=balance_train,
             balance_test=balance_test,
             embedding_name=embedding_name,
-            embedding_args=embedding_args,
+            embedding_kwargs=embedding_kwargs,
         )
 
         # Build the classifiers
