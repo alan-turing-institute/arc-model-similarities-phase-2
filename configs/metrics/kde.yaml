@@ -1,0 +1,51 @@
+baskerville: False
+metrics:
+  kde_umap_kl_approx:
+    class: kde
+    arguments:
+      embedding_name: inception_umap
+      embedding_kwargs:
+        batch_size: 16
+        device: cpu
+        n_components: 2
+        random_seed: 42
+      kernel_name: gaussian
+      metric_name: kl_approx
+  kde_pca_kl_approx:
+    class: kde
+    arguments:
+      embedding_name: inception_pca
+      embedding_kwargs:
+        batch_size: 16
+        device: cpu
+        n_components: 50
+      kernel_name: gaussian
+      metric_name: kl_approx
+  kde_gaussian_umap_l2:
+    class: kde
+    arguments:
+      embedding_name: inception_umap
+      embedding_kwargs:
+        batch_size: 16
+        device: cpu
+        random_seed: 42
+        n_components: 2
+      kernel_name: gaussian
+      metric_name: l2
+      integration_kwargs:
+        opts:
+          limit: 100
+  kde_gaussian_umap_tv:
+    class: kde
+    arguments:
+      embedding_name: inception_umap
+      embedding_kwargs:
+        batch_size: 16
+        device: cpu
+        random_seed: 42
+        n_components: 2
+      kernel_name: gaussian
+      metric_name: total_variation
+      integration_kwargs:
+        opts:
+          limit: 100
