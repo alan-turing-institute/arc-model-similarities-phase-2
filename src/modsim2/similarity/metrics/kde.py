@@ -49,7 +49,7 @@ class KDE(DistanceMetric):
         num_dimensions: int,
         func: callable,
         integration_kwargs: dict,
-    ) -> float:
+    ) -> tuple[float, float]:
         """
         Integrates a given function over a number of dimensions. Returns the result
         of the integration
@@ -62,15 +62,17 @@ class KDE(DistanceMetric):
 
         Returns:
             distance: the result of the integration
+            abs_error: the maximum of the estimates of the absolute error in the
+                    various integration results.
         """
 
         # the bounds over which the integration will be performed
         bounds = [[-np.inf, np.inf] for _ in range(num_dimensions)]
 
-        # perform integration
-        distance = integrate.nquad(func, bounds, **integration_kwargs)[0]
+        # perform integration, returns distance and absolute error
+        distance, abs_error = integrate.nquad(func, bounds, **integration_kwargs)
 
-        return distance
+        return distance, abs_error
 
     @staticmethod
     def l2(
@@ -92,6 +94,7 @@ class KDE(DistanceMetric):
 
         Returns:
             distance: the L2 distance
+            abs_error: the absolute error of the integration
         """
         # the function to be integrated
         def func(*args):
@@ -106,14 +109,14 @@ class KDE(DistanceMetric):
             return l2_func
 
         # Perform integration
-        distance = KDE._kde_distance(
+        distance, abs_error = KDE._kde_distance(
             num_dimensions=num_dimensions,
             func=func,
             integration_kwargs=integration_kwargs,
         )
         distance = np.sqrt(distance)
 
-        return distance, distance
+        return distance, abs_error
 
     @staticmethod
     def total_variation(
@@ -135,6 +138,7 @@ class KDE(DistanceMetric):
 
         Returns:
             distance: the total variation distance
+            abs_error: the absolute error of the integration
         """
         # the function to be integrated
         def func(*args):
@@ -149,13 +153,13 @@ class KDE(DistanceMetric):
             return tv_func
 
         # perform integration
-        distance = KDE._kde_distance(
+        distance, abs_error = KDE._kde_distance(
             num_dimensions=num_dimensions,
             func=func,
             integration_kwargs=integration_kwargs,
         )
 
-        return distance, distance
+        return distance, abs_error
 
     _kde_metric_dict = {
         "l2": l2,
