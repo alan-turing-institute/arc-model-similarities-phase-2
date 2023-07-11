@@ -1,4 +1,4 @@
-baskerville: False
+baskerville: True
 metrics:
   kde_umap_kl_approx:
     class: kde
