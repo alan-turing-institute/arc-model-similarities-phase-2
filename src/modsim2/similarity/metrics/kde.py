@@ -72,7 +72,9 @@ class KDE(DistanceMetric):
         # perform integration, returns distance and absolute error
         distance, abs_error = integrate.nquad(func, bounds, **integration_kwargs)
 
-        return distance, abs_error
+        logger.warn("Absolute error of integration: %s", abs_error)
+
+        return distance
 
     @staticmethod
     def l2(
@@ -109,14 +111,14 @@ class KDE(DistanceMetric):
             return l2_func
 
         # Perform integration
-        distance, abs_error = KDE._kde_distance(
+        distance = KDE._kde_distance(
             num_dimensions=num_dimensions,
             func=func,
             integration_kwargs=integration_kwargs,
         )
         distance = np.sqrt(distance)
 
-        return distance, abs_error
+        return distance, distance
 
     @staticmethod
     def total_variation(
@@ -153,13 +155,13 @@ class KDE(DistanceMetric):
             return tv_func
 
         # perform integration
-        distance, abs_error = KDE._kde_distance(
+        distance = KDE._kde_distance(
             num_dimensions=num_dimensions,
             func=func,
             integration_kwargs=integration_kwargs,
         )
 
-        return distance, abs_error
+        return distance, distance
 
     _kde_metric_dict = {
         "l2": l2,
@@ -278,7 +280,7 @@ class KDE(DistanceMetric):
             # The kernel density estimation is not required
             distance_AB = self.kl_tree(embed_A, embed_B)
             distance_BA = self.kl_tree(embed_B, embed_A)
-            return [distance_AB, distance_BA]
+            return distance_AB, distance_BA
 
         else:
             # Create kernel density estimators for A & B
