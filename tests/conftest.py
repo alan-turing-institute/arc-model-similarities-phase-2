@@ -62,8 +62,7 @@ def patch_datamodule():
 @pytest.fixture(scope="module", autouse=False)
 def inceptionMock():
     """
-    produce random samples from normal distr
-    ensures each subsequent call has a different mean
+    reshapes the original data and slices to fit expected shape
     """
 
     def inception_embeds(
