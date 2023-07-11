@@ -177,13 +177,18 @@ class KDE(DistanceMetric):
         https://ieeexplore.ieee.org/document/4595271
 
         Note, there is a mistake in equation 14 of the paper which defines the
-        distance as:
-        distance = np.log(r/s).sum() * d/n + np.log(m / (n-1))
+        divergence as:
+        divergence = np.log(r/s).sum() * d/n + np.log(m / (n-1))
 
-        The distance should either be:
-        distance = np.log(s/r).sum() * d/n + np.log(m / (n-1))
+        The divergence should either be:
+        divergence = np.log(s/r).sum() * d/n + np.log(m / (n-1))
         or:
-        distance = -np.log(r/s).sum() * d/n + np.log(m / (n-1))
+        divergence = -np.log(r/s).sum() * d/n + np.log(m / (n-1))
+
+        The KL divergence should always be positive. However, for small values
+        of m and n, it is possible that this method will calculate a negative
+        value. The referenced paper proves that the equation converges almost
+        surely to the KL divergence as m, n -> inf
 
         Args:
             A: dataset A
