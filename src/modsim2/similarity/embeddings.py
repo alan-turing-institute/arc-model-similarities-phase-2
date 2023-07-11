@@ -10,7 +10,9 @@ from modsim2.utils.accelerator import choose_auto_accelerator
 # Constants
 RESIZE = transforms.Resize(299)
 CENTER = transforms.CenterCrop(299)
-NORMALIZE = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+IMAGENET_MEANS = [0.485, 0.456, 0.406]
+IMAGENET_STDS = [0.229, 0.224, 0.225]
+NORMALIZE = transforms.Normalize(mean=IMAGENET_MEANS, std=IMAGENET_STDS)
 INCEPTION_NFEATS = 2048
 
 

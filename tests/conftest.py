@@ -58,13 +58,6 @@ def patch_datamodule():
 # embedding mocks
 ###
 
-# random values - repeated calls give different vals
-
-# consts for normal distr
-MEAN_LOW = -100
-MEAN_HIGH = 100
-SCALE = 0.1
-
 
 @pytest.fixture(scope="module", autouse=False)
 def inceptionMock():
