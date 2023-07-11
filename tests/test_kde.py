@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import pytest
 import yaml
 from pytest_check import check
@@ -68,7 +69,10 @@ def compare_results(test_scenarios: dict, metrics_config: dict):
             expected_result = tuple(metrics_config[k]["expected_results"][scenario])
             actual_result = tuple(results[k])
             with check:
-                assert actual_result == expected_result, (
+                # allow for some instability in calculation
+                assert np.allclose(
+                    actual_result, expected_result, rtol=1e-5, atol=1.0e-8
+                ), (
                     "test:"
                     + k
                     + "/"

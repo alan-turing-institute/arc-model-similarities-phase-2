@@ -77,7 +77,7 @@ def compare_results(test_scenarios: dict, metrics_config: dict):
             expected_result = metrics_config[k]["expected_results"][scenario]
             actual_result = results[k]
             with check:
-                assert np.isclose(
+                assert np.allclose(
                     actual_result, expected_result, rtol=1e-5, atol=1e-8
                 ), (
                     "test:"
