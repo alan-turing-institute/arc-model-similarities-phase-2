@@ -200,10 +200,10 @@ def main(
         project_name=project_name,
     )
     run_B.log({"B_to_A_metrics": B_to_A_metrics}, commit=True)
-    run_A.log(vulnerability_AB_fga, commit=True)
-    run_A.log(vulnerability_BB_fga, commit=True)
-    run_A.log(vulnerability_AB_boundary, commit=True)
-    run_A.log(vulnerability_BB_boundary, commit=True)
+    run_B.log(vulnerability_AB_fga, commit=True)
+    run_B.log(vulnerability_BB_fga, commit=True)
+    run_B.log(vulnerability_AB_boundary, commit=True)
+    run_B.log(vulnerability_BB_boundary, commit=True)
     run_B.finish()
 
 
