@@ -177,6 +177,7 @@ class PAD(DistanceMetric):
         balance_train: bool,
         balance_test: bool,
         embedding_name: str,
+        embedding_kwargs: dict,
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Takes A & B datasets as arguments and calls the methods to process
@@ -198,9 +199,13 @@ class PAD(DistanceMetric):
             embedding_name: What feature embeddings, if any, to use for the
                             input arrays
 
+            embedding_kwargs: Dict of arguments to pass to the embedding function
+
         Returns:
             embed_train_data: the training data transformed using the embedding function
+            train_labels: the labels for the training data
             embed_test_data: the test data transformed using the embedding function
+            test_labels: the labels for the test data
         """
         # Split A and B into train and test datasets
         # This is done before the data are concatenated in order
@@ -216,14 +221,15 @@ class PAD(DistanceMetric):
 
         # concatenate A&B datasets
         train_data, train_labels, test_data, test_labels = self._concat_data(
-            train_A, test_A, train_B, test_B
+            train_A=train_A, test_A=test_A, train_B=train_B, test_B=test_B
         )
 
-        # Extract embedding callable
-        embedding_fn = EMBEDDING_FN_DICT[embedding_name]
-        # Transform the train and test data using the embedding function
-        embed_train_data = embedding_fn(train_data)
-        embed_test_data = embedding_fn(test_data)
+        embed_train_data, embed_test_data = self._embed_data(
+            data_A=train_data,
+            data_B=test_data,
+            embedding_name=embedding_name,
+            embedding_kwargs=embedding_kwargs,
+        )
 
         return embed_train_data, train_labels, embed_test_data, test_labels
 
@@ -297,7 +303,8 @@ class PAD(DistanceMetric):
         balance_test: bool = True,
         gamma_values: list = ["scale"],
         degree_values: list = [3],
-    ) -> float:
+        embedding_kwargs: dict = {},
+    ) -> tuple[float, float]:
 
         """
         Calculates the proxy a-distance for datasets A and B.
@@ -333,6 +340,7 @@ class PAD(DistanceMetric):
             gamma_values: List of gamma values to be applied in SVCs, see sklearn
                             documentation for list of possible values
             degree_values: List of degree values to be applied in polynomial SVCs
+            embedding_kwargs: Dict of arguments to pass to the embedding function
         """
 
         # Check for valid embedding choice
@@ -351,6 +359,7 @@ class PAD(DistanceMetric):
             balance_train=balance_train,
             balance_test=balance_test,
             embedding_name=embedding_name,
+            embedding_kwargs=embedding_kwargs,
         )
 
         # Build the classifiers
@@ -374,4 +383,4 @@ class PAD(DistanceMetric):
         min_error = min(errors)
         pad = 2 * (1 - 2 * min_error)
 
-        return pad
+        return pad, pad

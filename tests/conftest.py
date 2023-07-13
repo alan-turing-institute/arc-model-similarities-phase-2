@@ -1,6 +1,7 @@
 import logging
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
+import numpy as np
 import pytest
 import testing_constants
 from pl_bolts.datamodules import CIFAR10DataModule
@@ -51,3 +52,57 @@ def patch_datamodule():
                 pass
             else:
                 raise e
+
+
+###
+# embedding mocks
+###
+
+
+@pytest.fixture(scope="module", autouse=False)
+def inceptionMock():
+    """
+    reshapes the original data and slices to fit expected shape
+    """
+
+    def inception_embeds(
+        array: np.ndarray,
+        batch_size: int,
+        device: str,
+    ) -> np.ndarray:
+        # assume feature unrolled is larger than 2048
+        assert np.prod(array.shape[1:]) > 2048
+        # just return data itsself (also in range 0,1)
+        return array.reshape(array.shape[0], -1)[:, :2048]
+
+    mock = Mock(side_effect=inception_embeds)
+    with patch("modsim2.similarity.embeddings.inception", new=mock):
+        yield None
+
+
+@pytest.fixture(scope="module", autouse=False)
+def umapMock():
+    def umap_embeds(
+        array: np.ndarray, random_seed: int, n_components: int
+    ) -> np.ndarray:
+        # assume feature unrolled is larger than n_components
+        assert np.prod(array.shape[1:]) > n_components
+        # just return data itsself (also in range 0,1)
+        return array.reshape(array.shape[0], -1)[:, :n_components]
+
+    mock = Mock(side_effect=umap_embeds)
+    with patch("modsim2.similarity.embeddings.umap", new=mock):
+        yield None
+
+
+@pytest.fixture(scope="module", autouse=False)
+def pcaMock():
+    def pca_embeds(array: np.ndarray, n_components: int) -> np.ndarray:
+        # assume feature unrolled is larger than n_components
+        assert np.prod(array.shape[1:]) > n_components
+        # just return data itsself (also in range 0,1)
+        return array.reshape(array.shape[0], -1)[:, :n_components]
+
+    mock = Mock(side_effect=pca_embeds)
+    with patch("modsim2.similarity.embeddings.pca", new=mock):
+        yield None

@@ -23,6 +23,7 @@ tqdm = "^4.65.0"
 numpy = "~1.23.5"
 matplotlib = "^3.7.1"
 otdd = {git = "https://github.com/alan-turing-institute/arc-otdd.git", tag = "v1.0.0"}
+umap-learn = "^0.5.3"
 
 [build-system]
 requires = ["poetry-core"]

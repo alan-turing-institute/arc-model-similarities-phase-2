@@ -3,8 +3,6 @@ import logging
 import numpy as np
 from sklearn import metrics
 
-from modsim2.similarity.embeddings import EMBEDDING_FN_DICT
-
 from .metrics import DistanceMetric
 
 # Set module logger
@@ -26,13 +24,12 @@ class MMD(DistanceMetric):
         data_B: np.ndarray,
         embedding_name: str,
         kernel_name: str,
+        embedding_kwargs: dict,
     ):
-        # Extract embedding callable
-        embedding_fn = EMBEDDING_FN_DICT[embedding_name]
+        matrix_A, matrix_B = self._embed_data(
+            data_A, data_B, embedding_name, embedding_kwargs
+        )
 
-        # In the future, consider optionally using feature embeddings here
-        matrix_A = embedding_fn(data_A)
-        matrix_B = embedding_fn(data_B)
         N_A = matrix_A.shape[0]
         N_B = matrix_B.shape[0]
 
@@ -58,7 +55,8 @@ class MMD(DistanceMetric):
         labels_B: np.ndarray,
         embedding_name: str,
         kernel_name: str,
-    ) -> float:
+        embedding_kwargs: dict = {},
+    ) -> tuple[float, float]:
         """
         Computes maximum mean discrepancy (MMD) for A and B. Given a kernel
         embedding k(X,X'), computes
@@ -74,17 +72,24 @@ class MMD(DistanceMetric):
         Args:
             data_A: The first image dataset
             data_B: The second image dataset
+            labels_A: Labels for the first dataset. Unused
+            labels_B: Labels for the second dataset. Unused
             embedding_name: What feature embeddings, if any, to use for the
                             input arrays
             kernel_name: An appropriate kernel embedding. See kernel_dict
                         for choices
+            embedding_kwargs: Dict of arguments to pass to the embedding function
 
         Returns:
             float: The maximum mean discrepancy between A and B
         """
 
         kernel_AA, kernel_BB, kernel_AB, N_A, N_B = self._pre_process_data(
-            data_A, data_B, embedding_name, kernel_name
+            data_A=data_A,
+            data_B=data_B,
+            embedding_name=embedding_name,
+            kernel_name=kernel_name,
+            embedding_kwargs=embedding_kwargs,
         )
 
         # Compute MMD
@@ -95,4 +100,4 @@ class MMD(DistanceMetric):
         )
 
         # Return
-        return mmd
+        return mmd, mmd

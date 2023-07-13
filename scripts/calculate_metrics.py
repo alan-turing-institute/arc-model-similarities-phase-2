@@ -34,18 +34,32 @@ def main(
     dmpair.A.setup()
     dmpair.B.setup()
     similarity_metrics = {
-        **dmpair.compute_similarity(only_train=True),  # TODO: remove only_train
+        **dmpair.compute_similarity(),
     }
 
-    # Log to wandb - puting all metrics in run A
+    # Split into metrics to log to A, and metrics to log to B
+    A_metrics = {key: similarity_metrics[key][0] for key in similarity_metrics}
+    B_metrics = {key: similarity_metrics[key][1] for key in similarity_metrics}
+
+    # Log to wandb - A metrics
     run_A = get_wandb_run(
         model_suffix="A",
         experiment_pair_name=experiment_pair_name,
         entity=trainer_config["wandb"]["entity"],
         project_name=trainer_config["wandb"]["project"],
     )
-    run_A.log(similarity_metrics, commit=True)
+    run_A.log(A_metrics, commit=True)
     run_A.finish()
+
+    # Log to wandb - B metrics
+    run_B = get_wandb_run(
+        model_suffix="B",
+        experiment_pair_name=experiment_pair_name,
+        entity=trainer_config["wandb"]["entity"],
+        project_name=trainer_config["wandb"]["project"],
+    )
+    run_B.log(B_metrics, commit=True)
+    run_B.finish()
 
 
 if __name__ == "__main__":

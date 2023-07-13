@@ -104,7 +104,7 @@ def test_cifar_pad_equal_samples(metrics_config: dict):
 def compare_results(test_scenarios: dict, metrics_config: dict):
     for scenario, results in test_scenarios.items():
         for k in metrics_config:
-            expected_result = metrics_config[k]["expected_results"][scenario]
+            expected_result = tuple(metrics_config[k]["expected_results"][scenario])
             actual_result = results[k]
             with check:
                 assert actual_result == expected_result, (
