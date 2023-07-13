@@ -1,6 +1,7 @@
 import argparse
 import os
 
+import torch
 import yaml
 from utils import opts2dmpairArgs
 
@@ -86,6 +87,32 @@ def main(
         steps=500,
     )
 
+    # Model Vulnerability Metrics
+    vulnerability_AA_fga = (
+        torch.sum(fga_images["model_A_dist_A"][1]).item() / num_attack_images
+    )
+    vulnerability_AB_fga = (
+        torch.sum(fga_images["model_A_dist_B"][1]).item() / num_attack_images
+    )
+    vulnerability_BA_fga = (
+        torch.sum(fga_images["model_B_dist_A"][1]).item() / num_attack_images
+    )
+    vulnerability_BB_fga = (
+        torch.sum(fga_images["model_B_dist_B"][1]).item() / num_attack_images
+    )
+    vulnerability_AA_boundary = (
+        torch.sum(boundary_images["model_A_dist_A"][1]).item() / num_attack_images
+    )
+    vulnerability_AB_boundary = (
+        torch.sum(boundary_images["model_A_dist_B"][1]).item() / num_attack_images
+    )
+    vulnerability_BA_boundary = (
+        torch.sum(boundary_images["model_B_dist_A"][1]).item() / num_attack_images
+    )
+    vulnerability_BB_boundary = (
+        torch.sum(boundary_images["model_B_dist_B"][1]).item() / num_attack_images
+    )
+
     # Transfer attack over model*dist combinations, comptue succes
     # Names: AB_to_B imples attack trained on model A with images from distribution B,
     # transferred to model B
@@ -93,7 +120,10 @@ def main(
         model=model_B,
         images=images_A,
         labels=labels_A,
-        advs_images=[fga_images["model_A_dist_A"], boundary_images["model_A_dist_A"]],
+        advs_images=[
+            fga_images["model_A_dist_A"][0],
+            boundary_images["model_A_dist_A"][0],
+        ],
         attack_names=attack_names,
         batch_size=attack_config["batch_size"],
         devices=devices,
@@ -103,7 +133,10 @@ def main(
         model=model_B,
         images=images_B,
         labels=labels_B,
-        advs_images=[fga_images["model_A_dist_B"], boundary_images["model_A_dist_B"]],
+        advs_images=[
+            fga_images["model_A_dist_B"][0],
+            boundary_images["model_A_dist_B"][0],
+        ],
         attack_names=attack_names,
         batch_size=attack_config["batch_size"],
         devices=devices,
@@ -113,7 +146,10 @@ def main(
         model=model_A,
         images=images_A,
         labels=labels_A,
-        advs_images=[fga_images["model_B_dist_A"], boundary_images["model_B_dist_A"]],
+        advs_images=[
+            fga_images["model_B_dist_A"][0],
+            boundary_images["model_B_dist_A"][0],
+        ],
         attack_names=attack_names,
         batch_size=attack_config["batch_size"],
         devices=devices,
@@ -123,7 +159,10 @@ def main(
         model=model_A,
         images=images_B,
         labels=labels_B,
-        advs_images=[fga_images["model_B_dist_B"], boundary_images["model_B_dist_B"]],
+        advs_images=[
+            fga_images["model_B_dist_B"][0],
+            boundary_images["model_B_dist_B"][0],
+        ],
         attack_names=attack_names,
         batch_size=attack_config["batch_size"],
         devices=devices,
@@ -148,6 +187,10 @@ def main(
         project_name=project_name,
     )
     run_A.log({"A_to_B_metrics": A_to_B_metrics}, commit=True)
+    run_A.log(vulnerability_AA_fga, commit=True)
+    run_A.log(vulnerability_BA_fga, commit=True)
+    run_A.log(vulnerability_AA_boundary, commit=True)
+    run_A.log(vulnerability_BA_boundary, commit=True)
     run_A.finish()
 
     run_B = get_wandb_run(
@@ -157,6 +200,10 @@ def main(
         project_name=project_name,
     )
     run_B.log({"B_to_A_metrics": B_to_A_metrics}, commit=True)
+    run_A.log(vulnerability_AB_fga, commit=True)
+    run_A.log(vulnerability_BB_fga, commit=True)
+    run_A.log(vulnerability_AB_boundary, commit=True)
+    run_A.log(vulnerability_BB_boundary, commit=True)
     run_B.finish()
 
 

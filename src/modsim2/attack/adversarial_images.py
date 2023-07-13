@@ -10,12 +10,15 @@ def select_best_attack(
     images: list[torch.tensor],
     success: torch.tensor,
     epsilons: list[float],
-):
+) -> tuple[torch.tensor, torch.tensor]:
     """
     A function to perform best attack selection. The criteria for each images is
     the first successful attack with the smallest possible value of epsilon. If no
     image is sucessful, it will select the image with the highest epsilon value.
-    Returns a torch.tensor of adversarial images with
+
+    Returns: a torch.tensor containing the adversarial images and a torch.tensor
+             where each element corresponds to an adversarial image and denotes
+             whether that image sucessfully attacks the network
 
     Args:
         images: A list of torch.tensors of length num_epsilon. Each tensor contains
@@ -35,13 +38,15 @@ def select_best_attack(
 
     # Best attack selection loop
     advs_images = []
+    advs_success = []
     num_attack_images = len(images[0])
     for i in range(num_attack_images):
         for j in range(num_epsilon):
             if success[j][i] or j == (num_epsilon - 1):
                 advs_images.append(images[j][i])
+                advs_success.append(success[j][i])
                 break
-    return torch.stack((advs_images))
+    return torch.stack((advs_images)), torch.stack(advs_success)
 
 
 def generate_adversarial_images(
@@ -52,7 +57,7 @@ def generate_adversarial_images(
     epsilons: list[float],
     device: str,
     **kwargs,
-) -> torch.tensor:
+) -> tuple[torch.tensor, torch.tensor]:
     """
     Generates adversarial images from bias images for either an L2 fast gradient
     attack or a boundary attack.
@@ -94,12 +99,12 @@ def generate_adversarial_images(
     _, clipped_advs, success = attack(fmodel, images, labels, epsilons=epsilons)
 
     # Apply image selection based on attack choice
-    advs_images = select_best_attack(
+    advs_images, advs_success = select_best_attack(
         images=clipped_advs, success=success, epsilons=epsilons
     )
 
     # Return images
-    return advs_images
+    return advs_images, advs_success
 
 
 def generate_over_combinations(
