@@ -6,7 +6,7 @@ metrics:
       embedding_name: inception_umap
       embedding_kwargs:
         batch_size: 16
-        device: cpu
+        device: cuda
         n_components: 2
         random_seed: 42
       kernel_name: gaussian
@@ -17,7 +17,7 @@ metrics:
       embedding_name: inception_pca
       embedding_kwargs:
         batch_size: 16
-        device: cpu
+        device: cuda
         n_components: 50
       kernel_name: gaussian
       metric_name: kl_approx
@@ -27,7 +27,7 @@ metrics:
       embedding_name: inception_umap
       embedding_kwargs:
         batch_size: 16
-        device: cpu
+        device: cuda
         random_seed: 42
         n_components: 2
       kernel_name: gaussian
@@ -41,7 +41,7 @@ metrics:
       embedding_name: inception_umap
       embedding_kwargs:
         batch_size: 16
-        device: cpu
+        device: cuda
         random_seed: 42
         n_components: 2
       kernel_name: gaussian
