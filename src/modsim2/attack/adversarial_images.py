@@ -16,10 +16,6 @@ def select_best_attack(
     the first successful attack with the smallest possible value of epsilon. If no
     image is sucessful, it will select the image with the highest epsilon value.
 
-    Returns: a torch.tensor containing the adversarial images and a torch.tensor
-             where each element corresponds to an adversarial image and denotes
-             whether that image sucessfully attacks the network
-
     Args:
         images: A list of torch.tensors of length num_epsilon. Each tensor contains
                 the adversarial images generated for the corresponding value of
@@ -28,6 +24,10 @@ def select_best_attack(
                  False values denoting whether the corresponding image in images is
                  successfully adversarial
         epsilons: A list of values of epsilon used to generate the list of images
+
+    Returns: a torch.tensor containing the adversarial images and a torch.tensor
+             where each element represents the percentage of successful attacks at
+             each value of epsilon
     """
     # Sort into order from lowest to highest epsilon to allow arbitary input order
     num_epsilon = len(epsilons)
@@ -72,7 +72,9 @@ def generate_adversarial_images(
         device: String passed to fb.PyTorchModel for computation
         **kwargs: Additional arguments based to attack setup
 
-    Returns: a torch.tensor containing the adversarial images
+    Returns: a torch.tensor containing the adversarial images and a torch.tensor
+             where each element represents the percentage of successful attacks at
+             each value of epsilon
     """
     # Check for valid attack choices
     if attack_fn_name not in ["L2FastGradientAttack", "BoundaryAttack"]:
