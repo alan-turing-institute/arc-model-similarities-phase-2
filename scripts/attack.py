@@ -1,7 +1,6 @@
 import argparse
 import os
 
-import torch
 import yaml
 from utils import opts2dmpairArgs
 
@@ -88,30 +87,18 @@ def main(
     )
 
     # Model Vulnerability Metrics
-    vulnerability_AA_fga = (
-        torch.sum(fga_images["model_A_dist_A"][1]).item() / num_attack_images
-    )
-    vulnerability_AB_fga = (
-        torch.sum(fga_images["model_A_dist_B"][1]).item() / num_attack_images
-    )
-    vulnerability_BA_fga = (
-        torch.sum(fga_images["model_B_dist_A"][1]).item() / num_attack_images
-    )
-    vulnerability_BB_fga = (
-        torch.sum(fga_images["model_B_dist_B"][1]).item() / num_attack_images
-    )
-    vulnerability_AA_boundary = (
-        torch.sum(boundary_images["model_A_dist_A"][1]).item() / num_attack_images
-    )
-    vulnerability_AB_boundary = (
-        torch.sum(boundary_images["model_A_dist_B"][1]).item() / num_attack_images
-    )
-    vulnerability_BA_boundary = (
-        torch.sum(boundary_images["model_B_dist_A"][1]).item() / num_attack_images
-    )
-    vulnerability_BB_boundary = (
-        torch.sum(boundary_images["model_B_dist_B"][1]).item() / num_attack_images
-    )
+    vulnerability_A = {
+        "vulnerability_AA_fga": fga_images["model_A_dist_A"][1],
+        "vulnerability_AB_fga": fga_images["model_A_dist_B"][1],
+        "vulnerability_AA_boundary": boundary_images["model_A_dist_A"][1],
+        "vulnerability_AB_boundary": boundary_images["model_A_dist_B"][1],
+    }
+    vulnerability_B = {
+        "vulnerability_BA_fga": fga_images["model_B_dist_A"][1],
+        "vulnerability_BB_fga": fga_images["model_B_dist_B"][1],
+        "vulnerability_BA_boundary": boundary_images["model_B_dist_A"][1],
+        "vulnerability_BB_boundary": boundary_images["model_B_dist_B"][1],
+    }
 
     # Transfer attack over model*dist combinations, comptue succes
     # Names: AB_to_B imples attack trained on model A with images from distribution B,
@@ -179,7 +166,7 @@ def main(
         "dist_B": transfer_metrics_BB_to_A,
     }
 
-    # Close once finished
+    # Log to A
     run_A = get_wandb_run(
         model_suffix="A",
         experiment_pair_name=experiment_pair_name,
@@ -187,12 +174,10 @@ def main(
         project_name=project_name,
     )
     run_A.log({"A_to_B_metrics": A_to_B_metrics}, commit=True)
-    run_A.log(vulnerability_AA_fga, commit=True)
-    run_A.log(vulnerability_BA_fga, commit=True)
-    run_A.log(vulnerability_AA_boundary, commit=True)
-    run_A.log(vulnerability_BA_boundary, commit=True)
-    run_A.finish()
+    run_A.log({"vulnerability_A": vulnerability_A}, commit=True)
+    run_A.finish()  # Close once finished
 
+    # Log to B
     run_B = get_wandb_run(
         model_suffix="B",
         experiment_pair_name=experiment_pair_name,
@@ -200,11 +185,8 @@ def main(
         project_name=project_name,
     )
     run_B.log({"B_to_A_metrics": B_to_A_metrics}, commit=True)
-    run_B.log(vulnerability_AB_fga, commit=True)
-    run_B.log(vulnerability_BB_fga, commit=True)
-    run_B.log(vulnerability_AB_boundary, commit=True)
-    run_B.log(vulnerability_BB_boundary, commit=True)
-    run_B.finish()
+    run_B.log({"vulnerability_B": vulnerability_B}, commit=True)
+    run_B.finish()  # Close once finished
 
 
 if __name__ == "__main__":

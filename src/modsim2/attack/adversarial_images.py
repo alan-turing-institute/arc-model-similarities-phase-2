@@ -38,15 +38,15 @@ def select_best_attack(
 
     # Best attack selection loop
     advs_images = []
-    advs_success = []
+    advs_success = torch.zeros(num_epsilon, device=success.device)
     num_attack_images = len(images[0])
     for i in range(num_attack_images):
         for j in range(num_epsilon):
             if success[j][i] or j == (num_epsilon - 1):
                 advs_images.append(images[j][i])
-                advs_success.append(success[j][i])
+                advs_success[j:] += success[j][i]
                 break
-    return torch.stack((advs_images)), torch.stack(advs_success)
+    return torch.stack((advs_images)), advs_success / num_attack_images
 
 
 def generate_adversarial_images(
