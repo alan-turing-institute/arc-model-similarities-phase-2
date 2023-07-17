@@ -40,10 +40,15 @@ def select_best_attack(
     advs_images = []
     advs_success = torch.zeros(num_epsilon, device=success.device)
     num_attack_images = len(images[0])
+    # For every image and value of epsilon
     for i in range(num_attack_images):
         for j in range(num_epsilon):
+            # If the image is sucessful or is the last image, append it to the
+            # output adversarial images
             if success[j][i] or j == (num_epsilon - 1):
                 advs_images.append(images[j][i])
+                # += success instead of 1 so last image doesn't automatically add
+                # to success
                 advs_success[j:] += success[j][i]
                 break
     return torch.stack((advs_images)), advs_success / num_attack_images
@@ -149,7 +154,8 @@ def generate_over_combinations(
     """
     # Make dict of adversarial images
     # 4 elements, w/ keys like model_A_dist_A
-    # Each element is a torch.tensor containing adversarial images
+    # Each element is a torch.tensor containing adversarial images and a
+    # torch.tensor with success rates at each value of epsilon
     adversarial_images_dict = {}
     for model, model_name in tqdm([(model_A, "model_A"), (model_B, "model_B")]):
         for images, labels, distribution_name in tqdm(
