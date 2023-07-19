@@ -1,4 +1,4 @@
-baskerville: False
+baskerville: True
 metrics:
   pad_linear:
     class: pad
@@ -8,10 +8,15 @@ metrics:
         - 0.1
         - 1
         - 10
-      embedding_name: matrix
+      embedding_name: inception_umap
+      embedding_kwargs:
+        batch_size: 16
+        device: cpu
+        n_components: 2
+        random_seed: 42
       test_proportion: 0.2
-      balance_train: False
-      balance_test: False
+      balance_train: True
+      balance_test: True
   pad_rbf:
     class: pad
     arguments:
@@ -23,22 +28,12 @@ metrics:
       gamma_values:
         - 'scale'
         - 'auto'
-      embedding_name: matrix
-      test_proportion: 0.2
-      balance_train: False
-      balance_test: True
-  pad_poly:
-    class: pad
-    arguments:
-      kernel_name: poly
-      c_values:
-        - 0.1
-        - 1
-        - 10
-      degree_values:
-        - 3
-        - 5
-      embedding_name: matrix
+      embedding_name: inception_umap
+      embedding_kwargs:
+        batch_size: 16
+        device: cpu
+        n_components: 2
+        random_seed: 42
       test_proportion: 0.2
       balance_train: True
-      balance_test: False
+      balance_test: True
