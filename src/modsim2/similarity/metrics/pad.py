@@ -46,8 +46,7 @@ class PAD(DistanceMetric):
         This method splits the two datasets data_A and data_B into train and test
         samples. To calculate the PAD, there should be the same number of samples
         from A & B in the test dataset. However, there may not be the same number
-        of samples in A & B. The following lines of code determine the size of the
-        test dataset for both A & B - the minimum proportion size of the two datasets
+        of samples in A & B.
 
         Args:
             data_A: all records in dataset A (excludes target value)
@@ -121,7 +120,8 @@ class PAD(DistanceMetric):
                       be reduced to
 
         Returns:
-            reduced_array:
+            reduced_array: the numpy array with a random selection of
+                    row removed to leave new_size records
         """
         random_indices = np.random.choice(
             array_to_reduce.shape[0], new_size, replace=False
@@ -198,7 +198,6 @@ class PAD(DistanceMetric):
                           from A and B in the test dataset
             embedding_name: What feature embeddings, if any, to use for the
                             input arrays
-
             embedding_kwargs: Dict of arguments to pass to the embedding function
 
         Returns:
@@ -336,7 +335,8 @@ class PAD(DistanceMetric):
             balance_train: Determines whether to balance the number of observations
                            from A and B in the training dataset
             balance_test: Determines whether to balance the number of observations
-                          from A and B in the test dataset
+                          from A and B in the test dataset, must be set to True to
+                          calculate the PAD
             gamma_values: List of gamma values to be applied in SVCs, see sklearn
                             documentation for list of possible values
             degree_values: List of degree values to be applied in polynomial SVCs
