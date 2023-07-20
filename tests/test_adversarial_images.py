@@ -26,7 +26,15 @@ def test_best_attack_selection():
 
     # this means the best selection function should *always* select the
     # second image in the list (as this corresponds to the lowest epsilon 0.3
-    # that is still success)
-    best_images = select_best_attack(images=images, success=success, epsilons=epsilons)
+    # that is still successful)
+    best_images, success_rates = select_best_attack(
+        images=images, success=success, epsilons=epsilons
+    )
+
+    # Check that second image is always chosen
     assert_equal = functools.partial(torch.testing.assert_close, rtol=0, atol=0)
     assert_equal(images[1], best_images)
+
+    # Success rates should be 0, 1, 1, 1 (as fn will sort to this order and all
+    # from second image onwards are successful)
+    assert_equal(success_rates, torch.tensor([0.0, 1.0, 1.0, 1.0]))

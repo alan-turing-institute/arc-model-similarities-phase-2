@@ -10,12 +10,11 @@ def select_best_attack(
     images: list[torch.tensor],
     success: torch.tensor,
     epsilons: list[float],
-):
+) -> tuple[torch.tensor, torch.tensor]:
     """
     A function to perform best attack selection. The criteria for each images is
     the first successful attack with the smallest possible value of epsilon. If no
     image is sucessful, it will select the image with the highest epsilon value.
-    Returns a torch.tensor of adversarial images with
 
     Args:
         images: A list of torch.tensors of length num_epsilon. Each tensor contains
@@ -25,6 +24,10 @@ def select_best_attack(
                  False values denoting whether the corresponding image in images is
                  successfully adversarial
         epsilons: A list of values of epsilon used to generate the list of images
+
+    Returns: a torch.tensor containing the adversarial images and a torch.tensor
+             where each element represents the percentage of successful attacks at
+             each value of epsilon
     """
     # Sort into order from lowest to highest epsilon to allow arbitary input order
     num_epsilon = len(epsilons)
@@ -35,13 +38,20 @@ def select_best_attack(
 
     # Best attack selection loop
     advs_images = []
+    advs_success = torch.zeros(num_epsilon, device=success.device)
     num_attack_images = len(images[0])
+    # For every image and value of epsilon
     for i in range(num_attack_images):
         for j in range(num_epsilon):
+            # If the image is sucessful or is the last image, append it to the
+            # output adversarial images
             if success[j][i] or j == (num_epsilon - 1):
                 advs_images.append(images[j][i])
+                # += success instead of 1 so last image doesn't automatically add
+                # to success
+                advs_success[j:] += success[j][i]
                 break
-    return torch.stack((advs_images))
+    return torch.stack((advs_images)), advs_success / num_attack_images
 
 
 def generate_adversarial_images(
@@ -52,7 +62,7 @@ def generate_adversarial_images(
     epsilons: list[float],
     device: str,
     **kwargs,
-) -> torch.tensor:
+) -> tuple[torch.tensor, torch.tensor]:
     """
     Generates adversarial images from bias images for either an L2 fast gradient
     attack or a boundary attack.
@@ -67,7 +77,9 @@ def generate_adversarial_images(
         device: String passed to fb.PyTorchModel for computation
         **kwargs: Additional arguments based to attack setup
 
-    Returns: a torch.tensor containing the adversarial images
+    Returns: a torch.tensor containing the adversarial images and a torch.tensor
+             where each element represents the percentage of successful attacks at
+             each value of epsilon
     """
     # Check for valid attack choices
     if attack_fn_name not in ["L2FastGradientAttack", "BoundaryAttack"]:
@@ -94,12 +106,12 @@ def generate_adversarial_images(
     _, clipped_advs, success = attack(fmodel, images, labels, epsilons=epsilons)
 
     # Apply image selection based on attack choice
-    advs_images = select_best_attack(
+    advs_images, advs_success = select_best_attack(
         images=clipped_advs, success=success, epsilons=epsilons
     )
 
     # Return images
-    return advs_images
+    return advs_images, advs_success
 
 
 def generate_over_combinations(
@@ -142,7 +154,8 @@ def generate_over_combinations(
     """
     # Make dict of adversarial images
     # 4 elements, w/ keys like model_A_dist_A
-    # Each element is a torch.tensor containing adversarial images
+    # Each element is a torch.tensor containing adversarial images and a
+    # torch.tensor with success rates at each value of epsilon
     adversarial_images_dict = {}
     for model, model_name in tqdm([(model_A, "model_A"), (model_B, "model_B")]):
         for images, labels, distribution_name in tqdm(
