@@ -11,7 +11,7 @@ metrics:
       embedding_name: inception_umap
       embedding_kwargs:
         batch_size: 16
-        device: cpu
+        device: cuda
         n_components: 2
         random_seed: 42
       test_proportion: 0.2
@@ -31,7 +31,7 @@ metrics:
       embedding_name: inception_umap
       embedding_kwargs:
         batch_size: 16
-        device: cpu
+        device: cuda
         n_components: 2
         random_seed: 42
       test_proportion: 0.2
