@@ -111,7 +111,7 @@ def compute_transfer_attack(
     advs_preds = [torch.max(softmax, dim=1)[1] for softmax in advs_softmax]
 
     # Compute transfer attack success metrics
-    transfer_metrics = {}
+    transfer_metrics = {"base_success_rate": torch.sum(base_correct)}
 
     # Loop over attacks, compute metrics for each attack
     for index, attack_name in enumerate(attack_names):
