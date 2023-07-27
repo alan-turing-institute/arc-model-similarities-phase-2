@@ -1,6 +1,6 @@
 num_attack_images: 1000
 attack_names: ["L2FastGradientAttack","BoundaryAttack"]
-fga_epsilons: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
-ba_epsilons: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+fga_epsilons: [1]
+ba_epsilons: [1]
 model_version: ":latest"
 batch_size: 128
