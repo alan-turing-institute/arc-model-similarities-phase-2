@@ -11,7 +11,7 @@ def test_success_rate():
     base_correct = torch.tensor([True, True, True, True, False, False])
 
     # Test where adversarial transfer success should be 0
-    advs_preds_same = torch.tensor([1, 1, 0, 0, 0, 0])
+    advs_preds_same = torch.tensor([0, 0, 1, 1, 0, 0])
     assert compute_success_rate(labels, base_correct, advs_preds_same) == 0
 
     # Test where adversarial transfer success should be 0.5
@@ -19,7 +19,7 @@ def test_success_rate():
     assert compute_success_rate(labels, base_correct, advs_preds_half) == 0.5
 
     # Test where adversarial transfer success should be 1
-    advs_preds_all = torch.tensor([0, 0, 1, 1, 0, 0])
+    advs_preds_all = torch.tensor([1, 1, 0, 0, 0, 0])
     assert compute_success_rate(labels, base_correct, advs_preds_all) == 1
 
 
