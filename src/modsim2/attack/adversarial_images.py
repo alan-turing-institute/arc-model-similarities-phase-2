@@ -101,9 +101,56 @@ def generate_adversarial_images(
     # Put model into foolbox format
     fmodel = fb.PyTorchModel(model, bounds=(0, 1), device=device)
 
-    # Generate attack images
-    attack = getattr(fb.attacks, attack_fn_name)(**kwargs)
-    _, clipped_advs, success = attack(fmodel, images, labels, epsilons=epsilons)
+    # If Boundary Attack, need to initialise and manage early failures to avoid error
+    if attack_fn_name == "BoundaryAttack":
+        # Initialise and run an attack
+        init_attack = fb.attacks.LinearSearchBlendedUniformNoiseAttack(
+            distance=fb.distances.LpDistance(p=2), steps=50
+        )
+        starting_points = init_attack.run(fmodel, images, labels)
+
+        # Assess whether the attack is adversarial, get tensor of successes
+        is_adversarial = fb.attacks.base.get_is_adversarial(
+            fb.attacks.base.get_criterion(labels), fmodel
+        )
+        starting_success = is_adversarial(starting_points)
+
+        # Generate attack images on already successful adversarial examples
+        attack = getattr(fb.attacks, attack_fn_name)(**kwargs)
+        _, clipped_advs, success = attack(
+            fmodel,
+            images[starting_success],
+            labels[starting_success],
+            starting_points=starting_points[starting_success],
+            epsilons=epsilons,
+        )
+
+        # Get indices for examples kept
+        starting_indices = [
+            i for i, _ in enumerate(starting_success) if starting_success[i]
+        ]
+
+        # Prepare new set of images and successes
+        new_advs = [images for _ in range(len(epsilons))]
+        new_success = [
+            torch.tensor([False for _ in range(images.shape[0])])
+            for _ in range(len(epsilons))
+        ]
+
+        # Replace original images and successes with ones from the attack
+        for i in range(len(epsilons)):
+            new_advs[i][starting_indices] = clipped_advs[i]
+            new_success[i][starting_indices] = success[i]
+            new_success[i] = new_success[i].tolist()
+
+        # Overwrite to continue as normal
+        clipped_advs = new_advs
+        success = new_success
+
+    else:
+        # Generate advs images as normal for other attacks
+        attack = getattr(fb.attacks, attack_fn_name)(**kwargs)
+        _, clipped_advs, success = attack(fmodel, images, labels, epsilons=epsilons)
 
     # Apply image selection based on attack choice
     advs_images, advs_success = select_best_attack(
