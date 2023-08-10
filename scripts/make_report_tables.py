@@ -13,14 +13,26 @@ PROJ = "ms2"
 DIRECTIONS = ["A_to_B_metrics", "B_to_A_metrics"]
 
 # Similarity Keys
-SIM_METRIC_NAMES = [
+SIM_METRIC_LIST = [
     "mmd_rbf_raw",
     "mmd_rbf_umap",
     "mmd_rbf_pca",
+    "hline",
     "otdd_exact_raw",
     "otdd_exact_umap",
     "otdd_exact_pca",
+    "hline",
+    "kde_umap_kl_approx",
+    "kde_pca_kl_approx",
+    "kde_gaussian_umap_l2",
+    "kde_gaussian_umap_tv",
+    "hline",
+    "pad_linear_umap",
+    "pad_rbf_umap",
+    "pad_linear_pca",
+    "pad_rbf_pca",
 ]
+SIM_METRIC_NAMES = [metric for metric in SIM_METRIC_LIST if metric != "hline"]
 
 # Attack keys + labels
 ATTACKS = ["L2FastGradientAttack", "BoundaryAttack"]
@@ -127,10 +139,10 @@ def make_vuln_corr_table(
     B_keys = make_vuln_keys("B")
 
     # Lists to store results in
-    A_vuln = [[]] * len(A_keys)
-    A_success = [[]] * len(distributions) * len(atk_names)
-    B_vuln = [[]] * len(B_keys)
-    B_success = [[]] * len(distributions) * len(atk_names)
+    A_vuln = [[] for _ in range(len(A_keys))]
+    A_success = [[] for _ in range(len(distributions) * len(atk_names))]
+    B_vuln = [[] for _ in range(len(B_keys))]
+    B_success = [[] for _ in range(len(distributions) * len(atk_names))]
 
     # Extract model vulnerability stats and transfer success
     it = 0
@@ -263,7 +275,7 @@ def cor_to_tex(
 ) -> None:
     # Get output dimensions
     ncol = len(cor)
-    nrow = len(cor[0])
+    nrow = len(sim_metric_names)
 
     # Threshold for significance
     threshold = 1 - confidence_level
@@ -284,14 +296,19 @@ def cor_to_tex(
         "B Distribution \\\\\n\\hline\n"
     )
     t_content = ""
+    extra = 0
     for i in range(nrow):
-        t_content = t_content + sim_metric_names[i].replace("_", "\\_") + " & "
-        for j in range(ncol):
-            t_content = t_content + write_cor_num(cor[j][i], threshold)
-            if j != (ncol - 1):
-                t_content = t_content + " & "
-            else:
-                t_content = t_content + " \\\\\n"
+        if sim_metric_names[i] != "hline":
+            t_content = t_content + sim_metric_names[i].replace("_", "\\_") + " & "
+            for j in range(ncol):
+                t_content = t_content + write_cor_num(cor[j][i - extra], threshold)
+                if j != (ncol - 1):
+                    t_content = t_content + " & "
+                else:
+                    t_content = t_content + " \\\\\n"
+        if sim_metric_names[i] == "hline":
+            t_content = t_content + " \\hline\\n "
+            extra += 1
     t_tail = (
         "\\end{tabular}\n"
         "\\caption*{All values rounded to 2 decimal places. "
@@ -326,13 +343,13 @@ def main():
     runs = api.runs(path=path)
 
     # H1 & H2
-    make_vuln_corr_table(
-        wandb_runs=runs,
-        directions=DIRECTIONS,
-        distributions=DISTS,
-        atk_names=ATTACKS,
-        atk_metric_name=ATK_METRIC_NAMES[0],
-    )
+    # make_vuln_corr_table(
+    #     wandb_runs=runs,
+    #     directions=DIRECTIONS,
+    #     distributions=DISTS,
+    #     atk_names=ATTACKS,
+    #     atk_metric_name=ATK_METRIC_NAMES[0],
+    # )
 
     # H3: Loop over attacks and attack metrics, make latex tables
     for i in range(len(ATTACKS)):
@@ -351,7 +368,7 @@ def main():
                 atk_label=ATK_LABELS[i],
                 atk_metric_name=ATK_METRIC_NAMES[j],
                 atk_metric_label=ATK_METRIC_LABELS[j],
-                sim_metric_names=SIM_METRIC_NAMES,
+                sim_metric_names=SIM_METRIC_LIST,
                 confidence_level=0.95,
             )
 
