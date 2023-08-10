@@ -81,6 +81,7 @@ def main(
             combinations=combinations,
             account_name=account_name,
             experiment_names=experiment_names,
+            metric_name=metrics_file,
             conda_env_path=conda_env_path,
             generated_script_names=script_names,
         )
