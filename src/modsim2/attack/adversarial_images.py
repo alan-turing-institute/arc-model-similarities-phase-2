@@ -132,16 +132,14 @@ def generate_adversarial_images(
 
         # Prepare new set of images and successes
         new_advs = [images for _ in epsilons]
-        new_success = [
-            torch.tensor([False for _ in range(images.shape[0])], device=device)
-            for _ in epsilons
-        ]
+        new_success = torch.tensor(
+            [[False for _ in range(images.shape[0])] for _ in epsilons], device=device
+        )
 
         # Replace original images and successes with ones from the attack
         for i in range(len(epsilons)):
             new_advs[i][starting_indices] = clipped_advs[i]
             new_success[i][starting_indices] = success[i]
-            new_success[i] = new_success[i].tolist()
 
         # Overwrite to continue as normal
         clipped_advs = new_advs
