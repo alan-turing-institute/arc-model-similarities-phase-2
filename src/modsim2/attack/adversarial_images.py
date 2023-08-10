@@ -131,10 +131,9 @@ def generate_adversarial_images(
         ]
 
         # Prepare new set of images and successes
-        new_advs = [images for _ in range(len(epsilons))]
+        new_advs = [images for _ in epsilons]
         new_success = [
-            torch.tensor([False for _ in range(images.shape[0])])
-            for _ in range(len(epsilons))
+            torch.tensor([False for _ in range(images.shape[0])]) for _ in epsilons
         ]
 
         # Replace original images and successes with ones from the attack
@@ -147,8 +146,8 @@ def generate_adversarial_images(
         clipped_advs = new_advs
         success = new_success
 
-    else:
-        # Generate advs images as normal for other attacks
+    # If not Boundary Attack, generate images as normal
+    if attack_fn_name != "BoundaryAttack":
         attack = getattr(fb.attacks, attack_fn_name)(**kwargs)
         _, clipped_advs, success = attack(fmodel, images, labels, epsilons=epsilons)
 
