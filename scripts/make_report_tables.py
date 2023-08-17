@@ -183,16 +183,16 @@ def make_h1_corr_table(
     # Make correlation table
     out = [
         [
-            pearsonr(A_vuln[0], A_success[0]),
-            pearsonr(A_vuln[1], A_success[1]),
-            pearsonr(B_vuln[0], B_success[0]),
-            pearsonr(B_vuln[1], B_success[1]),
+            pearsonr(B_vuln[0], A_success[0]),
+            pearsonr(B_vuln[1], A_success[1]),
+            pearsonr(A_vuln[0], B_success[0]),
+            pearsonr(A_vuln[1], B_success[1]),
         ],
         [
-            pearsonr(A_vuln[2], A_success[2]),
-            pearsonr(A_vuln[3], A_success[3]),
-            pearsonr(B_vuln[2], B_success[2]),
-            pearsonr(B_vuln[3], B_success[3]),
+            pearsonr(B_vuln[2], A_success[2]),
+            pearsonr(B_vuln[3], A_success[3]),
+            pearsonr(A_vuln[2], B_success[2]),
+            pearsonr(A_vuln[3], B_success[3]),
         ],
     ]
 
@@ -253,16 +253,16 @@ def make_h2_corr_table(
     # Make correlation table
     out = [
         [
-            pearsonr(B_vuln[0], A_success[0]),
-            pearsonr(B_vuln[1], A_success[1]),
-            pearsonr(A_vuln[0], B_success[0]),
-            pearsonr(A_vuln[1], B_success[1]),
+            pearsonr(A_vuln[0], A_success[0]),
+            pearsonr(A_vuln[1], A_success[1]),
+            pearsonr(B_vuln[0], B_success[0]),
+            pearsonr(B_vuln[1], B_success[1]),
         ],
         [
-            pearsonr(B_vuln[2], A_success[2]),
-            pearsonr(B_vuln[3], A_success[3]),
-            pearsonr(A_vuln[2], B_success[2]),
-            pearsonr(A_vuln[3], B_success[3]),
+            pearsonr(A_vuln[2], A_success[2]),
+            pearsonr(A_vuln[3], A_success[3]),
+            pearsonr(B_vuln[2], B_success[2]),
+            pearsonr(B_vuln[3], B_success[3]),
         ],
     ]
     return out
