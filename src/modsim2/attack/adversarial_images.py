@@ -54,6 +54,79 @@ def select_best_attack(
     return torch.stack((advs_images)), advs_success / num_attack_images
 
 
+def boundary_attack_fn(
+    fmodel,
+    images,
+    labels,
+    attack_fn_name,
+    epsilons,
+    device,
+    **kwargs,
+) -> tuple[list[torch.tensor], torch.tensor]:
+    """
+    A function that manually initialises an attack, filters for successful
+    initialisations using foolbox's own tests, and uses these to generate
+    adversarial images. Written for Boundary Attacks, may be valid to use
+    for other attack types too.
+
+    Images not succesfully initialised are return in the same output as adversarial
+    examples, and marked as failures in the same way other failures would be.
+
+    Args:
+        model: Resnet model object to train the adversarial images on
+        images: torch.tensor of base images to build the adversarial images on
+        labels: correct labels for each of the images
+        attack_fn_name: Name of the attack function in foolbox.attacks.
+        epsilons: Pertubation parameter for the attacks
+        device: String passed to fb.PyTorchModel for computation
+        **kwargs: Additional arguments based to attack setup
+
+    Returns:
+        A list where each element corresponds to a value of epsilon. Each element
+        contains a torch.tensor of adversarial examples corresponding to
+    """
+    # Initialise and run an attack
+    init_attack = fb.attacks.LinearSearchBlendedUniformNoiseAttack(
+        distance=fb.distances.LpDistance(p=2), steps=50
+    )
+    starting_points = init_attack.run(fmodel, images, labels)
+
+    # Assess whether the attack is adversarial, get tensor of successes
+    is_adversarial = fb.attacks.base.get_is_adversarial(
+        fb.attacks.base.get_criterion(labels), fmodel
+    )
+    starting_success = is_adversarial(starting_points)
+
+    # Generate attack images on already successful adversarial examples
+    attack = getattr(fb.attacks, attack_fn_name)(**kwargs)
+    _, clipped_advs, success = attack(
+        fmodel,
+        images[starting_success],
+        labels[starting_success],
+        starting_points=starting_points[starting_success],
+        epsilons=epsilons,
+    )
+
+    # Get indices for examples kept
+    starting_indices = [
+        i for i, _ in enumerate(starting_success) if starting_success[i]
+    ]
+
+    # Prepare new set of images and successes
+    new_advs = [images for _ in epsilons]
+    new_success = torch.zeros(
+        (images.shape[0], len(epsilons)), dtype=torch.bool, device=device
+    )
+
+    # Replace original images and successes with ones from the attack
+    for i in range(len(epsilons)):
+        new_advs[i][starting_indices] = clipped_advs[i]
+        new_success[i][starting_indices] = success[i]
+
+    # Return
+    return new_advs, new_success
+
+
 def generate_adversarial_images(
     model: ResnetModel,
     images: torch.tensor,
@@ -103,47 +176,15 @@ def generate_adversarial_images(
 
     # If Boundary Attack, need to initialise and manage early failures to avoid error
     if attack_fn_name == "BoundaryAttack":
-        # Initialise and run an attack
-        init_attack = fb.attacks.LinearSearchBlendedUniformNoiseAttack(
-            distance=fb.distances.LpDistance(p=2), steps=50
-        )
-        starting_points = init_attack.run(fmodel, images, labels)
-
-        # Assess whether the attack is adversarial, get tensor of successes
-        is_adversarial = fb.attacks.base.get_is_adversarial(
-            fb.attacks.base.get_criterion(labels), fmodel
-        )
-        starting_success = is_adversarial(starting_points)
-
-        # Generate attack images on already successful adversarial examples
-        attack = getattr(fb.attacks, attack_fn_name)(**kwargs)
-        _, clipped_advs, success = attack(
-            fmodel,
-            images[starting_success],
-            labels[starting_success],
-            starting_points=starting_points[starting_success],
+        clipped_advs, success = boundary_attack_fn(
+            fmodel=fmodel,
+            images=images,
+            labels=labels,
+            attack_fn_name=attack_fn_name,
             epsilons=epsilons,
+            device=device,
+            **kwargs,
         )
-
-        # Get indices for examples kept
-        starting_indices = [
-            i for i, _ in enumerate(starting_success) if starting_success[i]
-        ]
-
-        # Prepare new set of images and successes
-        new_advs = [images for _ in epsilons]
-        new_success = torch.tensor(
-            [[False for _ in range(images.shape[0])] for _ in epsilons], device=device
-        )
-
-        # Replace original images and successes with ones from the attack
-        for i in range(len(epsilons)):
-            new_advs[i][starting_indices] = clipped_advs[i]
-            new_success[i][starting_indices] = success[i]
-
-        # Overwrite to continue as normal
-        clipped_advs = new_advs
-        success = new_success
 
     # If not Boundary Attack, generate images as normal
     if attack_fn_name != "BoundaryAttack":
