@@ -6,7 +6,7 @@
 #SBATCH --gpus 1
 #SBATCH --cpus-per-gpu 36
 #SBATCH --job-name ms2-{{experiment_name}}
-#SBATCH --output ./slurm_metrics_logs/{{experiment_name}}-metrics-%j.out
+#SBATCH --output ./slurm_metrics_logs/{{experiment_name}}-metrics-{{metric_name}}-%j.out
 
 module purge
 module load baskerville
