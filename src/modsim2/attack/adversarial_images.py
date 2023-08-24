@@ -118,7 +118,7 @@ def boundary_attack_fn(
     # Prepare new set of images and successes
     new_advs = [images for _ in epsilons]
     new_success = torch.zeros(
-        (images.shape[0], len(epsilons)), dtype=torch.bool, device=device
+        (len(epsilons), images.shape[0]), dtype=torch.bool, device=device
     )
 
     # Replace original images and successes with ones from the attack
@@ -203,7 +203,7 @@ def generate_adversarial_images(
         _, clipped_advs, success = attack(fmodel, images, labels, epsilons=epsilons)
 
     # Apply image selection based on attack choice
-    advs_images, advs_success = select_best_attack(
+    advs_images, _ = select_best_attack(
         images=clipped_advs, success=success, epsilons=epsilons
     )
 
