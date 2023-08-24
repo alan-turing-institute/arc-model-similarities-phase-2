@@ -62,7 +62,8 @@ def compute_transfer_attack(
     """
     This function takes a model, base images, adversial images, and true labels
     as inputs, and attacks the model. Where the images were generated on a
-    different model, it will be a transfer attack.
+    different model, it will be a transfer attack. Where the images were generated
+    on the same model, the outputs will serve as a model vulnerability metric.
 
     As output, this function will compute the attack success rate and mean loss
     increase as metrics and provide them in a dictionary.
@@ -97,8 +98,8 @@ def compute_transfer_attack(
     base_preds = torch.max(base_softmax, dim=1)[1]
 
     # These are recycled for each attack, worth computing now
-    base_correct = labels == base_preds
-    base_loss = loss_function(base_softmax, labels)
+    base_correct = labels.to(base_softmax.device) == base_preds
+    base_loss = loss_function(base_softmax, labels.to(base_softmax.device))
 
     # Generate adversarial softmax and predictions
     advs_dl = [
@@ -120,14 +121,14 @@ def compute_transfer_attack(
 
         # Success rate
         transfer_metrics[attack_name]["success_rate"] = compute_success_rate(
-            labels=labels,
+            labels=labels.to(base_correct.device),
             base_correct=base_correct,
             advs_preds=advs_preds[index],
         )
 
         # Mean loss rate
         transfer_metrics[attack_name]["mean_loss_increase"] = compute_mean_loss_rate(
-            labels=labels,
+            labels=labels.to(base_loss.device),
             base_loss=base_loss,
             advs_softmax=advs_softmax[index],
             loss_function=loss_function,

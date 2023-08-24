@@ -1,7 +1,10 @@
+from typing import Callable
+
 import foolbox as fb
 import torch
 from tqdm import tqdm
 
+from modsim2.attack.transfer import compute_transfer_attack
 from modsim2.model.resnet import ResnetModel
 from modsim2.utils.accelerator import choose_auto_accelerator
 
@@ -134,6 +137,9 @@ def generate_adversarial_images(
     attack_fn_name: str,
     epsilons: list[float],
     device: str,
+    batch_size: int,
+    trainer_kwargs: dict = {},
+    loss_function: Callable = torch.nn.functional.nll_loss,
     **kwargs,
 ) -> tuple[torch.tensor, torch.tensor]:
     """
@@ -148,6 +154,9 @@ def generate_adversarial_images(
                         L2FastGradientAttack or BoundaryAttack
         epsilons: Pertubation parameter for the attacks
         device: String passed to fb.PyTorchModel for computation
+        batch_size: int,
+        trainer_kwargs: dict = {},
+        loss_function: Callable = torch.nn.functional.nll_loss,
         **kwargs: Additional arguments based to attack setup
 
     Returns: a torch.tensor containing the adversarial images and a torch.tensor
@@ -165,11 +174,13 @@ def generate_adversarial_images(
     if device == "mps" and attack_fn_name == "BoundaryAttack":
         device = "cpu"
 
-    # Make sure images are on correct device
+    # Make sure images + model are on correct device
     if str(images.device) != device:
         images = images.to(device=device)
     if str(labels.device) != device:
         labels = labels.to(device=device)
+    if str(model.device) != device:
+        model = model.to(device=device)
 
     # Put model into foolbox format
     fmodel = fb.PyTorchModel(model, bounds=(0, 1), device=device)
@@ -196,8 +207,23 @@ def generate_adversarial_images(
         images=clipped_advs, success=success, epsilons=epsilons
     )
 
+    # Get the model vulnerability metrics
+    vuln = compute_transfer_attack(
+        model=model,
+        images=images,
+        labels=labels,
+        advs_images=[advs_images],
+        attack_names=[attack_fn_name],
+        batch_size=batch_size,
+        loss_function=loss_function,
+        devices="auto",
+        accelerator=device,
+        **trainer_kwargs,
+    )
+    vuln = {**vuln[attack_fn_name]}
+
     # Return images
-    return advs_images, advs_success
+    return advs_images, vuln
 
 
 def generate_over_combinations(
@@ -208,6 +234,9 @@ def generate_over_combinations(
     images_B: torch.tensor,
     labels_B: torch.tensor,
     attack_fn_name: str,
+    batch_size: int,
+    trainer_kwargs: dict = {},
+    loss_function: Callable = torch.nn.functional.nll_loss,
     **kwargs,
 ) -> dict[torch.tensor]:
     """
@@ -234,6 +263,9 @@ def generate_over_combinations(
         images_B: torch.tensor of images from the distribution of dataset B
         labels_B: torch.tensor of labels corresponding to images_B
         attack_fn_name: String corresponding to the attack function to use
+        batch_size: Batch size for the dataloader used in predicting outputs
+        loss_function: Loss function to use in computing mean_loss_rate
+        trainer_kwargs: Keyword arguments passed to pytorch_lightning.Trainer()
         **kwargs: Arguments passed to the attack function
 
     Returns: A dictionary of 4 sets of adverisal images
@@ -257,6 +289,9 @@ def generate_over_combinations(
                 images=images,
                 labels=labels,
                 attack_fn_name=attack_fn_name,
+                batch_size=batch_size,
+                loss_function=loss_function,
+                trainer_kwargs=trainer_kwargs,
                 **kwargs,
             )
 

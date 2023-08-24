@@ -72,6 +72,7 @@ def main(
         attack_fn_name=attack_names[0],
         epsilons=fga_epsilons,
         device=accelerator,
+        batch_size=attack_config["batch_size"],
     )
     boundary_images = generate_over_combinations(
         model_A=model_A,
@@ -83,6 +84,7 @@ def main(
         attack_fn_name=attack_names[1],
         epsilons=ba_epsilons,
         device=accelerator,
+        batch_size=attack_config["batch_size"],
         steps=500,
     )
 
