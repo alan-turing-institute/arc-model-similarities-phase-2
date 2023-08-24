@@ -79,8 +79,8 @@ def compute_transfer_attack(
         model: The model to transfer the attacks to
         images: A torch.tensor of base images
         labels: A list of correct labels corresponding to each image
-        advs_images: A torch.tensor of adversial images, which corresponds to the base
-                     images
+        advs_images: A list of torch.tensor of adversial images, which corresponds to
+                     the base images
         attack_names: Output strings for the attack names
         batch_size: Batch size for the dataloader used in predicting outputs
         loss_function: Loss function to use in computing mean_loss_rate
