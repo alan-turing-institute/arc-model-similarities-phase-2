@@ -160,8 +160,7 @@ def generate_adversarial_images(
         **kwargs: Additional arguments based to attack setup
 
     Returns: a torch.tensor containing the adversarial images and a torch.tensor
-             where each element represents the percentage of successful attacks at
-             each value of epsilon
+             where each element contains a dictionary of model vulnerability metrics
     """
     # Check for valid attack choices
     if attack_fn_name not in ["L2FastGradientAttack", "BoundaryAttack"]:
