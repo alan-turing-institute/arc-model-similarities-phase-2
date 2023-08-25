@@ -269,7 +269,8 @@ def generate_over_combinations(
         trainer_kwargs: Keyword arguments passed to pytorch_lightning.Trainer()
         **kwargs: Arguments passed to the attack function
 
-    Returns: A dictionary of 4 sets of adverisal images
+    Returns: A dictionary of 4 sets of adverisal images with associated model
+             vulnerability metrics
     """
     # Make dict of adversarial images
     # 4 elements, w/ keys like model_A_dist_A
