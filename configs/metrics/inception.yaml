@@ -72,7 +72,7 @@ metrics:
         - 0.1
         - 1
         - 10
-      embedding_name: inception_umap
+      embedding_name: inception
       embedding_kwargs:
         batch_size: 16
         device: cuda
