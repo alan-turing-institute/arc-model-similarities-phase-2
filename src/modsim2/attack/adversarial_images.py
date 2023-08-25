@@ -159,8 +159,10 @@ def generate_adversarial_images(
         loss_function: Callable = torch.nn.functional.nll_loss,
         **kwargs: Additional arguments based to attack setup
 
-    Returns: a torch.tensor containing the adversarial images and a torch.tensor
-             where each element contains a dictionary of model vulnerability metrics
+    Returns: a torch.tensor containing the adversarial images and a ductionary
+             where each element is a model vulnerability metric. These are
+             'success_rate' and 'mean_loss_increase' respectively.
+
     """
     # Check for valid attack choices
     if attack_fn_name not in ["L2FastGradientAttack", "BoundaryAttack"]:
