@@ -524,12 +524,6 @@ def main():
     path = os.path.join(ENTITY, PROJ)
     runs = api.runs(path=path)
 
-    # Put runs into easily usable table
-    # run_names_list, run_summary_list = [], []
-    # for run in runs:
-    #     run_names_list.append(run.name)
-    #     run_summary_list.append(run.summary._json_dict)
-
     # H1 & H2
     for atk_name, atk_label in ATK_METRIC_PAIRS:
         tab_h1 = make_h1_corr_table(
