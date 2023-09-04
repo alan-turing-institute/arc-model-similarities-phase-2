@@ -4,7 +4,7 @@ import os
 import yaml
 from utils import opts2dmpairArgs
 
-from modsim2.attack import compute_transfer_attack, generate_over_combinations
+from modsim2.attack import compute_attack_metrics, generate_over_combinations
 from modsim2.data.loader import DMPair
 from modsim2.model.load_model import download_AB_models
 from modsim2.model.utils import get_wandb_run
@@ -72,6 +72,7 @@ def main(
         attack_fn_name=attack_names[0],
         epsilons=fga_epsilons,
         device=accelerator,
+        batch_size=attack_config["batch_size"],
     )
     boundary_images = generate_over_combinations(
         model_A=model_A,
@@ -83,6 +84,7 @@ def main(
         attack_fn_name=attack_names[1],
         epsilons=ba_epsilons,
         device=accelerator,
+        batch_size=attack_config["batch_size"],
         steps=500,
     )
 
@@ -103,7 +105,7 @@ def main(
     # Transfer attack over model*dist combinations, comptue succes
     # Names: AB_to_B imples attack trained on model A with images from distribution B,
     # transferred to model B
-    transfer_metrics_AA_to_B = compute_transfer_attack(
+    transfer_metrics_AA_to_B = compute_attack_metrics(
         model=model_B,
         images=images_A,
         labels=labels_A,
@@ -116,7 +118,7 @@ def main(
         devices=devices,
         accelerator=accelerator,
     )
-    transfer_metrics_AB_to_B = compute_transfer_attack(
+    transfer_metrics_AB_to_B = compute_attack_metrics(
         model=model_B,
         images=images_B,
         labels=labels_B,
@@ -129,7 +131,7 @@ def main(
         devices=devices,
         accelerator=accelerator,
     )
-    transfer_metrics_BA_to_A = compute_transfer_attack(
+    transfer_metrics_BA_to_A = compute_attack_metrics(
         model=model_A,
         images=images_A,
         labels=labels_A,
@@ -142,7 +144,7 @@ def main(
         devices=devices,
         accelerator=accelerator,
     )
-    transfer_metrics_BB_to_A = compute_transfer_attack(
+    transfer_metrics_BB_to_A = compute_attack_metrics(
         model=model_A,
         images=images_B,
         labels=labels_B,

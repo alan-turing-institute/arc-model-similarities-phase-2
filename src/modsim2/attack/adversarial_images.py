@@ -1,7 +1,11 @@
+import copy
+from typing import Callable
+
 import foolbox as fb
 import torch
 from tqdm import tqdm
 
+from modsim2.attack.metrics import compute_attack_metrics
 from modsim2.model.resnet import ResnetModel
 from modsim2.utils.accelerator import choose_auto_accelerator
 
@@ -113,9 +117,9 @@ def boundary_attack_fn(
     ]
 
     # Prepare new set of images and successes
-    new_advs = [images for _ in epsilons]
+    new_advs = [copy.deepcopy(images) for _ in epsilons]
     new_success = torch.zeros(
-        (images.shape[0], len(epsilons)), dtype=torch.bool, device=device
+        (len(epsilons), images.shape[0]), dtype=torch.bool, device=device
     )
 
     # Replace original images and successes with ones from the attack
@@ -134,6 +138,9 @@ def generate_adversarial_images(
     attack_fn_name: str,
     epsilons: list[float],
     device: str,
+    batch_size: int,
+    trainer_kwargs: dict = {},
+    loss_function: Callable = torch.nn.functional.nll_loss,
     **kwargs,
 ) -> tuple[torch.tensor, torch.tensor]:
     """
@@ -148,11 +155,15 @@ def generate_adversarial_images(
                         L2FastGradientAttack or BoundaryAttack
         epsilons: Pertubation parameter for the attacks
         device: String passed to fb.PyTorchModel for computation
+        batch_size: int,
+        trainer_kwargs: dict = {},
+        loss_function: Callable = torch.nn.functional.nll_loss,
         **kwargs: Additional arguments based to attack setup
 
-    Returns: a torch.tensor containing the adversarial images and a torch.tensor
-             where each element represents the percentage of successful attacks at
-             each value of epsilon
+    Returns: a torch.tensor containing the adversarial images and a dictionary
+             where each element is a model vulnerability metric. These are
+             'success_rate' and 'mean_loss_increase' respectively.
+
     """
     # Check for valid attack choices
     if attack_fn_name not in ["L2FastGradientAttack", "BoundaryAttack"]:
@@ -165,11 +176,13 @@ def generate_adversarial_images(
     if device == "mps" and attack_fn_name == "BoundaryAttack":
         device = "cpu"
 
-    # Make sure images are on correct device
+    # Make sure images + model are on correct device
     if str(images.device) != device:
         images = images.to(device=device)
     if str(labels.device) != device:
         labels = labels.to(device=device)
+    if str(model.device) != device:
+        model = model.to(device=device)
 
     # Put model into foolbox format
     fmodel = fb.PyTorchModel(model, bounds=(0, 1), device=device)
@@ -192,12 +205,27 @@ def generate_adversarial_images(
         _, clipped_advs, success = attack(fmodel, images, labels, epsilons=epsilons)
 
     # Apply image selection based on attack choice
-    advs_images, advs_success = select_best_attack(
+    advs_images, _ = select_best_attack(
         images=clipped_advs, success=success, epsilons=epsilons
     )
 
+    # Get the model vulnerability metrics
+    vuln = compute_attack_metrics(
+        model=model,
+        images=images,
+        labels=labels,
+        advs_images=[advs_images],
+        attack_names=[attack_fn_name],
+        batch_size=batch_size,
+        loss_function=loss_function,
+        devices="auto",
+        accelerator=device,
+        **trainer_kwargs,
+    )
+    vuln = {**vuln[attack_fn_name]}
+
     # Return images
-    return advs_images, advs_success
+    return advs_images, vuln
 
 
 def generate_over_combinations(
@@ -208,6 +236,9 @@ def generate_over_combinations(
     images_B: torch.tensor,
     labels_B: torch.tensor,
     attack_fn_name: str,
+    batch_size: int,
+    trainer_kwargs: dict = {},
+    loss_function: Callable = torch.nn.functional.nll_loss,
     **kwargs,
 ) -> dict[torch.tensor]:
     """
@@ -234,9 +265,13 @@ def generate_over_combinations(
         images_B: torch.tensor of images from the distribution of dataset B
         labels_B: torch.tensor of labels corresponding to images_B
         attack_fn_name: String corresponding to the attack function to use
+        batch_size: Batch size for the dataloader used in predicting outputs
+        loss_function: Loss function to use in computing mean_loss_rate
+        trainer_kwargs: Keyword arguments passed to pytorch_lightning.Trainer()
         **kwargs: Arguments passed to the attack function
 
-    Returns: A dictionary of 4 sets of adverisal images
+    Returns: A dictionary of 4 sets of adverisal images with associated model
+             vulnerability metrics
     """
     # Make dict of adversarial images
     # 4 elements, w/ keys like model_A_dist_A
@@ -257,6 +292,9 @@ def generate_over_combinations(
                 images=images,
                 labels=labels,
                 attack_fn_name=attack_fn_name,
+                batch_size=batch_size,
+                loss_function=loss_function,
+                trainer_kwargs=trainer_kwargs,
                 **kwargs,
             )
 
