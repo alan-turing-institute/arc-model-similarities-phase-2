@@ -1,6 +1,6 @@
 import torch
 
-from modsim2.attack.transfer import compute_mean_loss_rate, compute_success_rate
+from modsim2.attack.metrics import compute_mean_loss_rate, compute_success_rate
 
 
 def test_success_rate():

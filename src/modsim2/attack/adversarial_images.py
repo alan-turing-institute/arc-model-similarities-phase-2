@@ -5,7 +5,7 @@ import foolbox as fb
 import torch
 from tqdm import tqdm
 
-from modsim2.attack.transfer import compute_transfer_attack
+from modsim2.attack.metrics import compute_attack_metrics
 from modsim2.model.resnet import ResnetModel
 from modsim2.utils.accelerator import choose_auto_accelerator
 
@@ -160,7 +160,7 @@ def generate_adversarial_images(
         loss_function: Callable = torch.nn.functional.nll_loss,
         **kwargs: Additional arguments based to attack setup
 
-    Returns: a torch.tensor containing the adversarial images and a ductionary
+    Returns: a torch.tensor containing the adversarial images and a dictionary
              where each element is a model vulnerability metric. These are
              'success_rate' and 'mean_loss_increase' respectively.
 
@@ -210,7 +210,7 @@ def generate_adversarial_images(
     )
 
     # Get the model vulnerability metrics
-    vuln = compute_transfer_attack(
+    vuln = compute_attack_metrics(
         model=model,
         images=images,
         labels=labels,

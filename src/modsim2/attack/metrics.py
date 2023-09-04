@@ -49,7 +49,7 @@ def compute_mean_loss_rate(
     return mean_loss_rate
 
 
-def compute_transfer_attack(
+def compute_attack_metrics(
     model: ResnetModel,
     images: torch.tensor,
     labels: torch.tensor,
