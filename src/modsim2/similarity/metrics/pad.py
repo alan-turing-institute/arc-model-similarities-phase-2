@@ -181,9 +181,9 @@ class PAD(DistanceMetric):
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Takes A & B datasets as arguments and calls the methods to process
-        the data ahead of building the classifiers. First the data are split
-        into train and test datasets, then labelled and concatenated and then
-        transformed using the embedding function.
+        the data ahead of building the classifiers. First the data are
+        transformed using the embedding function, then split into train and
+        test datasets, and finally labelled and concatenated.
 
         Args:
             data_A: the records in the A dataset (excludes target values)
@@ -206,13 +206,22 @@ class PAD(DistanceMetric):
             embed_test_data: the test data transformed using the embedding function
             test_labels: the labels for the test data
         """
+        # Embed the datasets
+        embed_A, embed_B = self._embed_data(
+            data_A=data_A,
+            data_B=data_B,
+            embedding_name=embedding_name,
+            embedding_kwargs=embedding_kwargs,
+        )
+
         # Split A and B into train and test datasets
         # This is done before the data are concatenated in order
         # to ensure that the same proportion of A & B are
         # included in the test dataset
+
         train_A, test_A, train_B, test_B = self._train_test_split(
-            data_A=data_A,
-            data_B=data_B,
+            data_A=embed_A,
+            data_B=embed_B,
             test_proportion=test_proportion,
             balance_train=balance_train,
             balance_test=balance_test,
@@ -223,14 +232,7 @@ class PAD(DistanceMetric):
             train_A=train_A, test_A=test_A, train_B=train_B, test_B=test_B
         )
 
-        embed_train_data, embed_test_data = self._embed_data(
-            data_A=train_data,
-            data_B=test_data,
-            embedding_name=embedding_name,
-            embedding_kwargs=embedding_kwargs,
-        )
-
-        return embed_train_data, train_labels, embed_test_data, test_labels
+        return train_data, train_labels, test_data, test_labels
 
     def _build_models(
         self,

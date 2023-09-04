@@ -48,7 +48,6 @@ metrics:
         batch_size: 16
         device: cuda
         n_components: 50
-        random_seed: 42
       test_proportion: 0.2
       balance_train: True
       balance_test: True
@@ -66,7 +65,6 @@ metrics:
         batch_size: 16
         device: cuda
         n_components: 50
-        random_seed: 42
       test_proportion: 0.2
       balance_train: True
       balance_test: True
