@@ -1,3 +1,4 @@
+import copy
 from typing import Callable
 
 import foolbox as fb
@@ -116,7 +117,7 @@ def boundary_attack_fn(
     ]
 
     # Prepare new set of images and successes
-    new_advs = [images for _ in epsilons]
+    new_advs = [copy.deepcopy(images) for _ in epsilons]
     new_success = torch.zeros(
         (len(epsilons), images.shape[0]), dtype=torch.bool, device=device
     )
