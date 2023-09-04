@@ -59,6 +59,9 @@ DISTS = ["dist_A", "dist_B"]
 # Attack metrics keys + labels
 ATK_METRIC_NAMES = ["success_rate", "mean_loss_increase"]
 ATK_METRIC_LABELS = ["Success Rate", "Mean Loss Increase"]
+ATK_METRIC_PAIRS = [
+    [ATK_METRIC_NAMES[i], ATK_METRIC_LABELS[i]] for i in range(len(ATK_METRIC_NAMES))
+]
 
 # Vulnerability keys
 A_VULN = "vulnerability_A"
@@ -164,30 +167,38 @@ def make_h1_corr_table(
 
     # Extract model vulnerability stats and transfer success
     for run in runs:
+        # If run is A
         if run.name[-1] == "A":
+            # A -> B direction
             direction = directions[0]
             count = 0
             for distribution in distributions:
                 for atk_name in atk_names:
+                    # Get A -> B transfer
                     A_success[count].append(
                         run.summary[direction][distribution][atk_name][atk_metric_name]
                     )
                     count += 1
+            # Get opposite model B vulnerability
             new_run_name = run.name[0:-1] + "B"
             new_run = [run for run in runs if run.name == new_run_name][0]
             for i, key in enumerate(B_keys):
                 B_vuln[i].append(
                     new_run.summary["vulnerability_B"][key][atk_metric_name]
                 )
+        # If run is B
         if run.name[-1] == "B":
+            # B -> A direction
             direction = directions[1]
             count = 0
             for distribution in distributions:
                 for atk_name in atk_names:
+                    # Get B -> A transfer
                     B_success[count].append(
                         run.summary[direction][distribution][atk_name][atk_metric_name]
                     )
                     count += 1
+            # Get opposite model A vulnerability
             new_run_name = run.name[0:-1] + "A"
             new_run = [run for run in runs if run.name == new_run_name][0]
             for i, key in enumerate(A_keys):
@@ -196,6 +207,15 @@ def make_h1_corr_table(
                 )
 
     # Make correlation table
+    # Key order is mA_fga, m_B_fga, m_A_ba, m_B_ba where m is the model,
+    # second letter is the distribution, last bit is fga or boundary attack
+
+    # so for target vuln * A->B transfer success for fga on dist A, we want
+    # vuln_B and the 1st A success (AA_fga)
+
+    # we want FGA on 1st row, BA on 2nd
+    # A->B dist A, A->B dist B, B->A dist A, B->A dist B for columns
+    # Note: for A->B always vuln B, for B->A always vuln B
     out = [
         [
             pearsonr(B_vuln[0], A_success[0]),
@@ -242,26 +262,36 @@ def make_h2_corr_table(
 
     # Extract model vulnerability stats and transfer success
     for run in runs:
+        # If run is A
         if run.name[-1] == "A":
+            # A -> B direction
             direction = directions[0]
-            for i, key in enumerate(A_keys):
-                A_vuln[i].append(run.summary["vulnerability_A"][key])
             count = 0
             for distribution in distributions:
                 for atk_name in atk_names:
+                    # Get A -> B transfer
                     A_success[count].append(
                         run.summary[direction][distribution][atk_name][atk_metric_name]
                     )
                     count += 1
+            # Get same model A vulnerability
+            for i, key in enumerate(A_keys):
+                A_vuln[i].append(run.summary["vulnerability_A"][key][atk_metric_name])
+        # If run is B
         if run.name[-1] == "B":
+            # B -> A direction
             direction = directions[1]
             count = 0
             for distribution in distributions:
                 for atk_name in atk_names:
+                    # Get B -> A transfer
                     B_success[count].append(
                         run.summary[direction][distribution][atk_name][atk_metric_name]
                     )
                     count += 1
+            # Get same model B vulnerability
+            for i, key in enumerate(B_keys):
+                B_vuln[i].append(run.summary["vulnerability_B"][key][atk_metric_name])
 
     # Make correlation table
     out = [
@@ -299,11 +329,17 @@ def h1h2cor_to_text(
     # Table name for latex label + file name
     tname = f"{hypothesis}_{atk_metric_name}"
 
+    # For the table caption
+    if hypothesis == "H1":
+        hyp_text = "Target Vulnerability"
+    if hypothesis == "H2":
+        hyp_text = "Surrogate Vulnerability"
+
     # Write into latex table components
     t_head = (
         "\\begin{table}[H]\n"
         "\\centering\n"
-        f"\\caption{{{hypothesis} - {atk_metric_label}}}\n"
+        f"\\caption{{{hyp_text} - {atk_metric_label}}}\n"
         f"\\label{{tab:{tname}}}\n"
         "\\begin{tabular}{c|c|c|c|c}\n"
         "Attack & \\multicolumn{2}{c|}{A to B} & "
@@ -495,67 +531,37 @@ def main():
     #     run_summary_list.append(run.summary._json_dict)
 
     # H1 & H2
-    # h1cor_ts = make_h1_corr_table(
-    #     wandb_runs=runs,
-    #     directions=DIRECTIONS,
-    #     distributions=DISTS,
-    #     atk_names=ATTACKS,
-    #     atk_metric_name=ATK_METRIC_NAMES[0],
-    # )
-    # h1cor_ml = make_h1_corr_table(
-    #     wandb_runs=runs,
-    #     directions=DIRECTIONS,
-    #     distributions=DISTS,
-    #     atk_names=ATTACKS,
-    #     atk_metric_name=ATK_METRIC_NAMES[1],
-    # )
-    # h2cor_ts = make_h2_corr_table(
-    #     wandb_runs=runs,
-    #     directions=DIRECTIONS,
-    #     distributions=DISTS,
-    #     atk_names=ATTACKS,
-    #     atk_metric_name=ATK_METRIC_NAMES[0],
-    # )
-    # h2cor_ml = make_h2_corr_table(
-    #     wandb_runs=runs,
-    #     directions=DIRECTIONS,
-    #     distributions=DISTS,
-    #     atk_names=ATTACKS,
-    #     atk_metric_name=ATK_METRIC_NAMES[1],
-    # )
-
-    # h1h2cor_to_text(
-    #     cor=h1cor_ts,
-    #     confidence_level=0.95,
-    #     atk_labels=ATK_LABELS,
-    #     atk_metric_label=ATK_METRIC_LABELS[0],
-    #     atk_metric_name=ATK_METRIC_NAMES[0],
-    #     hypothesis="H1",
-    # )
-    # h1h2cor_to_text(
-    #     cor=h1cor_ml,
-    #     confidence_level=0.95,
-    #     atk_labels=ATK_LABELS,
-    #     atk_metric_label=ATK_METRIC_LABELS[1],
-    #     atk_metric_name=ATK_METRIC_NAMES[1],
-    #     hypothesis="H1",
-    # )
-    # h1h2cor_to_text(
-    #     cor=h2cor_ts,
-    #     confidence_level=0.95,
-    #     atk_labels=ATK_LABELS,
-    #     atk_metric_label=ATK_METRIC_LABELS[0],
-    #     atk_metric_name=ATK_METRIC_NAMES[0],
-    #     hypothesis="H2",
-    # )
-    # h1h2cor_to_text(
-    #     cor=h2cor_ml,
-    #     confidence_level=0.95,
-    #     atk_labels=ATK_LABELS,
-    #     atk_metric_label=ATK_METRIC_LABELS[1],
-    #     atk_metric_name=ATK_METRIC_NAMES[1],
-    #     hypothesis="H2",
-    # )
+    for atk_name, atk_label in ATK_METRIC_PAIRS:
+        tab_h1 = make_h1_corr_table(
+            wandb_runs=runs,
+            directions=DIRECTIONS,
+            distributions=DISTS,
+            atk_names=ATTACKS,
+            atk_metric_name=atk_name,
+        )
+        tab_h2 = make_h2_corr_table(
+            wandb_runs=runs,
+            directions=DIRECTIONS,
+            distributions=DISTS,
+            atk_names=ATTACKS,
+            atk_metric_name=atk_name,
+        )
+        h1h2cor_to_text(
+            cor=tab_h1,
+            confidence_level=0.95,
+            atk_labels=ATK_LABELS,
+            atk_metric_label=atk_label,
+            atk_metric_name=atk_name,
+            hypothesis="H1",
+        )
+        h1h2cor_to_text(
+            cor=tab_h2,
+            confidence_level=0.95,
+            atk_labels=ATK_LABELS,
+            atk_metric_label=atk_label,
+            atk_metric_name=atk_name,
+            hypothesis="H2",
+        )
 
     # H3: Loop over attacks and attack metrics, make latex tables
     for i in range(len(ATTACKS)):
