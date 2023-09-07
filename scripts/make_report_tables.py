@@ -1,13 +1,15 @@
 import os
 
 import constants
-from scipy.stats import pearsonr
+import yaml
+from scipy.stats import pearsonr, spearmanr
 
 import wandb
 
 # Constants
 ENTITY = "turing-arc"
 PROJ = "ms2"
+CIFAR_SIZE = 50000
 
 # Metrics Keys
 DIRECTIONS = ["A_to_B_metrics", "B_to_A_metrics"]
@@ -517,12 +519,110 @@ def cor_to_tex(
     return None
 
 
+# === H4 Functions === #
+
+# H4: Dataset size (or ratios) and transfer success
+# 2 directions of attack
+# 2 distributions attacks are based on
+# 2 kinds of attack
+# 2 transfer success metrics
+# 4+ versions (target size, surrogate size, t/s ratio, s/t ratio)
+# = lots of possible ways of doing this
+
+
+def make_h4_cor_table(
+    wandb_runs: wandb.Api.runs,
+    directions: list[str],
+    distributions: list[str],
+    atk_name: str,
+    atk_metric_names: str,
+):
+
+    # Output Array: similarity metrics on rows, attack metrics on columns
+    out = []
+
+    # Counter
+    i = 0
+
+    # Read in all dataset dicts to extract sizes
+    experiment_groups_file_names = os.listdir(constants.EXPERIMENT_GROUPS_PATH)
+    experiment_groups = {}
+    for eg_file_name in experiment_groups_file_names:
+        with open(
+            os.path.join(
+                constants.EXPERIMENT_GROUPS_PATH, experiment_groups_file_names[0]
+            )
+        ) as file:
+            experiment_groups[eg_file_name[:-5]] = yaml.safe_load(file)
+
+    # To access dmpair 0 of little-blur experiment group:
+    # experiment_groups["little-blur"]["dmpairs"][0]
+
+    # Loop over directions (A2B, B2A)
+    for direction in directions:
+
+        # Filter down runs
+        runs = [run for run in wandb_runs if direction in run.summary.keys()]
+
+        # Loop over distributions (A, B)
+        for distribution in distributions:
+
+            # New column in output
+            out.append([])
+
+            # Get dataset drop ratios
+            drop_ratios = []
+            for run in runs:
+                # Get experiment group name, dmpair num, and surrogate letter
+                run_eg = run.name[:-6]
+                dmpair_num = int(run.name[-5])
+                surrogate = run.name[-1]
+
+                # Get corresponding dataset sizes
+                drops = experiment_groups[run_eg]["dmpairs"][dmpair_num]
+                A_size = CIFAR_SIZE * (1 - drops["A"]["drop"])
+                B_size = CIFAR_SIZE * (1 - drops["B"]["drop"])
+
+                # Get surrogate/target drop ratio
+                if surrogate == "A":
+                    drop_ratios.append(B_size / A_size)  # A_drop - B_drop
+                if surrogate == "B":
+                    drop_ratios.append(A_size / B_size)  # B_drop - A_drop
+
+            # Compute Correlations
+            for atk_metric_name in atk_metric_names:
+
+                # Extract the metric
+                atk_metric = []
+                for run in runs:
+                    atk_metric.append(
+                        run.summary[direction][distribution][atk_name][atk_metric_name]
+                    )
+
+                # Append the correlation
+                out[i].append(spearmanr(drop_ratios, atk_metric))
+
+            # Iterate
+            i += 1
+
+    # Output
+    return out
+
+
 # Main Function
 def main():
     # Wandb
     api = wandb.Api()
     path = os.path.join(ENTITY, PROJ)
     runs = api.runs(path=path)
+
+    # out = make_h4_cor_table(
+    #     wandb_runs=runs,
+    #     directions=DIRECTIONS,
+    #     distributions=DISTS,
+    #     atk_name=ATTACKS[0],
+    #     atk_metric_names=ATK_METRIC_NAMES,
+    # )
 
     # H1 & H2
     for atk_name, atk_label in ATK_METRIC_PAIRS:
