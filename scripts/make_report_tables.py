@@ -174,8 +174,8 @@ def make_h1_corr_table(
             # A -> B direction
             direction = directions[0]
             count = 0
-            for distribution in distributions:
-                for atk_name in atk_names:
+            for atk_name in atk_names:
+                for distribution in distributions:
                     # Get A -> B transfer
                     A_success[count].append(
                         run.summary[direction][distribution][atk_name][atk_metric_name]
@@ -193,8 +193,8 @@ def make_h1_corr_table(
             # B -> A direction
             direction = directions[1]
             count = 0
-            for distribution in distributions:
-                for atk_name in atk_names:
+            for atk_name in atk_names:
+                for distribution in distributions:
                     # Get B -> A transfer
                     B_success[count].append(
                         run.summary[direction][distribution][atk_name][atk_metric_name]
@@ -269,8 +269,8 @@ def make_h2_corr_table(
             # A -> B direction
             direction = directions[0]
             count = 0
-            for distribution in distributions:
-                for atk_name in atk_names:
+            for atk_name in atk_names:
+                for distribution in distributions:
                     # Get A -> B transfer
                     A_success[count].append(
                         run.summary[direction][distribution][atk_name][atk_metric_name]
@@ -284,8 +284,8 @@ def make_h2_corr_table(
             # B -> A direction
             direction = directions[1]
             count = 0
-            for distribution in distributions:
-                for atk_name in atk_names:
+            for atk_name in atk_names:
+                for distribution in distributions:
                     # Get B -> A transfer
                     B_success[count].append(
                         run.summary[direction][distribution][atk_name][atk_metric_name]
