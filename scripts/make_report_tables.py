@@ -17,9 +17,11 @@ DIRECTIONS = ["A_to_B_metrics", "B_to_A_metrics"]
 # Similarity Keys
 SIM_METRIC_NAMES = [
     "mmd_rbf_raw",
+    "mmd_rbf_inception",
     "mmd_rbf_umap",
     "mmd_rbf_pca",
     "otdd_exact_raw",
+    "otdd_exact_inception",
     "otdd_exact_umap",
     "otdd_exact_pca",
     "kde_umap_kl_approx",
@@ -32,11 +34,13 @@ SIM_METRIC_NAMES = [
     "pad_rbf_pca",
 ]
 SIM_METRIC_LABELS = [
-    "MMD (Raw)",
+    "MMD (None)",
+    "MMD (Inception)",
     "MMD (UMAP)",
     "MMD (PCA)",
     "hline",
-    "OTDD (Raw)",
+    "OTDD (None)",
+    "OTDD (Inception)",
     "OTDD (UMAP)",
     "OTDD (PCA)",
     "hline",
@@ -491,7 +495,7 @@ def cor_to_tex(
                 else:
                     t_content = t_content + " \\\\\n"
         if sim_metric_labels[i] == "hline":
-            t_content = t_content + " \\hline\\n "
+            t_content = t_content + " \\hline\n "
             extra += 1
     t_tail = (
         "\\end{tabular}\n"
