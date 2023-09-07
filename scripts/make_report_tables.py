@@ -2,7 +2,7 @@ import os
 
 import constants
 import yaml
-from scipy.stats import pearsonr, spearmanr
+from scipy.stats import pearsonr
 
 import wandb
 
@@ -529,6 +529,9 @@ def cor_to_tex(
 # 4+ versions (target size, surrogate size, t/s ratio, s/t ratio)
 # = lots of possible ways of doing this
 
+TYPES = ["ratio", "diff", "abs-diff"]
+TYPE_LABELS = ["Ratio", "Difference", "Absolute Difference"]
+
 
 def make_h4_cor_table(
     wandb_runs: wandb.Api.runs,
@@ -536,8 +539,8 @@ def make_h4_cor_table(
     distributions: list[str],
     atk_name: str,
     atk_metric_names: str,
-):
-
+    type: str,
+) -> list[list[pearsonr]]:
     # Output Array: similarity metrics on rows, attack metrics on columns
     out = []
 
@@ -571,7 +574,7 @@ def make_h4_cor_table(
             out.append([])
 
             # Get dataset drop ratios
-            drop_ratios = []
+            drop_scores = []
             for run in runs:
                 # Get experiment group name, dmpair num, and surrogate letter
                 run_eg = run.name[:-6]
@@ -583,11 +586,22 @@ def make_h4_cor_table(
                 A_size = CIFAR_SIZE * (1 - drops["A"]["drop"])
                 B_size = CIFAR_SIZE * (1 - drops["B"]["drop"])
 
-                # Get surrogate/target drop ratio
-                if surrogate == "A":
-                    drop_ratios.append(B_size / A_size)  # A_drop - B_drop
-                if surrogate == "B":
-                    drop_ratios.append(A_size / B_size)  # B_drop - A_drop
+                # Get surrogate and target drop score depending on type
+                if type == "ratio":
+                    # surrogate/target drop ratio
+                    if surrogate == "A":
+                        drop_scores.append(B_size / A_size)
+                    if surrogate == "B":
+                        drop_scores.append(A_size / B_size)
+                if type == "diff":
+                    # surrogate/target drop ratio
+                    if surrogate == "A":
+                        drop_scores.append(A_size - B_size)
+                    if surrogate == "B":
+                        drop_scores.append(B_size - A_size)
+                if type == "abs-diff":
+                    # surrogate - target absolute difference
+                    drop_scores.append(abs(A_size - B_size))
 
             # Compute Correlations
             for atk_metric_name in atk_metric_names:
@@ -600,7 +614,7 @@ def make_h4_cor_table(
                     )
 
                 # Append the correlation
-                out[i].append(spearmanr(drop_ratios, atk_metric))
+                out[i].append(pearsonr(drop_scores, atk_metric))
 
             # Iterate
             i += 1
@@ -609,20 +623,79 @@ def make_h4_cor_table(
     return out
 
 
-# Main Function
-def main():
-    # Wandb
+def h4_cor_to_tex(
+    cor: list[list[pearsonr]],
+    type: str,
+    type_label: str,
+    atk_name: str,
+    atk_label: str,
+    atk_metric_labels: str,
+    confidence_level: float = 0.95,
+) -> None:
+
+    # Get output dimensions
+    ncol = len(cor)
+    nrow = len(atk_metric_labels)
+
+    # Threshold for significance
+    threshold = 1 - confidence_level
+
+    # Table name for latex label + file name
+    tname = f"{atk_name}_{type}"
+
+    # Write into latex table components
+    t_head = (
+        "\\begin{table}[H]\n"
+        "\\centering\n"
+        f"\\caption{{Dataset Size, {type_label} - {atk_label}}}\n"
+        f"\\label{{tab:{tname}}}\n"
+        "\\begin{tabular}{c|c|c|c|c}\n"
+        "Attack Success Metric & \\multicolumn{2}{c|}{A to B} & "
+        "\\multicolumn{2}{c}{B to A}\\\\\n\\hline\n"
+        "& A Distribution & B Distribution & A Distribution & "
+        "B Distribution \\\\\n\\hline\n"
+    )
+    t_content = ""
+    for i in range(nrow):
+        t_content = t_content + atk_metric_labels[i].replace("_", "\\_") + " & "
+        for j in range(ncol):
+            t_content = t_content + write_cor_num(cor[j][i], threshold)
+            if j != (ncol - 1):
+                t_content = t_content + " & "
+            else:
+                t_content = t_content + " \\\\\n"
+    t_tail = (
+        "\\end{tabular}\n"
+        "\\caption*{All values rounded to 2 decimal places. "
+        f"Values significant at the {confidence_level*100:.0f}"
+        "\\% confidence level highlighted in bold.}"
+        "\n\\end{table}"
+    )
+
+    # Full table
+    tex_table = t_head + t_content + t_tail
+
+    # Folder for results - if it does not exist, create it
+    results_folder = os.path.join(constants.PROJECT_ROOT, "results")
+    if not os.path.isdir(results_folder):
+        os.mkdir(results_folder)
+
+    # Save
+    with open(os.path.join(results_folder, "dataset_size_" + tname + ".tex"), "w") as f:
+        f.write(tex_table)
+
+    # No Return Value
+    return None
+
+
+# === Main Function === #
+
+
+def main() -> None:
+    # Get wandb runs
     api = wandb.Api()
     path = os.path.join(ENTITY, PROJ)
     runs = api.runs(path=path)
-
-    # out = make_h4_cor_table(
-    #     wandb_runs=runs,
-    #     directions=DIRECTIONS,
-    #     distributions=DISTS,
-    #     atk_name=ATTACKS[0],
-    #     atk_metric_names=ATK_METRIC_NAMES,
-    # )
 
     # H1 & H2
     for atk_name, atk_label in ATK_METRIC_PAIRS:
@@ -678,7 +751,26 @@ def main():
                 confidence_level=0.95,
             )
 
-    # H4
+    # H4 - loop over attacks and correlations
+    for i in range(len(ATTACKS)):
+        for j in range(len(TYPES)):
+            cor = make_h4_cor_table(
+                wandb_runs=runs,
+                directions=DIRECTIONS,
+                distributions=DISTS,
+                atk_name=ATTACKS[i],
+                atk_metric_names=ATK_METRIC_NAMES,
+                type=TYPES[j],
+            )
+            h4_cor_to_tex(
+                cor=cor,
+                type=TYPES[j],
+                type_label=TYPE_LABELS[j],
+                atk_name=ATTACKS[i],
+                atk_label=ATK_LABELS[i],
+                atk_metric_labels=ATK_METRIC_LABELS,
+                confidence_level=0.95,
+            )
 
 
 if __name__ == "__main__":
