@@ -364,9 +364,9 @@ def h1h2cor_to_text(
                 t_content = t_content + " \\\\\n"
     t_tail = (
         "\\end{tabular}\n"
-        "\\caption*{All values rounded to 2 decimal places. "
+        "\\caption*{\\textit{All values rounded to 2 decimal places. "
         f"Values significant at the {confidence_level*100:.0f}"
-        "\\% confidence level highlighted in bold.}"
+        "\\% confidence level highlighted in bold.}}"
         "\n\\end{table}"
     )
 
@@ -499,9 +499,9 @@ def cor_to_tex(
             extra += 1
     t_tail = (
         "\\end{tabular}\n"
-        "\\caption*{All values rounded to 2 decimal places. "
+        "\\caption*{\\textit{All values rounded to 2 decimal places. "
         f"Values significant at the {confidence_level*100:.0f}"
-        "\\% confidence level highlighted in bold.}"
+        "\\% confidence level highlighted in bold.}}"
         "\n\\end{table}"
     )
 
@@ -670,9 +670,9 @@ def h4_cor_to_tex(
                 t_content = t_content + " \\\\\n"
     t_tail = (
         "\\end{tabular}\n"
-        "\\caption*{All values rounded to 2 decimal places. "
+        "\\caption*{\\textit{All values rounded to 2 decimal places. "
         f"Values significant at the {confidence_level*100:.0f}"
-        "\\% confidence level highlighted in bold.}"
+        "\\% confidence level highlighted in bold.}}"
         "\n\\end{table}"
     )
 
