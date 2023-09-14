@@ -25,9 +25,9 @@ SIM_METRIC_NAMES = [
     "otdd_exact_umap",
     "otdd_exact_pca",
     "kde_umap_kl_approx",
+    "kde_pca_kl_approx",
     "kde_gaussian_umap_l2",
     "kde_gaussian_umap_tv",
-    "kde_pca_kl_approx",
     "pad_linear_umap",
     "pad_rbf_umap",
     "pad_linear_pca",
@@ -45,9 +45,10 @@ SIM_METRIC_LABELS = [
     "OTDD (PCA)",
     "hline",
     "KDE - KL Approx (UMAP)",
+    "KDE - KL Approx (PCA)",
+    "hline",
     "KDE - L2 (UMAP)",
     "KDE - TV (UMAP)",
-    "KDE - KL Approx (PCA)",
     "hline",
     "PAD - Linear (UMAP)",
     "PAD - RBF (UMAP)",
@@ -348,8 +349,8 @@ def h1h2cor_to_text(
         f"\\caption{{{hyp_text} - {atk_metric_label}}}\n"
         f"\\label{{tab:{tname}}}\n"
         "\\begin{tabular}{c|c|c|c|c}\n"
-        "Attack & \\multicolumn{2}{c|}{A to B} & "
-        "\\multicolumn{2}{c}{B to A}\\\\\n\\hline\n"
+        "Attack & \\multicolumn{2}{c|}{Surrogate A, Target B} & "
+        "\\multicolumn{2}{c}{Surrogate B, Target A}\\\\\n\\hline\n"
         "& A Distribution & B Distribution & A Distribution & "
         "B Distribution \\\\\n\\hline\n"
     )
@@ -478,8 +479,8 @@ def cor_to_tex(
         f"\\caption{{{atk_label} - {atk_metric_label}}}\n"
         f"\\label{{tab:{tname}}}\n"
         "\\begin{tabular}{c|c|c|c|c}\n"
-        "Similarity Metric & \\multicolumn{2}{c|}{A to B} & "
-        "\\multicolumn{2}{c}{B to A}\\\\\n\\hline\n"
+        "Similarity Metric & \\multicolumn{2}{c|}{Surrogate A, Target B} & "
+        "\\multicolumn{2}{c}{Surrogate B, Target A}\\\\\n\\hline\n"
         "& A Distribution & B Distribution & A Distribution & "
         "B Distribution \\\\\n\\hline\n"
     )
@@ -598,7 +599,7 @@ def make_h4_cor_table(
                     if surrogate == "B":
                         drop_scores.append(A_size / B_size)
                 if type == "diff":
-                    # surrogate/target drop ratio
+                    # surrogat - target difference
                     if surrogate == "A":
                         drop_scores.append(A_size - B_size)
                     if surrogate == "B":
@@ -654,8 +655,8 @@ def h4_cor_to_tex(
         f"\\caption{{Dataset Size, {type_label} - {atk_label}}}\n"
         f"\\label{{tab:{tname}}}\n"
         "\\begin{tabular}{c|c|c|c|c}\n"
-        "Attack Success Metric & \\multicolumn{2}{c|}{A to B} & "
-        "\\multicolumn{2}{c}{B to A}\\\\\n\\hline\n"
+        "Attack Success Metric & \\multicolumn{2}{c|}{Surrogate A, Target B} & "
+        "\\multicolumn{2}{c}{Surrogate B, Target A}\\\\\n\\hline\n"
         "& A Distribution & B Distribution & A Distribution & "
         "B Distribution \\\\\n\\hline\n"
     )
