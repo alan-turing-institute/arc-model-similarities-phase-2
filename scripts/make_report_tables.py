@@ -220,7 +220,7 @@ def cor_matrix_to_text(
     # Save
     with open(
         os.path.join(
-            results_folder, "sim_correlations_" + "sim_metrics_corelation" + ".tex"
+            results_folder, "sim_correlations_" + "sim_metrics_correlation" + ".tex"
         ),
         "w",
     ) as f:
