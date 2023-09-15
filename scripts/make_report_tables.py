@@ -171,7 +171,7 @@ def cor_matrix_to_text(
         "\\begin{table}[H]\n"
         "\\centering\n"
         f"\\caption{{Similarity Metrics Correlation Matrix}}\n"
-        "\\label{tab:sim_metrics_corelation}\n"
+        "\\label{tab:sim_metrics_correlation}\n"
         "\\setlength\\tabcolsep{1.5pt}\n"
         f"\\begin{{tabular}}{{{''.join(['c' for _ in range(dim + 1)])}}}\n"
         " & "
