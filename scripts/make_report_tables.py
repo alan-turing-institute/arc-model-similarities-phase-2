@@ -118,6 +118,119 @@ def write_cor_num(
         return f"{num}"
 
 
+# === Transfer Learning Fn === #
+
+
+def make_base_success_corr_table(
+    wandb_runs: wandb.Api.runs,
+    sim_metric_names: list[str],
+    directions: list[str],
+    distributions: list[str],
+) -> list[list[pearsonr]]:
+
+    # Output Array: similarity metrics on rows, attack metrics on columns
+    out = []
+
+    # Counter
+    i = 0
+
+    # Loop over directions (A2B, B2A)
+    for direction in directions:
+        # Filter down runs
+        runs = [run for run in wandb_runs if direction in run.summary.keys()]
+
+        # Loop over distributions (A, B)
+        for distribution in distributions:
+
+            # New column in output
+            out.append([])
+
+            # Get attack metric for ddirection + dist
+            atk_metric = []
+            for run in runs:
+                atk_metric.append(
+                    run.summary[direction][distribution]["base_success_rate"]
+                )
+
+            # Compute correlations
+            for sim_metric_name in sim_metric_names:
+                sim_metric = [run.summary[sim_metric_name] for run in runs]
+                out[i].append(pearsonr(sim_metric, atk_metric))
+
+            # Iterate
+            i += 1
+
+    # Output
+    return out
+
+
+def base_success_cor_to_tex(
+    cor: list[list[pearsonr]],
+    sim_metric_labels: list[str],
+    confidence_level: float = 0.95,
+) -> None:
+    # Get output dimensions
+    ncol = len(cor)
+    nrow = len(sim_metric_labels)
+
+    # Threshold for significance
+    threshold = 1 - confidence_level
+
+    # Table name for latex label + file name
+    tname = "base_success_rate"
+
+    # Write into latex table components
+    t_head = (
+        "\\begin{table}[H]\n"
+        "\\centering\n"
+        f"\\caption{{Base Transfer Success}}\n"
+        f"\\label{{tab:{tname}}}\n"
+        "\\begin{tabular}{c|c|c|c|c}\n"
+        "Similarity Metric & \\multicolumn{2}{c|}{Surrogate A, Target B} & "
+        "\\multicolumn{2}{c}{Surrogate B, Target A}\\\\\n\\hline\n"
+        "& A Distribution & B Distribution & A Distribution & "
+        "B Distribution \\\\\n\\hline\n"
+    )
+    t_content = ""
+    extra = 0
+    for i in range(nrow):
+        if sim_metric_labels[i] != "hline":
+            t_content = t_content + sim_metric_labels[i].replace("_", "\\_") + " & "
+            for j in range(ncol):
+                t_content = t_content + write_cor_num(cor[j][i - extra], threshold)
+                if j != (ncol - 1):
+                    t_content = t_content + " & "
+                else:
+                    t_content = t_content + " \\\\\n"
+        if sim_metric_labels[i] == "hline":
+            t_content = t_content + " \\hline\n "
+            extra += 1
+    t_tail = (
+        "\\end{tabular}\n"
+        "\\caption*{\\textit{All values rounded to 2 decimal places. "
+        f"Values significant at the {confidence_level*100:.0f}"
+        "\\% confidence level highlighted in bold.}}"
+        "\n\\end{table}"
+    )
+
+    # Full table
+    tex_table = t_head + t_content + t_tail
+
+    # Folder for results - if it does not exist, create it
+    results_folder = os.path.join(constants.PROJECT_ROOT, "results")
+    if not os.path.isdir(results_folder):
+        os.mkdir(results_folder)
+
+    # Save
+    with open(
+        os.path.join(results_folder, "sim_correlations_" + tname + ".tex"), "w"
+    ) as f:
+        f.write(tex_table)
+
+    # No Return Value
+    return None
+
+
 # === H1 and H2 Functions === #
 
 # H1: Target vulnerability and transfer success
@@ -701,6 +814,19 @@ def main() -> None:
     api = wandb.Api()
     path = os.path.join(ENTITY, PROJ)
     runs = api.runs(path=path)
+
+    # Base Success Rate
+    cor = make_base_success_corr_table(
+        wandb_runs=runs,
+        sim_metric_names=SIM_METRIC_NAMES,
+        directions=DIRECTIONS,
+        distributions=DISTS,
+    )
+    base_success_cor_to_tex(
+        cor=cor,
+        sim_metric_labels=SIM_METRIC_LABELS,
+        confidence_level=0.95,
+    )
 
     # H1 & H2
     for atk_name, atk_label in ATK_METRIC_PAIRS:
