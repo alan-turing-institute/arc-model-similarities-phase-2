@@ -118,6 +118,118 @@ def write_cor_num(
         return f"{num}"
 
 
+# === Similarity Metrics Correlation Matrix === #
+
+
+def make_cor_matrix(
+    wandb_runs: wandb.Api.runs,
+    sim_metric_names: list[str],
+):
+    # Filter down to A runs to avoid duplication
+    # This is a little unfair to KL divergence, but avoids inflating the p-value
+    runs = [run for run in wandb_runs if run.name[-1] == "A"]
+
+    # Obtain similarity metrics
+    sim_metrics = []
+    for sim_metric_name in sim_metric_names:
+        sim_metrics.append([run.summary[sim_metric_name] for run in runs])
+
+    # Initialise correlation matrix
+    n_metrics = len(sim_metrics)
+    cor_mat = [[None for _ in range(n_metrics)] for _ in range(n_metrics)]
+
+    # Populate correlation matrix
+    for i in range(n_metrics):
+        for j in range(n_metrics):
+            if i == j:
+                cor_mat[i][j] = ""
+            if i != j:
+                cor = pearsonr(sim_metrics[i], sim_metrics[j])
+                cor_mat[i][j] = cor
+                cor_mat[j][i] = cor
+
+    # Return matrix
+    return cor_mat
+
+
+def cor_matrix_to_text(
+    cor_mat: list[list[pearsonr]],
+    labels: list[str],
+    confidence_level: float = 0.95,
+):
+    # Get dimensions
+    dim = len(cor_mat)
+
+    # Filter out hlines
+    labels = [lable for lable in labels if lable != "hline"]
+
+    # Get significance threshold
+    threshold = 1 - confidence_level
+
+    # table head
+    t_head = (
+        "\\begin{table}[H]\n"
+        "\\centering\n"
+        f"\\caption{{Similarity Metrics Correlation Matrix}}\n"
+        "\\label{tab:sim_metrics_corelation}\n"
+        "\\setlength\\tabcolsep{1.5pt}\n"
+        f"\\begin{{tabular}}{{{''.join(['c' for _ in range(dim + 1)])}}}\n"
+        " & "
+    )
+    for i in range(dim):
+        if i != (dim - 1):
+            t_head = t_head + "\\rot{" + labels[i] + "} & "
+        if i == (dim - 1):
+            t_head = t_head + "\\rot{" + labels[i] + "} \\\\\n\\hline\n"
+
+    # Table content
+    t_content = ""
+    for i in range(dim):
+        t_content = t_content + labels[i] + " & "
+        for j in range(dim):
+            # Append next num
+            if i == j:
+                t_content = t_content + " "
+            if i != j:
+                t_content = t_content + write_cor_num(
+                    cor_mat[i][j], threshold=threshold
+                )
+            # Append either & or \\ for next line
+            if j != (dim - 1):
+                t_content = t_content + " & "
+            if j == (dim - 1):
+                t_content = t_content + " \\\\\n"
+
+    # Table tail
+    t_tail = (
+        "\\end{tabular}\n"
+        "\\caption*{\\textit{All values rounded to 2 decimal places. "
+        f"Values significant at the {confidence_level*100:.0f}"
+        "\\% confidence level highlighted in bold.}}"
+        "\n\\end{table}"
+    )
+
+    # Full table
+    tex_table = t_head + t_content + t_tail
+
+    # Folder for results - if it does not exist, create it
+    results_folder = os.path.join(constants.PROJECT_ROOT, "results")
+    if not os.path.isdir(results_folder):
+        os.mkdir(results_folder)
+
+    # Save
+    with open(
+        os.path.join(
+            results_folder, "sim_correlations_" + "sim_metrics_corelation" + ".tex"
+        ),
+        "w",
+    ) as f:
+        f.write(tex_table)
+
+    # No Return Value
+    return None
+
+
 # === Transfer Learning Fn === #
 
 
@@ -814,6 +926,17 @@ def main() -> None:
     api = wandb.Api()
     path = os.path.join(ENTITY, PROJ)
     runs = api.runs(path=path)
+
+    # Similarity Metrics Correlations
+    cor_mat = make_cor_matrix(
+        wandb_runs=runs,
+        sim_metric_names=SIM_METRIC_NAMES,
+    )
+    cor_matrix_to_text(
+        cor_mat=cor_mat,
+        labels=SIM_METRIC_LABELS,
+        confidence_level=0.95,
+    )
 
     # Base Success Rate
     cor = make_base_success_corr_table(
