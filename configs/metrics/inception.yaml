@@ -64,36 +64,3 @@ metrics:
       # dist.distance() args
       # https://github.com/alan-turing-institute/arc-otdd/blob/main/otdd/pytorch/distance.py#L622
       max_samples: 10000
-  pad_linear_inception:
-    class: pad
-    arguments:
-      kernel_name: linear
-      c_values:
-        - 0.1
-        - 1
-        - 10
-      embedding_name: inception
-      embedding_kwargs:
-        batch_size: 16
-        device: cuda
-      test_proportion: 0.2
-      balance_train: True
-      balance_test: True
-  pad_rbf_inception:
-    class: pad
-    arguments:
-      kernel_name: rbf
-      c_values:
-        - 0.1
-        - 1
-        - 10
-      gamma_values:
-        - 'scale'
-        - 'auto'
-      embedding_name: inception
-      embedding_kwargs:
-        batch_size: 16
-        device: cuda
-      test_proportion: 0.2
-      balance_train: True
-      balance_test: True
