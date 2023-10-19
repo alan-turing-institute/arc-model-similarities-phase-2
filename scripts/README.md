@@ -62,7 +62,7 @@ or
 scripts/shell_metrics_all.sh mmd drop-only
 ```
 
-where once again `mmd` is an example of a named metric config `drop-only` is an example of an experiment group with a named config.
+where once again `mmd` is an example of a named metric config and `drop-only` is an example of an experiment group with a named config.
 
 Alternatively, you can call each of the scripts individually, using `sbatch` if the created script is a slurm script, e.g.
 
