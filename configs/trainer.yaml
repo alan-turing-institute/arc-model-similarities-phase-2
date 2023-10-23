@@ -1,0 +1,14 @@
+trainer_kwargs:
+  max_epochs: 10
+  devices: "auto"
+  accelerator: "auto"
+
+model:
+  lr: 0.0125
+  weight_decay: 0.0005
+  momentum: 0.9
+
+wandb:
+  entity: turing-arc
+  project: ms2
+  mode: online

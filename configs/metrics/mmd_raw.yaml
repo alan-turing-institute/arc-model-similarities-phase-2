@@ -1,0 +1,7 @@
+baskerville: False
+metrics:
+  mmd_rbf_raw:
+    class: mmd
+    arguments:
+      embedding_name: matrix
+      kernel_name: rbf

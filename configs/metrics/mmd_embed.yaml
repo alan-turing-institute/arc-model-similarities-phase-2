@@ -1,0 +1,21 @@
+baskerville: True
+metrics:
+  mmd_rbf_umap:
+    class: mmd
+    arguments:
+      kernel_name: rbf
+      embedding_name: inception_umap
+      embedding_kwargs:
+        batch_size: 16
+        device: cuda
+        n_components: 2
+        random_seed: 42
+  mmd_rbf_pca:
+    class: mmd
+    arguments:
+      kernel_name: rbf
+      embedding_name: inception_pca
+      embedding_kwargs:
+        batch_size: 16
+        device: cuda
+        n_components: 50

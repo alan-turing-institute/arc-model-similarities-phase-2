@@ -1,0 +1,70 @@
+baskerville: True
+metrics:
+  pad_linear_umap:
+    class: pad
+    arguments:
+      kernel_name: linear
+      c_values:
+        - 0.1
+        - 1
+        - 10
+      embedding_name: inception_umap
+      embedding_kwargs:
+        batch_size: 16
+        device: cuda
+        n_components: 2
+        random_seed: 42
+      test_proportion: 0.2
+      balance_train: True
+      balance_test: True
+  pad_rbf_umap:
+    class: pad
+    arguments:
+      kernel_name: rbf
+      c_values:
+        - 0.1
+        - 1
+        - 10
+      gamma_values:
+        - 'scale'
+        - 'auto'
+      embedding_name: inception_umap
+      embedding_kwargs:
+        batch_size: 16
+        device: cuda
+        n_components: 2
+        random_seed: 42
+      test_proportion: 0.2
+      balance_train: True
+      balance_test: True
+  pad_linear_pca:
+    class: pad
+    arguments:
+      kernel_name: linear
+      c_values:
+        - 0.1
+      embedding_name: inception_pca
+      embedding_kwargs:
+        batch_size: 16
+        device: cuda
+        n_components: 50
+      test_proportion: 0.2
+      balance_train: True
+      balance_test: True
+  pad_rbf_pca:
+    class: pad
+    arguments:
+      kernel_name: rbf
+      c_values:
+        - 0.1
+      gamma_values:
+        - 'scale'
+        - 'auto'
+      embedding_name: inception_pca
+      embedding_kwargs:
+        batch_size: 16
+        device: cuda
+        n_components: 50
+      test_proportion: 0.2
+      balance_train: True
+      balance_test: True

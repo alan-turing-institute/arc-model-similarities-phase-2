@@ -127,3 +127,33 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# CIFAR
+cifar-10-python.tar.gz
+cifar-10-batches-py/
+
+#lightning logs
+logs/
+
+#vscode
+launch.json
+settings.json
+
+#wandb
+wandb/
+ms2/
+artifacts/
+
+# Generated bash scripts and outputs
+metrics_scripts/
+train_scripts/
+attack_scripts/
+results/
+
+# Slurm outputs
+slurm_train_logs/
+slurm_attack_logs/
+slurm_metrics_logs/
+
+# Misc
+.DS_Store
