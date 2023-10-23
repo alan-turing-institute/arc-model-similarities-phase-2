@@ -6,7 +6,7 @@ Previous ARC research examined the relationship between neural network similarit
 
 In the second phase of model similarity research, we are now assessing the relationship between dataset similarity and attack transferability between identitical models trained on two different datasets.
 
-We expect that dataset similarity will be predictive of attack transferability. This is in line with recent research that shows dataset similarity is predictive of successful transfer learning.
+We show that dataset similarity is predictive of attack transferability. This is in line with recent research that shows dataset similarity is predictive of successful transfer learning.
 
 ## Technical Approach
 
@@ -17,6 +17,14 @@ We expect that dataset similarity will be predictive of attack transferability. 
   - We may relax the requirement that tuning be identical in the future
 - **Step 4:** Perform transfer attack. Record transfer attack success metrics
 - **Step 5:** Assess relationship between similarity metrics and transfer attack succes
+
+## Repository Contents
+
+- **analysis:** This folder contains notebooks and data (including a .csv file of the results from wandb) used to generate the plots in the report. See `analysis/README.md` for details.
+- **configs:** This folder contains config files for the experiments, defining experiment groups (transform groups in the report), metrics, attacks, dataset creation arguments, and model training arguments. See `scripts/README.md` for more details on how these are used.
+- **scripts:** This folder contains scripts for model training, computing dataset similarity metrics, computing attacks and their success metrics, and generating the LaTeX tables of correlations shown in the report. See `scripts/README.md` for usage.
+- **src:** This folder contains our source code for the project. This includes our implemenations of the dataset pairs, the ResNet-18 model, and the dataset similarity metrics.
+- **test:** This folder contains the unit tests for the source code. See below for developer usage.
 
 ## Installation
 
