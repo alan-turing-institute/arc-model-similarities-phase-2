@@ -3,7 +3,7 @@ The scripts and notebooks in this folder are for generating images and plots use
 
 The data for images has not been stored here, due to the size of the files. One exception is the wandb output file, which is saved in the data folder.
 
-To replicate the images and plots, the file in `scripts\create_data.py` will need to be run. The user may want to change the `device` variable, which determines whether the inception embeddings will be caluclated on cpu or gpu.
+To replicate the images and plots, the file in `scripts\create_data.py` will need to be run to prepare the data used. You may want to change the `device` variable, which determines whether the inception embeddings will be caluclated on cpu or gpu. We used `device='mps'` for our analyses, and small differences in results may occur if you use another device.
 
 The images and plots used in the report can then be replicated by running the following notebooks:
 - `hypothesis1_2.ipynb` - Plots to analyse Hypotheses 1 and 2
